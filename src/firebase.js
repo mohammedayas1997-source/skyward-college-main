@@ -1,11 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth"; // Na kara wannan
+import { getFirestore } from "firebase/firestore"; // Na kara wannan
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBv-zKXx2on0QXPbqRp5j5YxIUSkCwPQ50",
   authDomain: "skyward-college-main.firebaseapp.com",
@@ -18,4 +15,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// --- DOLE KA SAKA WADANNAN DOMIN SAURAN PAGES SU GAN SU ---
+export const auth = getAuth(app); // Don Login
+export const db = getFirestore(app); // Don Database (Users, Students etc.)
+export const analytics = getAnalytics(app);
+
+export default app;
