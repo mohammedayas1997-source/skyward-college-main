@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { ShieldCheck, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 
 const AdminLogin = () => {
@@ -15,12 +15,18 @@ const AdminLogin = () => {
     setError("");
     setLoading(true);
 
-    const email = e.target.email.value;
+    const email = e.target.email.value.toLowerCase();
     const password = e.target.password.value;
 
-    // --- SECURITY CHECK: ONLY ADMIN EMAIL ALLOWED ---
-    if (email !== "admin@skyward.edu.ng") {
-      setError("Access Denied: Not an Administrative ID.");
+    // --- AUTHORIZED ACCOUNTS ONLY ---
+    const authorizedEmails = [
+      "admin@skyward.edu.ng",
+      "rector@skyward.edu.ng",
+      "owner@skyward.edu.ng"
+    ];
+
+    if (!authorizedEmails.includes(email)) {
+      setError("Access Denied: You do not have Administrative privileges.");
       setLoading(false);
       return;
     }
@@ -28,11 +34,19 @@ const AdminLogin = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       
-      // Successfully logged in as Admin
-      localStorage.setItem("userRole", "admin");
-      navigate("/admin/dashboard");
+      // Determine exactly which dashboard to send them to
+      if (email === "owner@skyward.edu.ng") {
+        localStorage.setItem("userRole", "proprietor");
+        navigate("/portal/proprietor");
+      } else if (email === "rector@skyward.edu.ng") {
+        localStorage.setItem("userRole", "rector");
+        navigate("/portal/rector");
+      } else {
+        localStorage.setItem("userRole", "admin");
+        navigate("/admin/dashboard");
+      }
     } catch (err) {
-      setError("Invalid Administrative Credentials!");
+      setError("Invalid Credentials! Please check your password.");
       console.error("Login Error:", err.message);
     } finally {
       setLoading(false);
@@ -48,8 +62,8 @@ const AdminLogin = () => {
           <div className="bg-red-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
             <ShieldCheck className="text-white" size={45} />
           </div>
-          <h1 className="text-white text-3xl font-black uppercase tracking-tighter">Admin Portal</h1>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>
+          <h1 className="text-white text-3xl font-black uppercase tracking-tighter">Command Center</h1>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Executive & Admin Access Only</p>
         </div>
 
         <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden p-8 md:p-12 border border-white/10">
@@ -61,7 +75,7 @@ const AdminLogin = () => {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest">Admin ID / Email</label>
+              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest">Authorized Email</label>
               <div className="relative">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">
                   <User size={18} />
@@ -70,7 +84,7 @@ const AdminLogin = () => {
                   name="email"
                   type="email" 
                   required
-                  placeholder="admin@skyward.edu.ng"
+                  placeholder="name@skyward.edu.ng"
                   className="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner"
                 />
               </div>
@@ -92,7 +106,7 @@ const AdminLogin = () => {
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#002147]"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#002147] transition-colors"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -108,15 +122,15 @@ const AdminLogin = () => {
                   <Loader2 className="animate-spin" size={20} /> Authenticating...
                 </>
               ) : (
-                "Unlock Dashboard"
+                "Grant Access"
               )}
             </button>
           </form>
 
           <div className="mt-10 pt-8 border-t border-slate-50 text-center">
             <p className="text-[9px] text-slate-400 uppercase font-black leading-relaxed tracking-widest">
-              System Monitor: IP Address Logged <br/>
-              <span className="text-red-500">Encrypted Session Layer 7</span>
+              Security Protocol: Multi-Role Verification <br/>
+              <span className="text-red-500 font-bold">Encrypted Session Active</span>
             </p>
           </div>
         </div>
@@ -126,7 +140,7 @@ const AdminLogin = () => {
             onClick={() => navigate("/")} 
             className="text-slate-500 text-[10px] font-black uppercase hover:text-white transition-colors tracking-widest"
           >
-            ← Terminate & Return to Web
+            ← Back to Public Website
           </button>
         </div>
       </div>

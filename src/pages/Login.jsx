@@ -1,55 +1,64 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase"; // Ensure this path is correct
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { Lock, User, ShieldCheck, Loader2 } from "lucide-react";
+import { auth } from "../firebase"; 
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { Lock, User, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+
+    // --- 1. PRE-LOGIN VALIDATION ---
+    const lowerEmail = email.toLowerCase();
+    const isAdminEmail = ["owner@skyward.edu.ng", "rector@skyward.edu.ng", "admin@skyward.edu.ng", "finance@skyward.edu.ng"].includes(lowerEmail);
+    const isStaffEmail = lowerEmail.includes("staff");
 
     try {
-      // 1. Firebase Authentication check
-      await signInWithEmailAndPassword(auth, email, password);
+      // Firebase Authentication check
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+
+      // --- 2. ROLE-BASED ACCESS CONTROL (STAFF vs STUDENT) ---
       
-      // 2. ROLE REDIRECTION LOGIC
-      // We check the exact email used to sign in to determine the dashboard
-      
-      if (email === "owner@skyward.edu.ng") {
-        localStorage.setItem("userRole", "proprietor");
-        navigate("/portal/proprietor");
+      // If it's an Admin/Executive trying to use this portal
+      if (isAdminEmail) {
+        if (lowerEmail === "owner@skyward.edu.ng") {
+          localStorage.setItem("userRole", "proprietor");
+          navigate("/portal/proprietor");
+        } else if (lowerEmail === "rector@skyward.edu.ng") {
+          localStorage.setItem("userRole", "rector");
+          navigate("/portal/rector");
+        } else if (lowerEmail === "admin@skyward.edu.ng") {
+          localStorage.setItem("userRole", "exam-officer");
+          navigate("/admin/exam-office");
+        } else {
+          localStorage.setItem("userRole", "accountant");
+          navigate("/admin/accountant");
+        }
       } 
-      else if (email === "rector@skyward.edu.ng") {
-        localStorage.setItem("userRole", "rector");
-        navigate("/portal/rector");
-      } 
-      else if (email === "admin@skyward.edu.ng") {
-        localStorage.setItem("userRole", "exam-officer");
-        navigate("/admin/exam-office");
-      } 
-      else if (email === "finance@skyward.edu.ng") {
-        localStorage.setItem("userRole", "accountant");
-        navigate("/admin/accountant"); 
-      }
-      else if (email.toLowerCase().includes("staff")) {
+      // STRICT STAFF LOGIN
+      else if (isStaffEmail) {
         localStorage.setItem("userRole", "staff");
         navigate("/staff/dashboard");
-      }
+      } 
+      // STRICT STUDENT LOGIN
       else {
-        // If the email doesn't match the above, treat as a student
+        // We assume any other institutional email that isn't admin or staff belongs to a student
         localStorage.setItem("userRole", "student");
         navigate("/portal/dashboard");
       }
 
     } catch (error) {
       console.error("Login Error:", error.code);
-      alert("Authentication Failed: Please check your Institutional Email and Password.");
+      setError("Invalid Email or Password. Access Denied.");
     } finally {
       setLoading(false);
     }
@@ -62,28 +71,34 @@ const Login = () => {
           <div className="w-16 h-16 bg-red-600 rounded-2xl mx-auto mb-4 flex items-center justify-center rotate-3 shadow-lg">
             <ShieldCheck className="text-white" size={32} />
           </div>
-          <h2 className="text-white text-2xl font-black uppercase tracking-tight">Access Portal</h2>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Skyward College Management System</p>
+          <h2 className="text-white text-2xl font-black uppercase tracking-tight">Skyward Portal</h2>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Staff & Student Access</p>
         </div>
 
         <form className="p-8 space-y-6" onSubmit={handleLogin}>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl flex items-center gap-2 text-[10px] font-bold uppercase border border-red-100">
+              <AlertCircle size={16} /> {error}
+            </div>
+          )}
+
           <div>
-            <label className="block text-[10px] font-black text-[#002147] uppercase mb-2">Institutional Email</label>
+            <label className="block text-[10px] font-black text-[#002147] uppercase mb-2 tracking-widest">Institutional Email</label>
             <div className="relative">
               <User className="absolute left-3 top-3 text-slate-400" size={18} />
               <input 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@skyward.edu.ng"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm font-bold"
+                placeholder="staff@skyward.edu.ng or student@skyward.edu.ng"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm font-bold transition-all"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-[#002147] uppercase mb-2">Password</label>
+            <label className="block text-[10px] font-black text-[#002147] uppercase mb-2 tracking-widest">Portal Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
               <input 
@@ -91,7 +106,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm font-bold"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm font-bold transition-all"
                 required
               />
             </div>
@@ -100,14 +115,16 @@ const Login = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:bg-slate-300"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Login"}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Access"}
           </button>
         </form>
         
         <div className="p-4 bg-slate-50 text-center border-t border-slate-100">
-          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Skyward Security Verified © 2026</p>
+          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+            Security Verified Layer © 2026
+          </p>
         </div>
       </div>
     </div>
