@@ -15,12 +15,11 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Logic for Firebase Authentication
+      // 1. Firebase Authentication check
       await signInWithEmailAndPassword(auth, email, password);
       
-      // ROLE REDIRECTION LOGIC
-      // Note: In a real app, roles should be fetched from Firestore.
-      // For now, we use your specific email logic:
+      // 2. ROLE REDIRECTION LOGIC
+      // We check the exact email used to sign in to determine the dashboard
       
       if (email === "owner@skyward.edu.ng") {
         localStorage.setItem("userRole", "proprietor");
@@ -38,17 +37,19 @@ const Login = () => {
         localStorage.setItem("userRole", "accountant");
         navigate("/admin/accountant"); 
       }
-      else if (email.includes("staff")) {
+      else if (email.toLowerCase().includes("staff")) {
         localStorage.setItem("userRole", "staff");
         navigate("/staff/dashboard");
       }
       else {
-        // Default for students
+        // If the email doesn't match the above, treat as a student
         localStorage.setItem("userRole", "student");
         navigate("/portal/dashboard");
       }
+
     } catch (error) {
-      alert("System Authentication Failed: Check credentials or Network connection.");
+      console.error("Login Error:", error.code);
+      alert("Authentication Failed: Please check your Institutional Email and Password.");
     } finally {
       setLoading(false);
     }

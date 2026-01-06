@@ -1,41 +1,46 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// GYARA: Mun hada shi da Firebase Auth
 import { auth } from "../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { ShieldCheck, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // Sabon state don loading
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true); // Fara loading
+    setLoading(true);
 
     const email = e.target.email.value;
     const password = e.target.password.value;
 
+    // --- SECURITY CHECK: ONLY ADMIN EMAIL ALLOWED ---
+    if (email !== "admin@skyward.edu.ng") {
+      setError("Access Denied: Not an Administrative ID.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // GYARA: Amfani da Firebase don shiga
       await signInWithEmailAndPassword(auth, email, password);
       
-      // Idan komai ya tafi daidai
+      // Successfully logged in as Admin
+      localStorage.setItem("userRole", "admin");
       navigate("/admin/dashboard");
     } catch (err) {
-      // Idan an samu kuskure (ba daidai ba)
       setError("Invalid Administrative Credentials!");
       console.error("Login Error:", err.message);
     } finally {
-      setLoading(false); // Dakatar da loading
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#00152b] py-12 px-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#00152b] py-12 px-4 font-sans">
       <div className="max-w-md w-full animate-in fade-in zoom-in duration-500">
         
         {/* Admin Shield Icon */}
@@ -49,7 +54,7 @@ const AdminLogin = () => {
 
         <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden p-8 md:p-12 border border-white/10">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 flex items-center gap-3 text-[10px] font-black border border-red-100 uppercase tracking-wider animate-shake">
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 flex items-center gap-3 text-[10px] font-black border border-red-100 uppercase tracking-wider animate-bounce">
               <AlertCircle size={18} /> {error}
             </div>
           )}
@@ -66,7 +71,7 @@ const AdminLogin = () => {
                   type="email" 
                   required
                   placeholder="admin@skyward.edu.ng"
-                  className="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold placeholder:text-slate-300 shadow-inner"
+                  className="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner"
                 />
               </div>
             </div>
@@ -87,7 +92,7 @@ const AdminLogin = () => {
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#002147] transition-colors"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#002147]"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -96,7 +101,7 @@ const AdminLogin = () => {
 
             <button 
               disabled={loading}
-              className={`w-full ${loading ? 'bg-slate-400' : 'bg-[#002147] hover:bg-red-600'} text-white font-black py-5 rounded-[25px] uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-3 mt-4`}
+              className={`w-full ${loading ? 'bg-slate-400' : 'bg-[#002147] hover:bg-red-600'} text-white font-black py-5 rounded-[25px] uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 mt-4`}
             >
               {loading ? (
                 <>
