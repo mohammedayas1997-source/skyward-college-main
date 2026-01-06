@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // Na kara wannan
-import { getFirestore } from "firebase/firestore"; // Na kara wannan
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -13,12 +13,11 @@ const firebaseConfig = {
   measurementId: "G-V80H690PR4"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// --- DOLE KA SAKA WADANNAN DOMIN SAURAN PAGES SU GAN SU ---
-export const auth = getAuth(app); // Don Login
-export const db = getFirestore(app); // Don Database (Users, Students etc.)
-export const analytics = getAnalytics(app);
+// GYARA: Cire analytics na farkon nan, bar guda daya kawai a kasa
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const analytics = getAnalytics(app); // Guda daya kacal
 
 export default app;
