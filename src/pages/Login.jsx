@@ -1,47 +1,56 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, User, ShieldCheck } from "lucide-react";
+import { auth } from "../firebase"; // Ensure this path is correct
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { Lock, User, ShieldCheck, Loader2 } from "lucide-react";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    // --- 1. PROPRIETOR ---
-    if (username === "owner" && password === "owner123") {
-      localStorage.setItem("userRole", "proprietor");
-      navigate("/portal/proprietor");
-    } 
-    // --- 2. RECTOR ---
-    else if (username === "rector" && password === "rector123") {
-      localStorage.setItem("userRole", "rector");
-      navigate("/portal/rector");
-    } 
-    // --- 3. EXAM OFFICER ---
-    else if (username === "sky-admin" && password === "admin123") {
-      localStorage.setItem("userRole", "exam-officer");
-      navigate("/admin/exam-office");
-    } 
-    // --- 4. ACCOUNTANT ---
-    else if (username === "finance" && password === "pay123") {
-      localStorage.setItem("userRole", "accountant");
-      navigate("/admin/accountant"); 
-    }
-    // --- 5. STAFF / LECTURER ---
-    else if (username === "staff" && password === "staff123") {
-      localStorage.setItem("userRole", "staff");
-      navigate("/staff/dashboard");
-    }
-    // --- 6. STUDENT ---
-    else if (username.startsWith("SKY/") && password === "student123") {
-      localStorage.setItem("userRole", "student");
-      navigate("/portal/dashboard");
-    } 
-    else {
-      alert("Error: Invalid Username or Password!");
+    try {
+      // Logic for Firebase Authentication
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // ROLE REDIRECTION LOGIC
+      // Note: In a real app, roles should be fetched from Firestore.
+      // For now, we use your specific email logic:
+      
+      if (email === "owner@skyward.edu.ng") {
+        localStorage.setItem("userRole", "proprietor");
+        navigate("/portal/proprietor");
+      } 
+      else if (email === "rector@skyward.edu.ng") {
+        localStorage.setItem("userRole", "rector");
+        navigate("/portal/rector");
+      } 
+      else if (email === "admin@skyward.edu.ng") {
+        localStorage.setItem("userRole", "exam-officer");
+        navigate("/admin/exam-office");
+      } 
+      else if (email === "finance@skyward.edu.ng") {
+        localStorage.setItem("userRole", "accountant");
+        navigate("/admin/accountant"); 
+      }
+      else if (email.includes("staff")) {
+        localStorage.setItem("userRole", "staff");
+        navigate("/staff/dashboard");
+      }
+      else {
+        // Default for students
+        localStorage.setItem("userRole", "student");
+        navigate("/portal/dashboard");
+      }
+    } catch (error) {
+      alert("System Authentication Failed: Check credentials or Network connection.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,14 +67,14 @@ const Login = () => {
 
         <form className="p-8 space-y-6" onSubmit={handleLogin}>
           <div>
-            <label className="block text-[10px] font-black text-[#002147] uppercase mb-2">Username / Matric No</label>
+            <label className="block text-[10px] font-black text-[#002147] uppercase mb-2">Institutional Email</label>
             <div className="relative">
               <User className="absolute left-3 top-3 text-slate-400" size={18} />
               <input 
-                type="text" 
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your ID"
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@skyward.edu.ng"
                 className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm font-bold"
                 required
               />
@@ -87,8 +96,12 @@ const Login = () => {
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg active:scale-95">
-            Authorize Login
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+          >
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Login"}
           </button>
         </form>
         
