@@ -6,8 +6,6 @@ import {
   PieChart, BarChart3, Plus, ArrowUpRight, ArrowDownRight, Bell, Printer
 } from "lucide-react";
 
-
-// --- SABON TSARI: Notification Hook (Simulation) ---
 const AccountantDashboard = () => {
   // --- STATE NA NOTIFICATIONS ---
   const [toast, setToast] = useState(null);
@@ -47,112 +45,101 @@ const AccountantDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-10 font-sans pb-20 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#fcfdfe] p-4 md:p-10 font-sans pb-20 relative overflow-x-hidden text-left">
       
       {/* --- LIVE NOTIFICATION TOAST --- */}
       {toast && (
-        <div className="fixed top-10 right-4 md:right-10 z-[100] bg-white border-l-4 border-green-500 shadow-2xl p-5 rounded-2xl flex items-center gap-4 animate-in slide-in-from-right duration-500">
-          <div className="bg-green-50 p-2 rounded-full text-green-600">
+        <div className="fixed top-10 right-4 md:right-10 z-[100] bg-white border-l-4 border-emerald-500 shadow-2xl p-6 rounded-2xl flex items-center gap-5 animate-in slide-in-from-right duration-500 min-w-[300px]">
+          <div className="bg-emerald-50 p-3 rounded-xl text-emerald-600">
             <Bell size={20} className="animate-bounce" />
           </div>
-          <div className="text-left">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Alert</p>
-            <p className="text-sm font-bold text-[#002147]">{toast}</p>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Notification</p>
+            <p className="text-sm font-bold text-[#002147] mt-1">{toast}</p>
           </div>
+          <button onClick={() => setToast(null)} className="ml-auto text-slate-300 hover:text-slate-500"><X size={16}/></button>
         </div>
       )}
 
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div className="animate-in slide-in-from-left duration-700 text-left">
-          <h1 className="text-4xl font-black text-[#002147] uppercase tracking-tighter leading-none">Bursary Central</h1>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-3 italic flex items-center gap-2">
-            <Activity size={12} className="text-green-500 animate-pulse"/> Financial Intelligence Unit • 2026
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-8">
+        <div className="animate-in slide-in-from-left duration-700">
+          <div className="flex items-center gap-3 mb-3">
+             <div className="h-8 w-1 bg-emerald-500 rounded-full"></div>
+             <h1 className="text-4xl font-black text-[#002147] uppercase tracking-tighter leading-none italic">Bursary Central</h1>
+          </div>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] ml-4 flex items-center gap-2 opacity-70">
+            <Activity size={14} className="text-emerald-500 animate-pulse"/> Treasury & Finance Department • 2026
           </p>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
-           <button onClick={() => window.print()} className="flex-1 md:flex-none bg-white p-4 rounded-2xl border border-slate-200 text-[#002147] hover:bg-slate-50 transition-all shadow-sm active:scale-95">
-              <Printer size={20}/>
+        <div className="flex gap-4 w-full md:w-auto">
+           <button onClick={() => window.print()} className="bg-white h-14 w-14 rounded-2xl border border-slate-200 text-[#002147] hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center active:scale-90">
+              <Printer size={22}/>
            </button>
-           <button className="flex-[3] md:flex-none bg-[#002147] text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/20 active:scale-95">
-              <Plus size={18}/> New Journal Entry
+           <button className="flex-1 md:flex-none bg-[#002147] text-white px-10 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#003366] transition-all shadow-xl shadow-blue-900/10 active:scale-95">
+              <Plus size={20}/> New Journal Entry
            </button>
         </div>
-      </div>
+      </header>
 
       {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-5 group hover:shadow-lg transition-all text-left">
-          <div className="h-14 w-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
-            <ArrowDownRight size={24}/>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <SummaryCard label="Total Revenue" value="₦14.2M" icon={<ArrowDownRight size={24}/>} color="emerald" />
+        <SummaryCard label="Expenses" value="₦4.8M" icon={<ArrowUpRight size={24}/>} color="red" />
+        <div className="bg-[#002147] p-8 rounded-[40px] shadow-2xl flex items-center justify-between text-left border border-white/5 relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 text-white/5 group-hover:scale-125 transition-transform duration-700"><Wallet size={120}/></div>
+          <div className="relative z-10">
+            <p className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-2">Net Treasury Balance</p>
+            <h3 className="text-3xl font-black text-white tracking-tighter italic">₦9.4M</h3>
           </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Revenue</p>
-            <h3 className="text-2xl font-black text-[#002147]">₦14.2M</h3>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-5 group hover:shadow-lg transition-all text-left">
-          <div className="h-14 w-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
-            <ArrowUpRight size={24}/>
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expenses</p>
-            <h3 className="text-2xl font-black text-[#002147]">₦4.8M</h3>
-          </div>
-        </div>
-        <div className="bg-[#002147] p-6 rounded-[32px] shadow-xl flex items-center gap-5 text-left border border-white/5">
-          <div className="h-14 w-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400">
+          <div className="h-14 w-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 relative z-10 shadow-inner">
             <Wallet size={24}/>
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-blue-300 uppercase tracking-widest">Net Balance</p>
-            <h3 className="text-2xl font-black text-white">₦9.4M</h3>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-10">
             {/* PAYROLL CARD */}
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-8">
+            <div className="bg-white p-8 lg:p-10 rounded-[50px] shadow-sm border border-slate-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
                     <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] flex items-center gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg"><UserCheck className="text-blue-600" size={16}/></div>
+                        <div className="p-3 bg-blue-50 rounded-2xl text-blue-600 shadow-sm"><UserCheck size={20}/></div>
                         Staff Payroll Management
                     </h2>
-                    <button className="text-[9px] font-black text-blue-600 uppercase border-b-2 border-blue-600 hover:text-blue-800 transition-colors">View Schedule</button>
+                    <button className="text-[10px] font-black text-blue-600 uppercase border-b-2 border-blue-600 hover:text-blue-800 transition-colors tracking-tighter">Download Schedule</button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
-                            <tr className="text-left text-[9px] font-black text-slate-400 uppercase border-b border-slate-100">
-                                <th className="pb-4 font-black">Staff Name</th>
-                                <th className="pb-4 font-black text-right">Amount</th>
-                                <th className="pb-4 font-black text-center">Status</th>
-                                <th className="pb-4 font-black text-right">Action</th>
+                            <tr className="text-left text-[10px] font-black text-slate-400 uppercase border-b border-slate-50">
+                                <th className="pb-5 font-black">Staff Member</th>
+                                <th className="pb-5 font-black text-right">Base Salary</th>
+                                <th className="pb-5 font-black text-center">Status</th>
+                                <th className="pb-5 font-black text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50 text-left">
+                        <tbody className="divide-y divide-slate-50">
                             {staffList.map(s => (
-                                <tr key={s.id} className="group hover:bg-slate-50/50 transition-colors">
-                                    <td className="py-4">
-                                        <p className="text-[11px] font-black text-[#002147] uppercase">{s.name}</p>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{s.rank}</p>
+                                <tr key={s.id} className="group hover:bg-[#fcfdfe] transition-colors">
+                                    <td className="py-6">
+                                        <p className="text-[12px] font-black text-[#002147] uppercase tracking-tight">{s.name}</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1 italic opacity-70">{s.rank}</p>
                                     </td>
-                                    <td className="py-4 text-right">
-                                        <p className="text-[11px] font-black text-[#002147]">{s.salary}</p>
+                                    <td className="py-6 text-right font-black text-[#002147] text-sm tracking-tighter">
+                                        {s.salary}
                                     </td>
-                                    <td className="py-4 text-center">
-                                        <span className={`text-[8px] font-black px-3 py-1 rounded-full uppercase ${s.status === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
+                                    <td className="py-6 text-center">
+                                        <span className={`text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-tighter ${s.status === 'Paid' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
                                             {s.status}
                                         </span>
                                     </td>
-                                    <td className="py-4 text-right">
+                                    <td className="py-6 text-right">
                                         <button 
                                           onClick={() => showNotification(`An tura albashin ${s.name} nasara.`)}
-                                          className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${s.status === 'Paid' ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-90'}`}>
-                                            {s.status === 'Paid' ? 'Processed' : 'Pay Now'}
+                                          className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${s.status === 'Paid' ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-[#002147] text-white hover:bg-emerald-600 hover:shadow-lg shadow-blue-900/10 active:scale-95'}`}>
+                                            {s.status === 'Paid' ? 'Processed' : 'Disburse'}
                                         </button>
                                     </td>
                                 </tr>
@@ -163,35 +150,36 @@ const AccountantDashboard = () => {
             </div>
 
             {/* BUDGETING SYSTEM */}
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-8">
+            <div className="bg-white p-8 lg:p-10 rounded-[50px] shadow-sm border border-slate-100">
+                <div className="flex justify-between items-center mb-10">
                     <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] flex items-center gap-3">
-                        <div className="p-2 bg-purple-50 rounded-lg"><BarChart3 className="text-purple-600" size={16}/></div>
-                        Expenditure Control
+                        <div className="p-3 bg-purple-50 rounded-2xl text-purple-600 shadow-sm"><BarChart3 size={20}/></div>
+                        Expenditure & Budget Control
                     </h2>
                 </div>
                 
-                <div className="space-y-10">
+                <div className="space-y-12">
                     {budgets.map(budget => (
                         <div key={budget.id} className="group">
-                            <div className="flex justify-between items-end mb-3 text-left">
-                                <div className="text-left">
-                                    <h4 className="text-[11px] font-black text-[#002147] uppercase mb-1 group-hover:text-blue-600 transition-colors">{budget.category}</h4>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-[10px] font-black text-slate-800 tracking-tighter">₦{budget.actual.toLocaleString()}</p>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">of ₦{budget.planned.toLocaleString()} Limit</p>
+                            <div className="flex justify-between items-end mb-4">
+                                <div>
+                                    <h4 className="text-[12px] font-black text-[#002147] uppercase tracking-tight mb-2 group-hover:text-blue-600 transition-colors">{budget.category}</h4>
+                                    <div className="flex items-center gap-3">
+                                        <p className="text-lg font-black text-slate-800 tracking-tighter">₦{budget.actual.toLocaleString()}</p>
+                                        <div className="h-4 w-[1px] bg-slate-200"></div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Limit: ₦{budget.planned.toLocaleString()}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className={`text-[12px] font-black ${calculateProgress(budget.actual, budget.planned) > 90 ? 'text-red-500' : 'text-[#002147]'}`}>
+                                    <span className={`text-xl font-black italic tracking-tighter ${calculateProgress(budget.actual, budget.planned) > 90 ? 'text-red-500' : 'text-[#002147]'}`}>
                                         {calculateProgress(budget.actual, budget.planned).toFixed(0)}%
                                     </span>
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Utilization</p>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Utilization</p>
                                 </div>
                             </div>
-                            <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                            <div className="w-full h-4 bg-slate-100 rounded-full overflow-hidden p-1 border border-slate-100 shadow-inner">
                                 <div 
-                                    className={`h-full ${budget.color} transition-all duration-1000 rounded-full shadow-inner relative`}
+                                    className={`h-full ${budget.color} transition-all duration-1000 rounded-full shadow-lg relative`}
                                     style={{ width: `${calculateProgress(budget.actual, budget.planned)}%` }}
                                 >
                                     <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
@@ -204,54 +192,59 @@ const AccountantDashboard = () => {
         </div>
 
         {/* Right Column */}
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* INVENTORY CARD */}
-            <div className="bg-gradient-to-br from-[#002147] to-[#001530] p-8 rounded-[40px] shadow-2xl text-white relative overflow-hidden text-left border border-white/5">
-                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-3 text-blue-400">
-                    <AlertCircle size={16}/> Low Stock Monitoring
+            <div className="bg-gradient-to-br from-[#002147] to-[#011225] p-10 rounded-[50px] shadow-2xl text-white relative overflow-hidden border border-white/5">
+                <div className="absolute -top-10 -right-10 opacity-10 rotate-12"><Package size={200}/></div>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] mb-10 flex items-center gap-3 text-blue-400 relative z-10">
+                    <AlertCircle size={18}/> Stock Monitoring
                 </h2>
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/10 group hover:bg-white/10 transition-all">
-                        <div className="text-left">
-                            <p className="text-[10px] font-black uppercase tracking-tight text-slate-100">Whiteboard Markers</p>
-                            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase italic">Stock Critically Low</p>
+                <div className="space-y-6 relative z-10">
+                    <div className="p-5 bg-white/5 rounded-3xl border border-white/10 group hover:bg-white/10 transition-all cursor-default backdrop-blur-sm">
+                        <div className="flex justify-between items-center mb-3">
+                            <p className="text-[11px] font-black uppercase tracking-tight text-white">Whiteboard Markers</p>
+                            <span className="bg-red-500 text-white px-3 py-1 rounded-full text-[9px] font-black shadow-lg shadow-red-500/40">45 Units</span>
                         </div>
-                        <span className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-[9px] font-black">45 Units</span>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase italic opacity-60">Status: Critical Reorder Level</p>
                     </div>
                 </div>
-                <button className="w-full mt-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-[20px] text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95">
+                <button className="w-full mt-10 py-5 bg-blue-600 hover:bg-blue-700 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 relative z-10">
                     Order Inventory
                 </button>
             </div>
 
             {/* QUICK APPROVALS */}
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-200">
-                <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
-                    <div className="p-2 bg-orange-50 rounded-lg"><PieChart className="text-orange-500" size={16}/></div>
-                    Pending Fees
+            <div className="bg-white p-8 lg:p-10 rounded-[50px] shadow-sm border border-slate-100">
+                <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] mb-10 flex items-center gap-3 border-b pb-6">
+                    <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 shadow-sm"><PieChart size={20}/></div>
+                    Payment Verification
                 </h2>
                 <div className="space-y-6">
                     {pendingReceipts.length > 0 ? (
                         pendingReceipts.map(r => (
-                            <div key={r.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-[24px] border border-slate-100 hover:border-green-300 transition-all">
-                                <div className="text-left">
-                                    <p className="text-[11px] font-black text-[#002147] uppercase leading-none">{r.name}</p>
-                                    <p className="text-[9px] font-bold text-slate-400 mt-2 tracking-tighter">{r.type} • <span className="text-green-600 font-black">{r.amount}</span></p>
+                            <div key={r.id} className="flex justify-between items-center p-5 bg-[#fcfdfe] rounded-[30px] border border-slate-50 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group">
+                                <div>
+                                    <p className="text-[12px] font-black text-[#002147] uppercase tracking-tighter mb-1">{r.name}</p>
+                                    <div className="flex items-center gap-2">
+                                       <p className="text-[10px] font-black text-emerald-600 tracking-tight">{r.amount}</p>
+                                       <span className="text-slate-300">•</span>
+                                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{r.type}</p>
+                                    </div>
                                 </div>
                                 <button 
                                     onClick={() => handleApprove(r.id, r.name)} 
-                                    className="bg-white text-green-600 p-3 rounded-xl hover:bg-green-600 hover:text-white transition-all border border-green-100 shadow-sm active:scale-90"
+                                    className="bg-white text-emerald-600 h-12 w-12 rounded-2xl hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 shadow-sm flex items-center justify-center active:scale-90"
                                 >
-                                    <Check size={16}/>
+                                    <Check size={20}/>
                                 </button>
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-10 animate-in zoom-in duration-500">
-                            <div className="h-16 w-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Check className="text-green-500" size={32}/>
+                        <div className="text-center py-12 animate-in zoom-in duration-500">
+                            <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                                <CheckCircle className="text-emerald-500" size={40}/>
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Pending Approvals</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Ledger Fully Balanced</p>
                         </div>
                     )}
                 </div>
@@ -261,5 +254,25 @@ const AccountantDashboard = () => {
     </div>
   );
 };
+
+// --- INTERNAL HELPERS ---
+const SummaryCard = ({ label, value, icon, color }) => (
+  <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-default">
+    <div className={`h-16 w-16 bg-${color}-50 rounded-3xl flex items-center justify-center text-${color}-600 group-hover:scale-110 transition-transform shadow-inner`}>
+      {icon}
+    </div>
+    <div className="text-right">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+      <h3 className={`text-3xl font-black text-[#002147] tracking-tighter italic`}>{value}</h3>
+    </div>
+  </div>
+);
+
+const CheckCircle = ({ className, size }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+  </svg>
+);
 
 export default AccountantDashboard;

@@ -1,53 +1,64 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Lock, User, Eye, EyeOff, AlertCircle } from "lucide-react";
+// GYARA: Mun hada shi da Firebase Auth
+import { auth } from "../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { ShieldCheck, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Sabon state don loading
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // A nan za mu saka misalin bayanan sirri na Admin
-    const adminUser = "admin@skyward.edu.ng";
-    const adminPass = "SkywardAdmin2026";
+    setError("");
+    setLoading(true); // Fara loading
 
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    if (email === adminUser && password === adminPass) {
+    try {
+      // GYARA: Amfani da Firebase don shiga
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // Idan komai ya tafi daidai
       navigate("/admin/dashboard");
-    } else {
+    } catch (err) {
+      // Idan an samu kuskure (ba daidai ba)
       setError("Invalid Administrative Credentials!");
+      console.error("Login Error:", err.message);
+    } finally {
+      setLoading(false); // Dakatar da loading
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#00152b] py-12 px-4">
-      <div className="max-w-md w-full">
+      <div className="max-w-md w-full animate-in fade-in zoom-in duration-500">
         
         {/* Admin Shield Icon */}
         <div className="text-center mb-8">
-          <div className="bg-red-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl rotate-3">
+          <div className="bg-red-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
             <ShieldCheck className="text-white" size={45} />
           </div>
           <h1 className="text-white text-3xl font-black uppercase tracking-tighter">Admin Portal</h1>
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Authorized Access Only</p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8 md:p-10 border border-white/10">
+        <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden p-8 md:p-12 border border-white/10">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-3 text-xs font-bold border border-red-100 animate-bounce">
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 flex items-center gap-3 text-[10px] font-black border border-red-100 uppercase tracking-wider animate-shake">
               <AlertCircle size={18} /> {error}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-[10px] font-black text-[#002147] uppercase mb-2 ml-1">Admin ID / Email</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest">Admin ID / Email</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">
                   <User size={18} />
                 </span>
                 <input 
@@ -55,15 +66,15 @@ const AdminLogin = () => {
                   type="email" 
                   required
                   placeholder="admin@skyward.edu.ng"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#002147] focus:outline-none transition-all text-sm font-bold"
+                  className="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold placeholder:text-slate-300 shadow-inner"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-black text-[#002147] uppercase mb-2 ml-1">Security Password</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest">Security Password</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">
                   <Lock size={18} />
                 </span>
                 <input 
@@ -71,33 +82,46 @@ const AdminLogin = () => {
                   type={showPassword ? "text" : "password"} 
                   required
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#002147] focus:outline-none transition-all text-sm"
+                  className="w-full pl-14 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner"
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#002147]"
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#002147] transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            <button className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-5 rounded-2xl uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3">
-              Unlock Dashboard
+            <button 
+              disabled={loading}
+              className={`w-full ${loading ? 'bg-slate-400' : 'bg-[#002147] hover:bg-red-600'} text-white font-black py-5 rounded-[25px] uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-3 mt-4`}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} /> Authenticating...
+                </>
+              ) : (
+                "Unlock Dashboard"
+              )}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-[9px] text-slate-400 uppercase font-black leading-relaxed">
-              Security Warning: Unauthorized access attempts are logged and monitored.
+          <div className="mt-10 pt-8 border-t border-slate-50 text-center">
+            <p className="text-[9px] text-slate-400 uppercase font-black leading-relaxed tracking-widest">
+              System Monitor: IP Address Logged <br/>
+              <span className="text-red-500">Encrypted Session Layer 7</span>
             </p>
           </div>
         </div>
 
         <div className="mt-8 text-center">
-          <button onClick={() => navigate("/")} className="text-slate-500 text-[10px] font-black uppercase hover:text-white transition-colors">
-            ← Back to Website
+          <button 
+            onClick={() => navigate("/")} 
+            className="text-slate-500 text-[10px] font-black uppercase hover:text-white transition-colors tracking-widest"
+          >
+            ← Terminate & Return to Web
           </button>
         </div>
       </div>

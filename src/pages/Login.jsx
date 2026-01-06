@@ -20,7 +20,7 @@ const Login = () => {
       localStorage.setItem("userRole", "rector");
       navigate("/portal/rector");
     } 
-    // --- 3. EXAM OFFICER (Kamar yadda ka saka a baya) ---
+    // --- 3. EXAM OFFICER ---
     else if (username === "sky-admin" && password === "admin123") {
       localStorage.setItem("userRole", "exam-officer");
       navigate("/admin/exam-office");
@@ -28,9 +28,14 @@ const Login = () => {
     // --- 4. ACCOUNTANT (MAI KUDI) ---
     else if (username === "finance" && password === "pay123") {
       localStorage.setItem("userRole", "accountant");
-      navigate("/portal/finance");
+      navigate("/admin/accountant"); // Na gyara wannan path din ya dace da App.js
     }
-    // --- 5. STUDENT (Zai gane matric number dake farawa da SKY/) ---
+    // --- 5. STAFF / LECTURER (Dole mu kara wannan domin StaffDashboard dinka) ---
+    else if (username === "staff" && password === "staff123") {
+      localStorage.setItem("userRole", "staff");
+      navigate("/staff/dashboard");
+    }
+    // --- 6. STUDENT ---
     else if (username.startsWith("SKY/") && password === "student123") {
       localStorage.setItem("userRole", "student");
       navigate("/portal/dashboard");
@@ -41,10 +46,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-6">
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-6 font-sans">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
         <div className="bg-[#002147] p-8 text-center">
-          <div className="w-16 h-16 bg-red-600 rounded-2xl mx-auto mb-4 flex items-center justify-center rotate-3">
+          <div className="w-16 h-16 bg-red-600 rounded-2xl mx-auto mb-4 flex items-center justify-center rotate-3 shadow-lg">
             <ShieldCheck className="text-white" size={32} />
           </div>
           <h2 className="text-white text-2xl font-black uppercase tracking-tight">Access Portal</h2>
@@ -76,7 +81,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-600 focus:outline-none text-sm font-bold"
                 required
               />
             </div>

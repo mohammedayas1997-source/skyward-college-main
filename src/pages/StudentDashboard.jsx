@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-// Na kara wadannan don Firebase
 import { db, auth } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { updatePassword } from "firebase/auth";
+import { updatePassword, onAuthStateChanged } from "firebase/auth";
 import { 
   User, FileCheck, Download, LogOut, Bell, Clock, 
   BookOpen, CreditCard, Menu, X, Award, MapPin,
@@ -16,7 +15,7 @@ const StudentDashboard = () => {
   const [admissionStatus, setAdmissionStatus] = useState("Admitted");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // --- SABBIN STATES NA TSARO ---
+  // --- STATES NA TSARO ---
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -24,12 +23,9 @@ const StudentDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [studentData, setStudentData] = useState(null);
 
-  // --- TSARO: Duba Login da Yanayin isFirstLogin ---
+  // --- TSARO: Duba Auth Status ---
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const user = auth.currentUser;
-      
-      // Idan babu login a Firebase
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         navigate("/portal/student-login");
         return;
@@ -40,16 +36,16 @@ const StudentDashboard = () => {
         if (userDoc.exists()) {
           const data = userDoc.data();
           setStudentData(data);
-          setIsFirstLogin(data.isFirstLogin); // Wannan zai nuna mana idan login na farko ne
+          setIsFirstLogin(data.isFirstLogin);
         }
       } catch (error) {
         console.error("Error fetching student data:", error);
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    checkAuthStatus();
+    return () => unsubscribe();
   }, [navigate]);
 
   // --- AIKIN CANZA PASSWORD ---
@@ -61,26 +57,32 @@ const StudentDashboard = () => {
     setUpdating(true);
     try {
       const user = auth.currentUser;
-      await updatePassword(user, newPassword);
-      
-      // Update Firestore: Cire 'isFirstLogin' flag din
-      await updateDoc(doc(db, "users", user.uid), {
-        isFirstLogin: false
-      });
+      if (user) {
+        await updatePassword(user, newPassword);
+        
+        // Update Firestore
+        await updateDoc(doc(db, "users", user.uid), {
+          isFirstLogin: false
+        });
 
-      setIsFirstLogin(false); // Shikenan, yanzu zai ga ainihin Dashboard
-      alert("Success: Password dinka ya canza! Barka da shigowa.");
+        setIsFirstLogin(false);
+        alert("Success: An canza Password! Barka da shigowa Portal.");
+      }
     } catch (error) {
-      alert("Error: " + error.message);
+      if (error.code === 'auth/requires-recent-login') {
+        alert("Zaman login dinka ya dade. Dan Allah sake fita ka dawo (Re-login) don canza password.");
+      } else {
+        alert("Error: " + error.message);
+      }
     } finally {
       setUpdating(false);
     }
   };
 
-  const handleLogout = () => {
-    auth.signOut();
+  const handleLogout = async () => {
+    await auth.signOut();
     localStorage.clear(); 
-    window.location.href = "/portal/student-login";
+    navigate("/portal/student-login");
   };
 
   const handleNavigation = (path) => {
@@ -101,7 +103,7 @@ const StudentDashboard = () => {
     );
   }
 
-  // 2. IDAN LOGIN NA FARKO NE: Nuna Password Change Form
+  // 2. PASSWORD CHANGE UI
   if (isFirstLogin) {
     return (
       <div className="min-h-screen bg-[#002147] flex items-center justify-center p-6 text-left">
@@ -148,7 +150,7 @@ const StudentDashboard = () => {
     );
   }
 
-  // 3. AINIHIN DASHBOARD DINKA (Ba a canza komai ba)
+  // 3. MAIN DASHBOARD
   return (
     <div className="min-h-screen bg-slate-100 flex relative font-sans overflow-x-hidden">
       
@@ -161,7 +163,7 @@ const StudentDashboard = () => {
         {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Sidebar dinka - Na gefe */}
+      {/* Sidebar */}
       <div className={`
         w-64 bg-[#002147] flex flex-col text-white p-6 sticky top-0 h-screen shadow-2xl z-50
         transition-all duration-300 ease-in-out md:translate-x-0
@@ -176,24 +178,10 @@ const StudentDashboard = () => {
         </div>
         
         <nav className="flex-1 space-y-3 text-left">
-          <button 
-            onClick={() => handleNavigation("/portal/dashboard")}
-            className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-lg text-left ${location.pathname === '/portal/dashboard' ? 'bg-red-600' : 'hover:bg-white/10'}`}
-          >
-            <User size={18} /> Dashboard
-          </button>
-
-          <button className="w-full flex items-center gap-3 hover:bg-white/10 p-4 rounded-2xl font-black text-[10px] uppercase transition-all text-left">
-            <FileCheck size={18} /> Admission Status
-          </button>
-
-          <button onClick={() => handleNavigation("/portal/registration")} className="w-full flex items-center gap-3 hover:bg-white/10 p-4 rounded-2xl font-black text-[10px] uppercase transition-all text-left">
-            <BookOpen size={18} /> Course Registration
-          </button>
-
-          <button onClick={() => handleNavigation("/portal/check-result")} className="w-full flex items-center gap-3 hover:bg-white/10 p-4 rounded-2xl font-black text-[10px] uppercase transition-all text-left">
-            <Award size={18} /> Check Results
-          </button>
+          <SidebarBtn active={location.pathname === '/portal/dashboard'} onClick={() => handleNavigation("/portal/dashboard")} icon={<User size={18} />} label="Dashboard" />
+          <SidebarBtn onClick={() => {}} icon={<FileCheck size={18} />} label="Admission Status" />
+          <SidebarBtn onClick={() => handleNavigation("/portal/registration")} icon={<BookOpen size={18} />} label="Registration" />
+          <SidebarBtn onClick={() => handleNavigation("/portal/check-result")} icon={<Award size={18} />} label="Results" />
 
           <button 
             onClick={() => navigate("/portal/payments")}
@@ -208,11 +196,13 @@ const StudentDashboard = () => {
         </button>
       </div>
 
-      {/* Main Content dinka */}
+      {/* Main Content */}
       <div className="flex-1 p-6 md:p-12 overflow-y-auto pt-20 md:pt-12 text-left">
-        <div className="flex justify-between items-center mb-10">
-          <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-            <h1 className="text-2xl md:text-3xl font-black text-[#002147] uppercase leading-tight">Welcome Back,<br/> <span className="text-red-600">{studentData?.fullName || "Abubakar Ibrahim"}</span></h1>
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-[#002147] uppercase leading-tight">
+              Welcome Back,<br/> <span className="text-red-600">{studentData?.fullName || "Student"}</span>
+            </h1>
             <div className="flex items-center gap-2 mt-2">
                 <MapPin size={12} className="text-slate-400"/>
                 <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Skyward Main Campus</p>
@@ -223,44 +213,20 @@ const StudentDashboard = () => {
                <Bell size={20} />
                <span className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
              </div>
-             <div className="w-12 h-12 bg-[#002147] rounded-xl overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-white font-black text-xl">
-               {studentData?.fullName?.charAt(0) || "AI"}
+             <div className="w-12 h-12 bg-[#002147] rounded-xl overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-white font-black text-xl uppercase">
+               {studentData?.fullName?.charAt(0) || "S"}
              </div>
           </div>
-        </div>
+        </header>
 
-        {/* Dashboard Cards dinka */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white p-8 rounded-[32px] shadow-sm border-b-4 border-blue-500 hover:shadow-xl transition-all">
-            <div className="flex justify-between items-center mb-4 text-left">
-              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Admission</h4>
-              <Clock className="text-blue-500" size={24} />
-            </div>
-            <p className={`text-2xl font-black uppercase ${admissionStatus === 'Admitted' ? 'text-green-600' : 'text-orange-500'}`}>{admissionStatus}</p>
-          </div>
-          
-          <div className="bg-white p-8 rounded-[32px] shadow-sm border-b-4 border-red-600 hover:shadow-xl transition-all">
-            <div className="flex justify-between items-center mb-4 text-slate-400 text-left">
-              <h4 className="text-[10px] font-black uppercase tracking-widest">Major</h4>
-              <BookOpen size={24} />
-            </div>
-            <p className="text-xs font-black text-[#002147] uppercase leading-tight">Travel & Tourism Management</p>
-          </div>
-
-          <div onClick={() => navigate("/portal/payments")} className="bg-white p-8 rounded-[32px] shadow-sm border-b-4 border-[#002147] hover:shadow-xl transition-all cursor-pointer group">
-            <div className="flex justify-between items-center mb-4 text-left">
-              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Fee Status</h4>
-              <CreditCard className="text-[#002147] group-hover:scale-110 transition-transform" size={24} />
-            </div>
-            <p className="text-2xl font-black text-[#002147]">₦ 0.00</p>
-            <div className="mt-2 flex items-center gap-1">
-                <CheckCircle size={10} className="text-green-500"/>
-                <span className="text-[9px] font-black text-green-600 uppercase">Clear</span>
-            </div>
-          </div>
+          <DashboardCard title="Admission" val={admissionStatus} color="blue" icon={<Clock className="text-blue-500" size={24}/>} />
+          <DashboardCard title="Major" val={studentData?.course || "Tourism Management"} color="red" icon={<BookOpen size={24}/>} isSmallText />
+          <DashboardCard title="Fee Status" val="₦ 0.00" color="navy" icon={<CreditCard size={24}/>} isPaid />
         </div>
 
-        {/* ADMISSION SECTION dinka */}
+        {/* Admission Section */}
         <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 mb-10">
           <div className="p-8 md:p-10 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4 bg-slate-50/50">
             <div>
@@ -284,8 +250,8 @@ const StudentDashboard = () => {
                   <h3 className="text-green-800 text-3xl font-black uppercase tracking-tighter">Congratulations!</h3>
                   <div className="h-1 w-20 bg-green-500 my-4 mx-auto md:mx-0"></div>
                   <p className="text-green-900 text-base font-medium leading-relaxed max-w-2xl">
-                    You have been offered provisional admission into <span className="font-black">Skyward College of Travels & Tourism</span>. 
-                    Your primary course of study is <span className="text-red-600 font-black italic">Air Cabin Crew Management</span>.
+                    You have been offered provisional admission into <span className="font-black">Skyward College</span>. 
+                    Your primary course of study is <span className="text-red-600 font-black italic">{studentData?.course || "Air Cabin Crew Management"}</span>.
                   </p>
                 </div>
               </div>
@@ -298,6 +264,35 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+// --- Kananan Components don sauki ---
+const SidebarBtn = ({ icon, label, onClick, active }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all shadow-lg text-left ${active ? 'bg-red-600' : 'hover:bg-white/10'}`}
+  >
+    {icon} {label}
+  </button>
+);
+
+const DashboardCard = ({ title, val, icon, color, isSmallText, isPaid }) => {
+  const borderColors = { blue: 'border-blue-500', red: 'border-red-600', navy: 'border-[#002147]' };
+  return (
+    <div className={`bg-white p-8 rounded-[32px] shadow-sm border-b-4 ${borderColors[color]} hover:shadow-xl transition-all`}>
+      <div className="flex justify-between items-center mb-4 text-left">
+        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{title}</h4>
+        {icon}
+      </div>
+      <p className={`font-black uppercase tracking-tight ${isSmallText ? 'text-xs text-[#002147] leading-tight' : 'text-2xl text-green-600'}`}>{val}</p>
+      {isPaid && (
+        <div className="mt-2 flex items-center gap-1">
+          <CheckCircle size={10} className="text-green-500"/>
+          <span className="text-[9px] font-black text-green-600 uppercase tracking-widest">Clear</span>
+        </div>
+      )}
     </div>
   );
 };

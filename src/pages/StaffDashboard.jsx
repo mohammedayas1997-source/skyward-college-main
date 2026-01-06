@@ -3,12 +3,13 @@ import {
   BookOpen, Users, Calendar, FileText, ClipboardCheck, 
   Upload, MessageSquare, Clock, Video, Link as LinkIcon, 
   X, CheckCircle, User, Mail, Award, Briefcase, Camera,
-  Printer, Save, Download, RefreshCcw, Menu, LogOut
+  Printer, Save, Download, RefreshCcw, Menu, LogOut, Search, Book
 } from "lucide-react";
 
 const StaffDashboard = () => {
-  const [activeTab, setActiveTab] = useState("results"); // dashboard, profile, results
+  const [activeTab, setActiveTab] = useState("results");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Bayanan dalibai don saka maki
   const [studentResults, setStudentResults] = useState([
@@ -17,7 +18,14 @@ const StaffDashboard = () => {
     { id: 3, name: "Fatima Yusuf", ca: 15, exam: 30, total: 45, grade: "D", remarks: "Fair" },
   ]);
 
-  // Aikin lissafa Grade
+  // Misalin Littattafan E-Library
+  const libraryBooks = [
+    { id: 1, title: "Modern Pedagogy", author: "Dr. Skyward", category: "Education", link: "#" },
+    { id: 2, title: "Advanced Mathematics", author: "Prof. Aliyu", category: "Science", link: "#" },
+    { id: 3, title: "History of West Africa", author: "Musa Ibrahim", category: "Arts", link: "#" },
+    { id: 4, title: "Educational Research Methods", author: "Dr. Fatima", category: "Research", link: "#" },
+  ];
+
   const getGrade = (total) => {
     if (total >= 70) return { g: "A", r: "Excellent" };
     if (total >= 60) return { g: "B", r: "Very Good" };
@@ -74,6 +82,12 @@ const StaffDashboard = () => {
         <nav className="space-y-4">
           <button onClick={() => {setActiveTab("dashboard"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'dashboard' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}><BookOpen size={18} /> Dashboard</button>
           <button onClick={() => {setActiveTab("results"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'results' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}><FileText size={18} /> Generate Results</button>
+          
+          {/* RESEARCH BUTTON NA KASA */}
+          <button onClick={() => {setActiveTab("research"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'research' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}>
+            <Search size={18} /> Research & Library
+          </button>
+
           <button onClick={() => {setActiveTab("profile"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'profile' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}><User size={18} /> My Profile</button>
           
           <div className="pt-10">
@@ -87,8 +101,7 @@ const StaffDashboard = () => {
       {/* Main Content Area */}
       <div className="flex-1 p-6 md:p-10">
         
-        {activeTab === "results" ? (
-          /* --- RESULT GENERATOR VIEW --- */
+        {activeTab === "results" && (
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
               <div className="animate-in fade-in duration-700">
@@ -101,8 +114,7 @@ const StaffDashboard = () => {
               </div>
             </div>
 
-            {/* Input Table */}
-            <div className="bg-white rounded-[40px] shadow-sm border border-slate-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white rounded-[40px] shadow-sm border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -123,28 +135,14 @@ const StaffDashboard = () => {
                           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter italic">REG: SKY/2026/0{s.id}</p>
                         </td>
                         <td className="p-8">
-                          <input 
-                            type="number" 
-                            max="40"
-                            value={s.ca} 
-                            onChange={(e) => updateScore(s.id, 'ca', e.target.value)}
-                            className="w-16 p-2 bg-slate-100 rounded-lg text-xs font-black text-center focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                          />
+                          <input type="number" max="40" value={s.ca} onChange={(e) => updateScore(s.id, 'ca', e.target.value)} className="w-16 p-2 bg-slate-100 rounded-lg text-xs font-black text-center outline-none" />
                         </td>
                         <td className="p-8">
-                          <input 
-                            type="number" 
-                            max="60"
-                            value={s.exam} 
-                            onChange={(e) => updateScore(s.id, 'exam', e.target.value)}
-                            className="w-16 p-2 bg-slate-100 rounded-lg text-xs font-black text-center focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                          />
+                          <input type="number" max="60" value={s.exam} onChange={(e) => updateScore(s.id, 'exam', e.target.value)} className="w-16 p-2 bg-slate-100 rounded-lg text-xs font-black text-center outline-none" />
                         </td>
                         <td className="p-8 font-black text-sm text-[#002147]">{s.total}</td>
                         <td className="p-8">
-                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black ${s.grade === 'A' ? 'bg-green-100 text-green-600' : s.grade === 'F' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                            {s.grade}
-                          </span>
+                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black ${s.grade === 'A' ? 'bg-green-100 text-green-600' : s.grade === 'F' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>{s.grade}</span>
                         </td>
                         <td className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.remarks}</td>
                       </tr>
@@ -153,24 +151,49 @@ const StaffDashboard = () => {
                 </table>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Quick Summary View */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-               <div className="bg-blue-50 p-6 rounded-[30px] border border-blue-100">
-                  <p className="text-[10px] font-black text-blue-400 uppercase mb-2">Class Average</p>
-                  <p className="text-2xl font-black text-blue-900">63.3%</p>
-               </div>
-               <div className="bg-green-50 p-6 rounded-[30px] border border-green-100">
-                  <p className="text-[10px] font-black text-green-400 uppercase mb-2">Highest Score</p>
-                  <p className="text-2xl font-black text-green-900">80%</p>
-               </div>
-               <div className="bg-red-50 p-6 rounded-[30px] border border-red-100">
-                  <p className="text-[10px] font-black text-red-400 uppercase mb-2">Pending</p>
-                  <p className="text-2xl font-black text-red-900">0</p>
-               </div>
+        {/* --- SHAFIN RESEARCH & E-LIBRARY --- */}
+        {activeTab === "research" && (
+          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h1 className="text-3xl font-black text-[#002147] uppercase tracking-tighter mb-2">Research & E-Library</h1>
+            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-10">Access Academic Journals and Resources</p>
+
+            <div className="flex flex-col md:flex-row gap-6 mb-10">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                    <input 
+                      type="text" 
+                      placeholder="Search for books, journals, or authors..." 
+                      className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-red-500 transition-all font-bold text-sm"
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <button className="bg-[#002147] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase flex items-center justify-center gap-2 shadow-lg">
+                    <Upload size={18}/> Upload Research
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {libraryBooks.map(book => (
+                    <div key={book.id} className="bg-white p-6 rounded-[30px] border border-slate-200 hover:shadow-xl transition-all group">
+                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-all">
+                            <Book size={24} />
+                        </div>
+                        <h3 className="font-black text-[#002147] text-sm uppercase mb-1">{book.title}</h3>
+                        <p className="text-slate-400 text-[10px] font-bold mb-4 italic">By {book.author}</p>
+                        <div className="flex justify-between items-center">
+                            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase">{book.category}</span>
+                            <button className="text-red-600 hover:scale-110 transition-transform"><Download size={18} /></button>
+                        </div>
+                    </div>
+                ))}
             </div>
           </div>
-        ) : (
+        )}
+
+        {(activeTab !== "results" && activeTab !== "research") && (
           <div className="flex flex-col items-center justify-center py-40">
              <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mb-4 text-slate-400">
                 <Clock size={32} className="animate-pulse" />

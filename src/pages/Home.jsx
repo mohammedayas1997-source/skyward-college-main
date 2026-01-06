@@ -6,8 +6,8 @@ export const Home = () => {
   const [current, setCurrent] = useState(0);
   const slides = [
     "/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", 
-    "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg",
-    "/hero9.jpg", "/hero10.jpg"
+    "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
+    
   ];
 
   useEffect(() => {
