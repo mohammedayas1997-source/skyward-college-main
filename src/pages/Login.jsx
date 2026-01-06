@@ -10,12 +10,12 @@ const Login = () => {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // --- 1. PROPRIETOR (SHUGABAN MAKARANTA) ---
+    // --- 1. PROPRIETOR ---
     if (username === "owner" && password === "owner123") {
       localStorage.setItem("userRole", "proprietor");
       navigate("/portal/proprietor");
     } 
-    // --- 2. RECTOR (SHUGABAN GUDANARWA) ---
+    // --- 2. RECTOR ---
     else if (username === "rector" && password === "rector123") {
       localStorage.setItem("userRole", "rector");
       navigate("/portal/rector");
@@ -25,12 +25,12 @@ const Login = () => {
       localStorage.setItem("userRole", "exam-officer");
       navigate("/admin/exam-office");
     } 
-    // --- 4. ACCOUNTANT (MAI KUDI) ---
+    // --- 4. ACCOUNTANT ---
     else if (username === "finance" && password === "pay123") {
       localStorage.setItem("userRole", "accountant");
-      navigate("/admin/accountant"); // Na gyara wannan path din ya dace da App.js
+      navigate("/admin/accountant"); 
     }
-    // --- 5. STAFF / LECTURER (Dole mu kara wannan domin StaffDashboard dinka) ---
+    // --- 5. STAFF / LECTURER ---
     else if (username === "staff" && password === "staff123") {
       localStorage.setItem("userRole", "staff");
       navigate("/staff/dashboard");
@@ -41,7 +41,7 @@ const Login = () => {
       navigate("/portal/dashboard");
     } 
     else {
-      alert("Kuskure: Username ko Password bai yi daidai ba!");
+      alert("Error: Invalid Username or Password!");
     }
   };
 
