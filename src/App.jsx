@@ -36,6 +36,7 @@ import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // --- INGANTAACCEN SECURITY COMPONENT ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -114,6 +115,7 @@ function App() {
               <Route path="/portal/login" element={<UnifiedLogin />} />
               <Route path="/skyward-secure-access" element={<UnifiedLogin />} />
               <Route path="/portal/audit" element={<AuditTrail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               
               {/* --- SECURE ROUTES --- */}
               

@@ -7,14 +7,14 @@ import {
   Printer, Download, ShieldCheck, BadgeCheck, ChevronRight
 } from "lucide-react";
 
-// --- NEW LOGIC: Staff Assignment Mapping ---
+// --- Staff Assignment Mapping ---
 const lecturerDatabase = {
   "Computer Science": { staffName: "Dr. Adamu", staffId: "STF001" },
   "Business Admin": { staffName: "Prof. Zainab", staffId: "STF002" },
   "Public Health": { staffName: "Mr. John", staffId: "STF003" }
 };
 
-const AdmissionDashboard = () => {
+const AdmissionOfficerDashboard = () => { // Changed name to match App.jsx import
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLetter, setSelectedLetter] = useState(null);
@@ -25,7 +25,6 @@ const AdmissionDashboard = () => {
     { id: "APP003", name: "John Sunday", course: "Public Health", status: "Rejected", date: "2026-01-03", admissionNo: null },
   ]);
 
-  // --- UPDATED: Handle Approve with Auto-Push to Staff ---
   const handleApprove = (id) => {
     const year = new Date().getFullYear();
     const randomSerial = Math.floor(1000 + Math.random() * 9000); 
@@ -33,14 +32,12 @@ const AdmissionDashboard = () => {
 
     setApplicants(applicants.map(app => {
       if (app.id === id) {
-        // Auto-detect the lecturer for this student's course
         const assignment = lecturerDatabase[app.course] || { staffId: "UNASSIGNED" };
-        
         return { 
           ...app, 
           status: "Approved", 
           admissionNo: generatedID,
-          assignedStaffId: assignment.staffId // This "Pushes" the student to that staff's list
+          assignedStaffId: assignment.staffId 
         };
       }
       return app;
@@ -178,7 +175,7 @@ const AdmissionDashboard = () => {
           </div>
         </div>
 
-        {/* LETTER MODAL CODE REMAINS THE SAME... */}
+        {/* LETTER MODAL */}
         {selectedLetter && (
           <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6 overflow-y-auto">
             <div className="bg-white w-full max-w-2xl rounded-[50px] p-12 relative shadow-2xl animate-in zoom-in duration-300">
@@ -267,4 +264,4 @@ const StatsCard = ({ label, value, color, icon }) => {
     )
 }
 
-export default AdmissionDashboard;
+export default AdmissionOfficerDashboard;
