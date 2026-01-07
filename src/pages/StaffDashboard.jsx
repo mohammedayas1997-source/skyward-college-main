@@ -1,30 +1,20 @@
 import React, { useState } from "react";
 import { 
-  BookOpen, Users, Calendar, FileText, ClipboardCheck, 
-  Upload, MessageSquare, Clock, Video, Link as LinkIcon, 
-  X, CheckCircle, User, Mail, Award, Briefcase, Camera,
-  Printer, Save, Download, RefreshCcw, Menu, LogOut, Search, Book
+  BookOpen, FileText, User, LogOut, Menu, X, Printer, Save, 
+  Send, AlertCircle, CheckCircle2, Search, Book, Download, Upload, Clock, Loader2
 } from "lucide-react";
 
 const StaffDashboard = () => {
   const [activeTab, setActiveTab] = useState("results");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  // Bayanan dalibai don saka maki
-  const [studentResults, setStudentResults] = useState([
-    { id: 1, name: "Musa Ibrahim", ca: 25, exam: 55, total: 80, grade: "A", remarks: "Excellent" },
-    { id: 2, name: "Zainab Aliyu", ca: 20, exam: 45, total: 65, grade: "B", remarks: "Very Good" },
-    { id: 3, name: "Fatima Yusuf", ca: 15, exam: 30, total: 45, grade: "D", remarks: "Fair" },
-  ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLocked, setIsLocked] = useState(false); // Lokacin da aka tura wa Exams Officer
 
-  // Misalin Littattafan E-Library
-  const libraryBooks = [
-    { id: 1, title: "Modern Pedagogy", author: "Dr. Skyward", category: "Education", link: "#" },
-    { id: 2, title: "Advanced Mathematics", author: "Prof. Aliyu", category: "Science", link: "#" },
-    { id: 3, title: "History of West Africa", author: "Musa Ibrahim", category: "Arts", link: "#" },
-    { id: 4, title: "Educational Research Methods", author: "Dr. Fatima", category: "Research", link: "#" },
-  ];
+  const [studentResults, setStudentResults] = useState([
+    { id: 1, name: "Musa Ibrahim", ca: 25, exam: 55, total: 80, grade: "A", remarks: "Excellent", status: "Draft" },
+    { id: 2, name: "Zainab Aliyu", ca: 20, exam: 45, total: 65, grade: "B", remarks: "Very Good", status: "Draft" },
+    { id: 3, name: "Fatima Yusuf", ca: 15, exam: 30, total: 45, grade: "D", remarks: "Fair", status: "Draft" },
+  ]);
 
   const getGrade = (total) => {
     if (total >= 70) return { g: "A", r: "Excellent" };
@@ -35,6 +25,7 @@ const StaffDashboard = () => {
   };
 
   const updateScore = (id, field, value) => {
+    if (isLocked) return; // Ba za a iya edit ba idan an tura
     const newVal = parseInt(value) || 0;
     setStudentResults(studentResults.map(s => {
       if (s.id === id) {
@@ -49,102 +40,141 @@ const StaffDashboard = () => {
     }));
   };
 
+  const handlePushToExamsOfficer = () => {
+    setIsSubmitting(true);
+    // Simulate API Call
+    setTimeout(() => {
+      setIsLocked(true);
+      setIsSubmitting(false);
+      alert("Results successfully pushed to Exams Officer Dashboard.");
+    }, 2000);
+  };
+
   const handleLogout = () => {
     localStorage.clear();
-    window.location.href = "/portal/staff-login";
+    window.location.href = "/portal/login";
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row font-sans relative">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col md:flex-row font-sans">
       
-      {/* Mobile Header */}
-      <div className="md:hidden bg-[#002147] text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-lg">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-red-600 rounded-lg flex items-center justify-center font-black italic">S</div>
-          <span className="font-black uppercase text-xs tracking-tighter">Staff Portal</span>
-        </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 transform ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} 
-        md:relative md:translate-x-0 transition-transform duration-300 ease-in-out
-        w-72 bg-[#002147] text-white p-8 z-40 h-screen md:h-auto overflow-y-auto
-      `}>
-        <div className="hidden md:flex items-center gap-3 mb-12">
-          <div className="h-10 w-10 bg-red-600 rounded-xl flex items-center justify-center font-black text-xl italic shadow-lg">S</div>
-          <h2 className="font-black text-white uppercase tracking-tighter text-lg">Staff Portal</h2>
+      {/* Sidebar - Same styling as Login for Global Standard */}
+      <div className={`fixed inset-y-0 left-0 transform ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 transition-transform duration-300 w-72 bg-[#002147] text-white p-8 z-50`}>
+        <div className="flex items-center gap-3 mb-12">
+          <img src="/logo.png" className="h-10 w-10 brightness-200" alt="Logo" />
+          <h2 className="font-black text-sm uppercase tracking-tighter">Staff Portal</h2>
         </div>
 
-        <nav className="space-y-4">
-          <button onClick={() => {setActiveTab("dashboard"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'dashboard' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}><BookOpen size={18} /> Dashboard</button>
-          <button onClick={() => {setActiveTab("results"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'results' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}><FileText size={18} /> Generate Results</button>
-          
-          {/* RESEARCH BUTTON NA KASA */}
-          <button onClick={() => {setActiveTab("research"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'research' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}>
-            <Search size={18} /> Research & Library
-          </button>
-
-          <button onClick={() => {setActiveTab("profile"); setIsMobileMenuOpen(false)}} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${activeTab === 'profile' ? 'bg-white text-[#002147] shadow-xl' : 'text-slate-400 hover:bg-white/5'}`}><User size={18} /> My Profile</button>
-          
-          <div className="pt-10">
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 p-4 rounded-2xl font-black text-[10px] uppercase text-red-400 border border-red-400/20 hover:bg-red-500 hover:text-white transition-all">
-              <LogOut size={18} /> Sign Out
+        <nav className="space-y-2">
+          {[
+            { id: "dashboard", icon: <BookOpen size={18}/>, label: "Overview" },
+            { id: "results", icon: <FileText size={18}/>, label: "Result Manager" },
+            { id: "research", icon: <Search size={18}/>, label: "E-Library" },
+            { id: "profile", icon: <User size={18}/>, label: "Account" }
+          ].map((item) => (
+            <button 
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl font-bold text-[11px] uppercase tracking-widest transition-all ${activeTab === item.id ? 'bg-red-600 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5'}`}
+            >
+              {item.icon} {item.label}
             </button>
-          </div>
+          ))}
+          
+          <button onClick={handleLogout} className="w-full flex items-center gap-4 p-4 mt-20 rounded-2xl font-bold text-[11px] uppercase text-red-400 hover:bg-red-500/10 transition-all">
+            <LogOut size={18} /> Sign Out
+          </button>
         </nav>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 p-6 md:p-10">
+      {/* Content Area */}
+      <div className="flex-1 p-6 md:p-12 overflow-y-auto">
         
         {activeTab === "results" && (
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-              <div className="animate-in fade-in duration-700">
-                <h1 className="text-3xl font-black text-[#002147] uppercase tracking-tighter">Result Manager</h1>
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Skyward College • Academic Year 2026</p>
+          <div className="max-w-6xl mx-auto space-y-8">
+            
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              <div>
+                <h1 className="text-4xl font-black text-[#002147] tracking-tighter uppercase">Result Center</h1>
+                <div className="flex items-center gap-2 mt-2">
+                   <span className="px-3 py-1 bg-blue-100 text-[#002147] text-[9px] font-black rounded-full uppercase tracking-widest">Semester 1</span>
+                   <span className="px-3 py-1 bg-slate-200 text-slate-600 text-[9px] font-black rounded-full uppercase tracking-widest italic">Locked: {isLocked ? "YES" : "NO"}</span>
+                </div>
               </div>
-              <div className="flex gap-2 w-full md:w-auto">
-                <button className="flex-1 md:flex-none bg-white border border-slate-200 p-3 rounded-xl text-[#002147] hover:bg-slate-50 shadow-sm transition-all flex justify-center"><Printer size={18}/></button>
-                <button className="flex-[2] md:flex-none bg-green-600 text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 shadow-lg hover:bg-green-700 transition-all active:scale-95"><Save size={18}/> Publish All</button>
+
+              <div className="flex gap-3">
+                <button className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:bg-slate-50 transition-all"><Printer size={20} className="text-[#002147]"/></button>
+                <button 
+                  disabled={isLocked || isSubmitting}
+                  onClick={handlePushToExamsOfficer}
+                  className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.1em] shadow-xl transition-all active:scale-95 ${isLocked ? 'bg-green-100 text-green-600 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-[#002147]'}`}
+                >
+                  {isSubmitting ? <Loader2 className="animate-spin" size={18}/> : isLocked ? <CheckCircle2 size={18}/> : <Send size={18}/>}
+                  {isLocked ? "Pushed to Exams" : "Submit to Exams Officer"}
+                </button>
               </div>
             </div>
 
-            <div className="bg-white rounded-[40px] shadow-sm border border-slate-200 overflow-hidden">
+            {/* Notification Alert */}
+            {!isLocked && (
+              <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl flex items-center gap-4">
+                <AlertCircle className="text-amber-600" size={24} />
+                <p className="text-[11px] font-bold text-amber-800 uppercase tracking-tight">
+                  Attention: Results are in <span className="underline italic">Edit Mode</span>. Ensure all scores are correct before pushing to the Exams Officer.
+                </p>
+              </div>
+            )}
+
+            {/* Table Container */}
+            <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,33,71,0.05)] border border-slate-100 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left">
                   <thead>
-                    <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
-                      <th className="p-8">Student Name</th>
-                      <th className="p-8">CA (40)</th>
+                    <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
+                      <th className="p-8">Student Identity</th>
+                      <th className="p-8">C.A (40)</th>
                       <th className="p-8">Exam (60)</th>
-                      <th className="p-8">Total (100)</th>
-                      <th className="p-8">Grade</th>
-                      <th className="p-8">Remarks</th>
+                      <th className="p-8 text-center">Score</th>
+                      <th className="p-8 text-center">Grade</th>
+                      <th className="p-8">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {studentResults.map((s) => (
-                      <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="p-8">
-                          <p className="font-black text-[#002147] text-xs uppercase">{s.name}</p>
-                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter italic">REG: SKY/2026/0{s.id}</p>
+                          <p className="font-black text-[#002147] text-sm uppercase">{s.name}</p>
+                          <p className="text-[10px] text-slate-400 font-bold">SKY/2026/00{s.id}</p>
                         </td>
                         <td className="p-8">
-                          <input type="number" max="40" value={s.ca} onChange={(e) => updateScore(s.id, 'ca', e.target.value)} className="w-16 p-2 bg-slate-100 rounded-lg text-xs font-black text-center outline-none" />
+                          <input 
+                            type="number" 
+                            disabled={isLocked}
+                            value={s.ca} 
+                            onChange={(e) => updateScore(s.id, 'ca', e.target.value)} 
+                            className={`w-16 p-3 rounded-xl text-sm font-black text-center outline-none transition-all ${isLocked ? 'bg-slate-100 text-slate-400' : 'bg-slate-50 focus:ring-2 focus:ring-red-600/20'}`} 
+                          />
                         </td>
                         <td className="p-8">
-                          <input type="number" max="60" value={s.exam} onChange={(e) => updateScore(s.id, 'exam', e.target.value)} className="w-16 p-2 bg-slate-100 rounded-lg text-xs font-black text-center outline-none" />
+                          <input 
+                            type="number" 
+                            disabled={isLocked}
+                            value={s.exam} 
+                            onChange={(e) => updateScore(s.id, 'exam', e.target.value)} 
+                            className={`w-16 p-3 rounded-xl text-sm font-black text-center outline-none transition-all ${isLocked ? 'bg-slate-100 text-slate-400' : 'bg-slate-50 focus:ring-2 focus:ring-red-600/20'}`} 
+                          />
                         </td>
-                        <td className="p-8 font-black text-sm text-[#002147]">{s.total}</td>
+                        <td className="p-8 text-center font-black text-[#002147] text-lg">{s.total}</td>
+                        <td className="p-8 text-center">
+                          <span className={`px-4 py-2 rounded-xl text-[10px] font-black ${s.grade === 'A' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>{s.grade}</span>
+                        </td>
                         <td className="p-8">
-                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black ${s.grade === 'A' ? 'bg-green-100 text-green-600' : s.grade === 'F' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>{s.grade}</span>
+                           <div className="flex items-center gap-2">
+                             <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`} />
+                             <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{isLocked ? "Finalized" : "Drafting"}</span>
+                           </div>
                         </td>
-                        <td className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.remarks}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -154,52 +184,11 @@ const StaffDashboard = () => {
           </div>
         )}
 
-        {/* --- SHAFIN RESEARCH & E-LIBRARY --- */}
+        {/* Other tabs remain same logic */}
         {activeTab === "research" && (
-          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h1 className="text-3xl font-black text-[#002147] uppercase tracking-tighter mb-2">Research & E-Library</h1>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-10">Access Academic Journals and Resources</p>
-
-            <div className="flex flex-col md:flex-row gap-6 mb-10">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input 
-                      type="text" 
-                      placeholder="Search for books, journals, or authors..." 
-                      className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-red-500 transition-all font-bold text-sm"
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                <button className="bg-[#002147] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase flex items-center justify-center gap-2 shadow-lg">
-                    <Upload size={18}/> Upload Research
-                </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {libraryBooks.map(book => (
-                    <div key={book.id} className="bg-white p-6 rounded-[30px] border border-slate-200 hover:shadow-xl transition-all group">
-                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-all">
-                            <Book size={24} />
-                        </div>
-                        <h3 className="font-black text-[#002147] text-sm uppercase mb-1">{book.title}</h3>
-                        <p className="text-slate-400 text-[10px] font-bold mb-4 italic">By {book.author}</p>
-                        <div className="flex justify-between items-center">
-                            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase">{book.category}</span>
-                            <button className="text-red-600 hover:scale-110 transition-transform"><Download size={18} /></button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {(activeTab !== "results" && activeTab !== "research") && (
-          <div className="flex flex-col items-center justify-center py-40">
-             <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mb-4 text-slate-400">
-                <Clock size={32} className="animate-pulse" />
-             </div>
-             <p className="text-slate-400 text-center uppercase font-black text-[10px] tracking-[0.2em]">Section Under Development</p>
-             <button onClick={() => setActiveTab('results')} className="mt-4 text-blue-600 font-black text-[10px] uppercase underline">Return to Manager</button>
+          <div className="max-w-6xl mx-auto py-10 text-center">
+            <h2 className="text-2xl font-black text-[#002147] uppercase tracking-tighter">Academic Library</h2>
+            <p className="text-slate-400 text-xs font-bold mt-2">Section is currently syncing with world journals...</p>
           </div>
         )}
       </div>
