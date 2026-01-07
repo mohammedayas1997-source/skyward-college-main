@@ -40,17 +40,31 @@ import { doc, setDoc } from "firebase/firestore";
 
 // --- UPDATED SECURITY COMPONENT (FIXED REDIRECT BUG) ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
 
-  // If no session exists, redirect to the centralized login
+  useEffect(() => {
+    // Brief delay to ensure localStorage is synced
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#002147] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-white/20 border-t-red-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   if (!userRole || isAuth !== "true") {
     return <Navigate to="/portal/login" replace />;
   }
 
-  // If the user's role is not in the allowed list, redirect to home
   if (!allowedRoles.includes(userRole)) {
-    console.warn(`Access denied for role: ${userRole}`);
     return <Navigate to="/" replace />;
   }
 

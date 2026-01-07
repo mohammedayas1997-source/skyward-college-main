@@ -18,7 +18,6 @@ const AdminLogin = () => {
     const email = e.target.email.value.toLowerCase().trim();
     const password = e.target.password.value;
 
-    // --- AUTHORIZED ADMINISTRATIVE ROLES ---
     const authorizedUsers = {
       "owner@skyward.edu.ng": { role: "proprietor", path: "/portal/proprietor" },
       "admin@skyward.edu.ng": { role: "admin", path: "/admin/dashboard" },
@@ -29,7 +28,6 @@ const AdminLogin = () => {
       "news@skyward.edu.ng": { role: "news-admin", path: "/admin/news" }
     };
 
-    // Check if email exists in our authorized list
     if (!authorizedUsers[email]) {
       setError("Access Denied: Unauthorized Administrative ID.");
       setLoading(false);
@@ -37,21 +35,28 @@ const AdminLogin = () => {
     }
 
     try {
-      // Firebase Authentication
+      // 1. Firebase Authentication
       await signInWithEmailAndPassword(auth, email, password);
       
       const userData = authorizedUsers[email];
       
-      // Store session data
+      // 2. Clear EVERYTHING to prevent role conflicts
+      localStorage.clear();
+
+      // 3. Store new session data
       localStorage.setItem("userRole", userData.role);
       localStorage.setItem("isAuth", "true");
+      // Keep the setup flag so it doesn't try to recreate admin
+      localStorage.setItem("skyward_admin_setup", "done");
 
-      // Navigate to specific dashboard
-      navigate(userData.path);
+      // 4. Navigate after a small delay to let App.js "Loading" finish
+      setTimeout(() => {
+        navigate(userData.path);
+      }, 200);
+
     } catch (err) {
       setError("Login Failed: Please verify your security credentials.");
       console.error("Auth Error:", err.message);
-    } finally {
       setLoading(false);
     }
   };
