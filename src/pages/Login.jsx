@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, LogOut } from "lucide-react";
 // Shigo da Firebase config dinka
-import { auth, db } from "./firebase"; 
+import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
