@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-// ... (Duka imports dinka na sauran pages suna nan kamar yadda ka turo su)
+// NAMED IMPORTS
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Home } from "./pages/Home";
+
+// DEFAULT IMPORTS
 import Admission from "./pages/Admission";
 import ELibrary from "./pages/ELibrary"; 
 import ContactHelpDesk from './pages/ContactHelpDesk'; 
@@ -27,29 +29,35 @@ import UnifiedLogin from "./components/UnifiedLogin";
 import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
+
+// --- NOTIFICATION CONTEXT & FIREBASE ---
 import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-// --- PROFESSIONAL SECURITY COMPONENT (FIXED) ---
+// --- INGANTAACCEN SECURITY COMPONENT (FIXED) ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
   const location = useLocation();
 
-  // Tabbatar an yi login (String check "true")
+  // 1. Idan ba'a yi login ba
   if (!isAuth || isAuth !== "true") {
-    const isStudentRoute = location.pathname.startsWith("/portal/dashboard") || 
-                           location.pathname.startsWith("/portal/payments") ||
-                           location.pathname.startsWith("/portal/registration");
-    
+    const isStudentRoute = location.pathname.startsWith("/portal/dashboard");
     return <Navigate to={isStudentRoute ? "/portal/student-login" : "/portal/login"} state={{ from: location }} replace />;
   }
 
-  // Idan role din baya cikin jerin allowedRoles, tura shi Home
-  if (allowedRoles && !allowedRoles.includes(userRole)) {
-    console.warn(`Unauthorized access attempt to ${location.pathname} by role: ${userRole}`);
+  // 2. Idan Role bai gama lodi ba, tsaya ka jira (Wait a second)
+  if (!userRole && isAuth === "true") {
+    return <div className="min-h-screen flex items-center justify-center bg-[#001524] text-white font-bold italic tracking-widest">VERIFYING ACCESS...</div>;
+  }
+
+  // 3. Duba Role (Cire duk wani kuskuren rubutu)
+  const normalizedRole = userRole ? userRole.toLowerCase().trim() : "";
+
+  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
+    console.error("Unauthorized Role:", normalizedRole);
     return <Navigate to="/" replace />;
   }
 
@@ -57,7 +65,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 function App() {
-  // Admin Setup logic dinka yana nan daram
   useEffect(() => {
     const createFirstAdmin = async () => {
       const setupFlag = localStorage.getItem("skyward_admin_setup");
@@ -154,7 +161,6 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* SHARED SECURE ROUTES */}
               <Route path="/portal/payments" element={
                 <ProtectedRoute allowedRoles={["student", "proprietor", "accountant"]}>
                   <PaymentPortal />
