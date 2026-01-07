@@ -34,21 +34,30 @@ const UnifiedLogin = () => {
       // 1. Firebase Authentication
       await signInWithEmailAndPassword(auth, lowerEmail, password);
 
-      // 2. Role-Based Redirection
+      // 2. Role Determination
+      let userRole = "";
+      let targetPath = "";
+
       if (authorizedUsers[lowerEmail]) {
-        const user = authorizedUsers[lowerEmail];
-        localStorage.setItem("userRole", user.role);
-        localStorage.setItem("isAuth", "true");
-        navigate(user.path);
+        userRole = authorizedUsers[lowerEmail].role;
+        targetPath = authorizedUsers[lowerEmail].path;
       } else if (lowerEmail.includes("staff")) {
-        localStorage.setItem("userRole", "staff");
-        localStorage.setItem("isAuth", "true");
-        navigate("/staff/dashboard");
+        userRole = "staff";
+        targetPath = "/staff/dashboard";
       } else {
-        localStorage.setItem("userRole", "student");
-        localStorage.setItem("isAuth", "true");
-        navigate("/portal/student-dashboard");
+        userRole = "student";
+        targetPath = "/portal/student-dashboard";
       }
+
+      // 3. CRITICAL FIX: Set Storage first
+      localStorage.setItem("userRole", userRole);
+      localStorage.setItem("isAuth", "true");
+
+      // 4. SYNC DELAY: Wait 100ms to ensure storage is registered before the Guard checks it
+      setTimeout(() => {
+        navigate(targetPath);
+      }, 100);
+
     } catch (err) {
       setError("Authentication Failed: Invalid credentials or unauthorized access.");
       console.error("Login Error:", err.message);

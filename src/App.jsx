@@ -32,24 +32,34 @@ import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
 
-// --- IMPORT NA NOTIFICATION CONTEXT & FIREBASE ---
+// --- NOTIFICATION CONTEXT & FIREBASE ---
 import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
-import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-// --- SECURITY COMPONENT ---
+// --- UPDATED SECURITY COMPONENT (FIXED REDIRECT BUG) ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userRole = localStorage.getItem("userRole");
-  if (!userRole || !allowedRoles.includes(userRole)) {
+  const isAuth = localStorage.getItem("isAuth");
+
+  // If no session exists, redirect to the centralized login
+  if (!userRole || isAuth !== "true") {
+    return <Navigate to="/portal/login" replace />;
+  }
+
+  // If the user's role is not in the allowed list, redirect to home
+  if (!allowedRoles.includes(userRole)) {
+    console.warn(`Access denied for role: ${userRole}`);
     return <Navigate to="/" replace />;
   }
+
   return children;
 };
 
 function App() {
 
-  // --- WANNAN ZAI KIRKIRI ADMIN NA FARKO A DATABASE ---
+  // --- AUTOMATIC ADMIN SETUP ---
   useEffect(() => {
     const createFirstAdmin = async () => {
       const setupFlag = localStorage.getItem("skyward_admin_setup");
@@ -87,7 +97,7 @@ function App() {
       <Router>
         <div className="flex flex-col min-h-screen bg-slate-50">
           
-          {/* HEADER LOGIC */}
+          {/* HEADER LOGIC - Hidden in Portals */}
           <Routes>
             <Route path="/portal/*" element={null} />
             <Route path="/admin/*" element={null} />
@@ -109,10 +119,10 @@ function App() {
               <Route path="/admission/apply" element={<Apply />} />
               
               {/* LOGIN PAGES */}
+              <Route path="/portal/login" element={<UnifiedLogin />} />
               <Route path="/portal/student-login" element={<Login userType="student" />} />
               <Route path="/portal/staff-login" element={<Login userType="staff" />} />
               <Route path="/skyward-secure-access" element={<AdminLogin />} />
-              <Route path="/admission" element={<AdmissionDashboard />} />
               <Route path="/portal/audit" element={<AuditTrail />} />
               
               {/* --- PROTECTED PORTAL ROUTES --- */}
@@ -121,54 +131,59 @@ function App() {
                   <ProprietorDashboard />
                 </ProtectedRoute>
               } />
+
               <Route path="/portal/rector" element={
                 <ProtectedRoute allowedRoles={["rector"]}>
                   <RectorDashboard />
                 </ProtectedRoute>
               } />
+
               <Route path="/staff/dashboard" element={
                 <ProtectedRoute allowedRoles={["staff"]}>
                   <StaffDashboard />
                 </ProtectedRoute>
               } />
+
               <Route path="/admin/exam-office" element={
                 <ProtectedRoute allowedRoles={["exam-officer"]}>
                   <ExamOfficerDashboard />
                 </ProtectedRoute>
               } />
+
               <Route path="/admin/accountant" element={
                 <ProtectedRoute allowedRoles={["accountant"]}>
                   <AccountantDashboard />
                 </ProtectedRoute>
               } />
+
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
 
-              {/* 4. STUDENT PORTAL */}
               <Route path="/portal/dashboard" element={
                 <ProtectedRoute allowedRoles={["student"]}>
                   <StudentDashboard />
                 </ProtectedRoute>
               } />
+
+              {/* SHARED STUDENT TOOLS */}
               <Route path="/portal/payments" element={<PaymentPortal />} /> 
               <Route path="/portal/registration" element={<CourseRegistration />} />
               <Route path="/portal/check-result" element={<CheckResult />} />
-              <Route path="/portal/login" element={<UnifiedLogin />} />
               <Route path="/portal/exam-timetable" element={<ExamTimetable />} />
 
+              {/* CATCH-ALL REDIRECT */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
 
-          {/* FOOTER LOGIC - AN GYARA NAN */}
+          {/* FOOTER LOGIC - Hidden in Portals */}
           <Routes>
             <Route path="/portal/*" element={null} />
             <Route path="/admin/*" element={null} />
             <Route path="/staff/*" element={null} />
-            {/* Mun cire Home da News a nan domin kar su ninka kansu */}
             <Route path="*" element={<Footer />} />
           </Routes>
         </div>
