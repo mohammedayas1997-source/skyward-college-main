@@ -18,6 +18,7 @@ const AdminLogin = () => {
     const email = e.target.email.value.toLowerCase().trim();
     const password = e.target.password.value;
 
+    // Jerin ma'aikata da inda ya kamata su nufa
     const authorizedUsers = {
       "owner@skyward.edu.ng": { role: "proprietor", path: "/portal/proprietor" },
       "admin@skyward.edu.ng": { role: "admin", path: "/admin/dashboard" },
@@ -28,6 +29,7 @@ const AdminLogin = () => {
       "news@skyward.edu.ng": { role: "news-admin", path: "/admin/news" }
     };
 
+    // 1. Duba idan email din yana cikin wadanda aka amincewa
     if (!authorizedUsers[email]) {
       setError("Access Denied: Unauthorized Administrative ID.");
       setLoading(false);
@@ -35,24 +37,24 @@ const AdminLogin = () => {
     }
 
     try {
-      // 1. Firebase Authentication
+      // 2. Shiga ta Firebase
       await signInWithEmailAndPassword(auth, email, password);
       
       const userData = authorizedUsers[email];
       
-      // 2. Clear EVERYTHING to prevent role conflicts
+      // 3. GYARA MAI KYAU: Goge komai na tsohon login don gujewa conflict
       localStorage.clear();
 
-      // 3. Store new session data
+      // 4. Sanya sabbin bayanai na wannan Admin din
       localStorage.setItem("userRole", userData.role);
       localStorage.setItem("isAuth", "true");
-      // Keep the setup flag so it doesn't try to recreate admin
       localStorage.setItem("skyward_admin_setup", "done");
 
-      // 4. Navigate after a small delay to let App.js "Loading" finish
+      // 5. JINKIRI (DELAY): Wannan 500ms din yana da matukar muhimmanci 
+      // domin baiwa App.js damar ganin LocalStorage kafin a canza shafi
       setTimeout(() => {
-        navigate(userData.path);
-      }, 200);
+        navigate(userData.path, { replace: true });
+      }, 500);
 
     } catch (err) {
       setError("Login Failed: Please verify your security credentials.");
@@ -62,7 +64,7 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#00152b] py-12 px-4 font-sans">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#00152b] py-12 px-4 font-sans text-left">
       <div className="max-w-md w-full animate-in fade-in zoom-in duration-500">
         
         <div className="text-center mb-8">
@@ -82,7 +84,7 @@ const AdminLogin = () => {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest">Authorized Email</label>
+              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest text-left">Authorized Email</label>
               <div className="relative">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">
                   <User size={18} />
@@ -98,7 +100,7 @@ const AdminLogin = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest">Security Password</label>
+              <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest text-left">Security Password</label>
               <div className="relative">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">
                   <Lock size={18} />
@@ -122,7 +124,7 @@ const AdminLogin = () => {
 
             <button 
               disabled={loading}
-              className={`w-full ${loading ? 'bg-slate-400' : 'bg-[#002147] hover:bg-red-600'} text-white font-black py-5 rounded-[25px] uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 mt-4`}
+              className={`w-full ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#002147] hover:bg-red-600'} text-white font-black py-5 rounded-[25px] uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 mt-4`}
             >
               {loading ? (
                 <>
@@ -144,6 +146,7 @@ const AdminLogin = () => {
 
         <div className="mt-8 text-center">
           <button 
+            type="button"
             onClick={() => navigate("/")} 
             className="text-slate-500 text-[10px] font-black uppercase hover:text-white transition-colors tracking-widest"
           >
