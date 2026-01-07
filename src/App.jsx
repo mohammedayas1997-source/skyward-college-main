@@ -1,191 +1,131 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase"; 
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { Lock, User, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 
-// NAMED IMPORTS
-import { Header } from "./components/Header";
-import { Footer } from "./components/Footer";
-import { Home } from "./pages/Home";
+const UnifiedLogin = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-// DEFAULT IMPORTS
-import Admission from "./pages/Admission";
-import ELibrary from "./pages/ELibrary"; 
-import ContactHelpDesk from './pages/ContactHelpDesk'; 
-import CheckResult from "./pages/CheckResult";
-import AboutDetail from "./pages/AboutDetail";
-import Login from "./pages/Login"; 
-import Contact from "./pages/Contact";
-import Apply from "./pages/Apply";
-import StudentDashboard from "./pages/StudentDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import ExamOfficerDashboard from "./pages/ExamOfficerDashboard";
-import CourseRegistration from "./pages/CourseRegistration";
-import Courses from "./pages/Courses"; 
-import PaymentPortal from "./pages/PaymentPortal";
-import AccountantDashboard from "./pages/AccountantDashboard";
-import ExamTimetable from "./pages/ExamTimetable";
-import StaffDashboard from "./pages/StaffDashboard";
-import RectorDashboard from "./pages/RectorDashboard";
-import UnifiedLogin from "./components/UnifiedLogin"; 
-import AuditTrail from "./components/AuditTrail";
-import News from "./pages/News";
-import ProprietorDashboard from "./pages/ProprietorDashboard";
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-// --- NOTIFICATION CONTEXT & FIREBASE ---
-import { NotificationProvider } from "./components/NotificationContext";
-import { auth, db } from "./firebase"; 
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+    const lowerEmail = email.toLowerCase().trim();
+    
+    // 1. TANTANCE ROLE DA INDA ZA A JE
+    let role = "";
+    let destination = "";
 
-// --- INGANTAACCEN SECURITY COMPONENT (FIXED) ---
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const userRole = localStorage.getItem("userRole");
-  const isAuth = localStorage.getItem("isAuth");
-  const location = useLocation();
+    if (lowerEmail === "owner@skyward.edu.ng") {
+      role = "proprietor";
+      destination = "/portal/proprietor";
+    } else if (lowerEmail === "admin@skyward.edu.ng") {
+      role = "admin";
+      destination = "/admin/dashboard";
+    } else if (lowerEmail === "rector@skyward.edu.ng") {
+      role = "rector";
+      destination = "/portal/rector";
+    } else if (lowerEmail === "finance@skyward.edu.ng") {
+      role = "accountant";
+      destination = "/admin/accountant";
+    } else if (lowerEmail.includes("staff")) {
+      role = "staff";
+      destination = "/staff/dashboard";
+    } else {
+      setError("Unauthorized: Management/Staff emails only.");
+      setLoading(false);
+      return;
+    }
 
-  // 1. Idan ba'a yi login ba
-  if (!isAuth || isAuth !== "true") {
-    const isStudentRoute = location.pathname.startsWith("/portal/dashboard");
-    return <Navigate to={isStudentRoute ? "/portal/student-login" : "/portal/login"} state={{ from: location }} replace />;
-  }
+    try {
+      // 2. SHIGA SYSTEM (Firebase)
+      await signInWithEmailAndPassword(auth, lowerEmail, password);
 
-  // 2. Idan Role bai gama lodi ba, tsaya ka jira (Wait a second)
-  if (!userRole && isAuth === "true") {
-    return <div className="min-h-screen flex items-center justify-center bg-[#001524] text-white font-bold italic tracking-widest">VERIFYING ACCESS...</div>;
-  }
+      // 3. TSAFTACE STORAGE (Wannan ne yake sa ka koma Student Dashboard)
+      localStorage.clear(); // Goge komai na tsohon login (musamman na Student)
+      
+      // 4. SAKA SABON BAYANI
+      localStorage.setItem("isAuth", "true");
+      localStorage.setItem("userRole", role);
 
-  // 3. Duba Role (Cire duk wani kuskuren rubutu)
-  const normalizedRole = userRole ? userRole.toLowerCase().trim() : "";
+      // 5. TILASTA WA BROWSER TA GANE CANJIN
+      // Muna amfani da window.location maimakon navigate don App.js ya sake duba Role
+      setTimeout(() => {
+        window.location.href = destination;
+      }, 300);
 
-  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
-    console.error("Unauthorized Role:", normalizedRole);
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
-
-function App() {
-  useEffect(() => {
-    const createFirstAdmin = async () => {
-      const setupFlag = localStorage.getItem("skyward_admin_setup");
-      if (setupFlag === "done") return;
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, "admin@skyward.edu.ng", "Skyward@2026");
-        await setDoc(doc(db, "users", userCredential.user.uid), {
-          fullName: "Main Admin",
-          email: "admin@skyward.edu.ng",
-          role: "admin",
-          createdAt: new Date()
-        });
-        localStorage.setItem("skyward_admin_setup", "done");
-      } catch (error) {
-        if (error.code === "auth/email-already-in-use") localStorage.setItem("skyward_admin_setup", "done");
-      }
-    };
-    createFirstAdmin();
-  }, []);
+    } catch (error) {
+      setError("Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <NotificationProvider>
-      <Router>
-        <div className="flex flex-col min-h-screen bg-slate-50">
-          
-          <Routes>
-            <Route path="/portal/*" element={null} />
-            <Route path="/admin/*" element={null} />
-            <Route path="/staff/*" element={null} />
-            <Route path="/skyward-secure-access" element={null} />
-            <Route path="*" element={<Header />} />
-          </Routes>
-          
-          <main className="flex-grow">
-            <Routes>
-              {/* PUBLIC PAGES */}
-              <Route path="/" element={<Home />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/about/:id" element={<AboutDetail />} />
-              <Route path="/admission" element={<Admission />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/e-library" element={<ELibrary />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/help-desk" element={<ContactHelpDesk />} />
-              <Route path="/admission/apply" element={<Apply />} />
-              
-              {/* LOGIN ROUTES */}
-              <Route path="/portal/student-login" element={<Login />} />
-              <Route path="/portal/login" element={<UnifiedLogin />} />
-              <Route path="/skyward-secure-access" element={<UnifiedLogin />} />
-              
-              <Route path="/portal/audit" element={<AuditTrail />} />
-              
-              {/* --- SECURE ROUTES --- */}
-              <Route path="/portal/proprietor" element={
-                <ProtectedRoute allowedRoles={["proprietor"]}>
-                  <ProprietorDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/portal/rector" element={
-                <ProtectedRoute allowedRoles={["rector"]}>
-                  <RectorDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/staff/dashboard" element={
-                <ProtectedRoute allowedRoles={["staff"]}>
-                  <StaffDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/admin/exam-office" element={
-                <ProtectedRoute allowedRoles={["exam-officer"]}>
-                  <ExamOfficerDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/admin/accountant" element={
-                <ProtectedRoute allowedRoles={["accountant"]}>
-                  <AccountantDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/admin/dashboard" element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/portal/dashboard" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              } />
-
-              <Route path="/portal/payments" element={
-                <ProtectedRoute allowedRoles={["student", "proprietor", "accountant"]}>
-                  <PaymentPortal />
-                </ProtectedRoute>
-              } /> 
-
-              <Route path="/portal/registration" element={<ProtectedRoute allowedRoles={["student"]}><CourseRegistration /></ProtectedRoute>} />
-              <Route path="/portal/check-result" element={<ProtectedRoute allowedRoles={["student"]}><CheckResult /></ProtectedRoute>} />
-              <Route path="/portal/exam-timetable" element={<ProtectedRoute allowedRoles={["student"]}><ExamTimetable /></ProtectedRoute>} />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-
-          <Routes>
-            <Route path="/portal/*" element={null} />
-            <Route path="/admin/*" element={null} />
-            <Route path="/staff/*" element={null} />
-            <Route path="/skyward-secure-access" element={null} />
-            <Route path="*" element={<Footer />} />
-          </Routes>
+    <div className="min-h-screen flex items-center justify-center bg-[#001524] px-6 py-12">
+      <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl overflow-hidden p-10 border border-white/20">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-red-600 rounded-2xl mx-auto mb-4 flex items-center justify-center rotate-3 shadow-lg">
+            <ShieldCheck className="text-white" size={32} />
+          </div>
+          <h2 className="text-[#002147] text-2xl font-black uppercase italic tracking-tighter">Official Portal</h2>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Management & Staff Access</p>
         </div>
-      </Router>
-    </NotificationProvider>
-  );
-}
 
-export default App;
+        <form className="space-y-6" onSubmit={handleLogin}>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border border-red-100 italic">
+              <AlertCircle size={18} /> {error}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest italic">Official Email</label>
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="e.g. admin@skyward.edu.ng"
+                className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-red-600 focus:bg-white outline-none text-sm font-bold transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#002147] uppercase ml-2 tracking-widest italic">Security Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-red-600 focus:bg-white outline-none text-sm font-bold transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-[#002147] hover:bg-red-700 text-white font-black py-5 rounded-2xl uppercase tracking-[0.3em] transition-all shadow-xl flex items-center justify-center gap-3 disabled:bg-slate-300"
+          >
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Entry"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default UnifiedLogin;
