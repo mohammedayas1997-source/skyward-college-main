@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../firebase"; 
+import { db, auth } from "../firebase"; // Na kara auth a nan
+import { signOut } from "firebase/auth"; // Na kara signOut
+import { useNavigate } from "react-router-dom"; // Na kara useNavigate
 import { 
   collection, addDoc, onSnapshot, query, where, 
   updateDoc, doc, serverTimestamp, orderBy, writeBatch 
@@ -16,6 +18,7 @@ const StaffDashboard = () => {
   const [isLocked] = useState(false);
   const [staffCourse] = useState("Computer Science");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Kunna navigate
 
   // --- DATA STATES ---
   const [incomingStudents, setIncomingStudents] = useState([]);
@@ -54,6 +57,16 @@ const StaffDashboard = () => {
     return () => { unsubStudents(); unsubResults(); unsubPlans(); };
   }, [staffCourse]);
 
+  // --- LOGIC: Logout Function ---
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/"); // Wannan zai kai ka shafin login ya hana 404 error
+    } catch (err) {
+      alert("Error logging out: " + err.message);
+    }
+  };
+
   // --- LOGIC: Submit All Results to Exam Officer ---
   const submitToExamOfficer = async () => {
     if (studentResults.length === 0) return alert("No results to submit!");
@@ -63,8 +76,6 @@ const StaffDashboard = () => {
       setLoading(true);
       try {
         const batch = writeBatch(db);
-        
-        // 1. Update each student record to "Submitted" status
         studentResults.forEach((student) => {
           const studentRef = doc(db, "studentResults", student.id);
           batch.update(studentRef, { 
@@ -73,7 +84,6 @@ const StaffDashboard = () => {
             isLocked: true 
           });
 
-          // 2. Add to a central 'finalResults' collection for Exam Officer
           const finalRef = doc(collection(db, "finalResults"));
           batch.set(finalRef, {
             ...student,
@@ -81,7 +91,6 @@ const StaffDashboard = () => {
             submissionDate: serverTimestamp()
           });
         });
-
         await batch.commit();
         alert("Success! All results have been sent to the Exam Officer.");
       } catch (err) {
@@ -186,7 +195,11 @@ const StaffDashboard = () => {
           <NavItem id="history_plans" icon={FileSearch} label="My Plans" />
           <NavItem id="entry" icon={FileEdit} label="Score Entry" />
         </nav>
-        <button className="w-full flex items-center gap-4 p-4 rounded-2xl font-bold text-[11px] uppercase text-red-400 hover:bg-red-500/10 border border-red-500/20 mt-4">
+        {/* LOGOUT BUTTON GYARARRE */}
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 p-4 rounded-2xl font-bold text-[11px] uppercase text-red-400 hover:bg-red-500/10 border border-red-500/20 mt-4"
+        >
           <LogOut size={18} /> Logout
         </button>
       </aside>
@@ -261,7 +274,6 @@ const StaffDashboard = () => {
           </div>
         )}
 
-        {/* Keeping other tabs for functionality */}
         {activeTab === "inbox" && (
            <div className="max-w-4xl mx-auto space-y-4">
               <h2 className="text-2xl font-black text-[#002147] uppercase tracking-tighter mb-6">Student Intake Queue</h2>
@@ -311,6 +323,7 @@ const StaffDashboard = () => {
   );
 };
 
+// ... (Helper Components StatCard and PlanEditor are same)
 const PlanEditor = ({ icon: Icon, label, value, onChange }) => (
   <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm space-y-4">
     <div className="flex items-center gap-3">
