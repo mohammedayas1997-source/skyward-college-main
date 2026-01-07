@@ -7,6 +7,13 @@ import {
   Printer, Download, ShieldCheck, BadgeCheck, ChevronRight
 } from "lucide-react";
 
+// --- NEW LOGIC: Staff Assignment Mapping ---
+const lecturerDatabase = {
+  "Computer Science": { staffName: "Dr. Adamu", staffId: "STF001" },
+  "Business Admin": { staffName: "Prof. Zainab", staffId: "STF002" },
+  "Public Health": { staffName: "Mr. John", staffId: "STF003" }
+};
+
 const AdmissionDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,18 +21,30 @@ const AdmissionDashboard = () => {
   
   const [applicants, setApplicants] = useState([
     { id: "APP001", name: "Musa Yahaya", course: "Computer Science", status: "Pending", date: "2026-01-05", admissionNo: null },
-    { id: "APP002", name: "Zainab Aliyu", course: "Business Admin", status: "Approved", date: "2026-01-04", admissionNo: "GTI/2026/1024" },
+    { id: "APP002", name: "Zainab Aliyu", course: "Business Admin", status: "Approved", date: "2026-01-04", admissionNo: "GTI/2026/1024", assignedStaffId: "STF002" },
     { id: "APP003", name: "John Sunday", course: "Public Health", status: "Rejected", date: "2026-01-03", admissionNo: null },
   ]);
 
+  // --- UPDATED: Handle Approve with Auto-Push to Staff ---
   const handleApprove = (id) => {
     const year = new Date().getFullYear();
     const randomSerial = Math.floor(1000 + Math.random() * 9000); 
     const generatedID = `GTI/${year}/${randomSerial}`; 
 
-    setApplicants(applicants.map(app => 
-      app.id === id ? { ...app, status: "Approved", admissionNo: generatedID } : app
-    ));
+    setApplicants(applicants.map(app => {
+      if (app.id === id) {
+        // Auto-detect the lecturer for this student's course
+        const assignment = lecturerDatabase[app.course] || { staffId: "UNASSIGNED" };
+        
+        return { 
+          ...app, 
+          status: "Approved", 
+          admissionNo: generatedID,
+          assignedStaffId: assignment.staffId // This "Pushes" the student to that staff's list
+        };
+      }
+      return app;
+    }));
   };
 
   const handleStatusChange = (id, newStatus) => {
@@ -159,11 +178,10 @@ const AdmissionDashboard = () => {
           </div>
         </div>
 
-        {/* --- ADMISSION LETTER MODAL --- */}
+        {/* LETTER MODAL CODE REMAINS THE SAME... */}
         {selectedLetter && (
           <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6 overflow-y-auto">
             <div className="bg-white w-full max-w-2xl rounded-[50px] p-12 relative shadow-2xl animate-in zoom-in duration-300">
-              
               <div className="flex justify-between items-start mb-14">
                 <div className="flex items-center gap-5">
                   <div className="h-20 w-20 bg-blue-600 rounded-[28px] flex items-center justify-center text-white shadow-2xl shadow-blue-600/30">
@@ -185,37 +203,24 @@ const AdmissionDashboard = () => {
                   <h4 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.3em] mb-3">Admission Notice</h4>
                   <p className="text-3xl font-black text-slate-900 uppercase tracking-tight">{selectedLetter.name}</p>
                 </div>
-
-                <div className="bg-slate-50/50 p-8 rounded-[35px] border border-slate-100">
-                    <p className="text-xs leading-relaxed text-slate-600 font-medium">
-                        Congratulations! We are pleased to inform you that you have been offered provisional admission into the <b>{selectedLetter.course}</b> program. 
-                        Your academic journey starts here, and we are excited to have you as part of our innovative community.
-                    </p>
+                <div className="bg-slate-50/50 p-8 rounded-[35px] border border-slate-100 text-xs leading-relaxed text-slate-600 font-medium">
+                    Congratulations! You have been admitted to <b>{selectedLetter.course}</b>. Your enrollment data has been forwarded to your department lecturer.
                 </div>
 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-10">
                   <div className="text-center md:text-left flex-1">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Registration ID</p>
                     <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{selectedLetter.admissionNo}</p>
-                    <div className="flex items-center gap-2 mt-4 justify-center md:justify-start">
-                      <BadgeCheck className="text-emerald-500" size={20}/>
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Global Tech Certified</span>
-                    </div>
                   </div>
-
-                  <div className="bg-white p-5 rounded-[30px] shadow-2xl shadow-slate-200 border border-slate-50 hover:scale-105 transition-transform duration-500">
-                    <QRCodeSVG 
-                      value={`GTI-VERIFY-${selectedLetter.admissionNo}`} 
-                      size={120}
-                      level="H"
-                    />
+                  <div className="bg-white p-5 rounded-[30px] shadow-2xl border border-slate-50">
+                    <QRCodeSVG value={`GTI-VERIFY-${selectedLetter.admissionNo}`} size={120} level="H" />
                   </div>
                 </div>
               </div>
 
               <div className="mt-14 flex gap-5">
                 <button onClick={() => setSelectedLetter(null)} className="flex-1 py-5 bg-slate-50 text-slate-400 hover:bg-slate-100 rounded-3xl font-black uppercase text-[11px] tracking-widest transition-all">Close</button>
-                <button className="flex-1 py-5 bg-blue-600 text-white rounded-3xl font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-blue-600/40 flex items-center justify-center gap-3 hover:bg-blue-700 transition-all">
+                <button className="flex-1 py-5 bg-blue-600 text-white rounded-3xl font-black uppercase text-[11px] tracking-widest shadow-2xl shadow-blue-600/40 flex items-center justify-center gap-3">
                   <Download size={20}/> Download PDF
                 </button>
               </div>

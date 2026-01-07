@@ -29,6 +29,7 @@ import UnifiedLogin from "./components/UnifiedLogin";
 import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
+import AdmissionOfficerDashboard from "./pages/AdmissionOfficerDashboard"; // Na kara wannan
 
 // --- NOTIFICATION CONTEXT & FIREBASE ---
 import { NotificationProvider } from "./components/NotificationContext";
@@ -36,24 +37,21 @@ import { auth, db } from "./firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-// --- INGANTAACCEN SECURITY COMPONENT (FIXED) ---
+// --- INGANTAACCEN SECURITY COMPONENT ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
   const location = useLocation();
 
-  // 1. Idan ba'a yi login ba
   if (!isAuth || isAuth !== "true") {
     const isStudentRoute = location.pathname.startsWith("/portal/dashboard");
     return <Navigate to={isStudentRoute ? "/portal/student-login" : "/portal/login"} state={{ from: location }} replace />;
   }
 
-  // 2. Idan Role bai gama lodi ba, tsaya ka jira (Wait a second)
   if (!userRole && isAuth === "true") {
     return <div className="min-h-screen flex items-center justify-center bg-[#001524] text-white font-bold italic tracking-widest">VERIFYING ACCESS...</div>;
   }
 
-  // 3. Duba Role (Cire duk wani kuskuren rubutu)
   const normalizedRole = userRole ? userRole.toLowerCase().trim() : "";
 
   if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
@@ -115,46 +113,60 @@ function App() {
               <Route path="/portal/student-login" element={<Login />} />
               <Route path="/portal/login" element={<UnifiedLogin />} />
               <Route path="/skyward-secure-access" element={<UnifiedLogin />} />
-              
               <Route path="/portal/audit" element={<AuditTrail />} />
               
               {/* --- SECURE ROUTES --- */}
+              
+              {/* 1. PROPRIETOR */}
               <Route path="/portal/proprietor" element={
                 <ProtectedRoute allowedRoles={["proprietor"]}>
                   <ProprietorDashboard />
                 </ProtectedRoute>
               } />
 
+              {/* 2. RECTOR */}
               <Route path="/portal/rector" element={
                 <ProtectedRoute allowedRoles={["rector"]}>
                   <RectorDashboard />
                 </ProtectedRoute>
               } />
 
+              {/* 3. STAFF */}
               <Route path="/staff/dashboard" element={
                 <ProtectedRoute allowedRoles={["staff"]}>
                   <StaffDashboard />
                 </ProtectedRoute>
               } />
 
+              {/* 4. EXAM OFFICER */}
               <Route path="/admin/exam-office" element={
-                <ProtectedRoute allowedRoles={["exam-officer"]}>
+                <ProtectedRoute allowedRoles={["exam-officer", "exam"]}>
                   <ExamOfficerDashboard />
                 </ProtectedRoute>
               } />
 
+              {/* 5. ACCOUNTANT */}
               <Route path="/admin/accountant" element={
                 <ProtectedRoute allowedRoles={["accountant"]}>
                   <AccountantDashboard />
                 </ProtectedRoute>
               } />
 
+              {/* 6. ADMISSION OFFICER */}
+              <Route path="/admin/admission-officer" element={
+                <ProtectedRoute allowedRoles={["admission-officer", "admission"]}>
+                  <AdmissionOfficerDashboard />
+                </ProtectedRoute>
+              } />
+
+              {/* 7. ADMIN */}
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
 
+              {/* 8. STUDENT & PORTAL SERVICES */}
               <Route path="/portal/dashboard" element={
                 <ProtectedRoute allowedRoles={["student"]}>
                   <StudentDashboard />

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, LogOut } from "lucide-react";
 
+// --- LOGIN COMPONENT ---
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -9,109 +10,105 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { email } = formData;
+    const email = formData.email.toLowerCase();
 
-    // Role-Based Routing Logic
-    if (email.toLowerCase().includes("@admin.skyward.edu.ng")) {
-      // Redirects to Admin Dashboard
-      navigate("/admin/dashboard");
-    } else if (email.toLowerCase().includes("@staff.skyward.edu.ng")) {
-      // Redirects to Staff Portal
-      navigate("/staff/portal");
-    } else {
-      // Default redirect for Students
-      navigate("/student/dashboard");
-    }
+    // ROLE-BASED LOGIC (Maimakon Email kadai, nan gaba za mu sa Firebase)
+    if (email.includes("@rector")) navigate("/rector/dashboard");
+    else if (email.includes("@proprietor")) navigate("/proprietor/dashboard");
+    else if (email.includes("@accountant")) navigate("/accountant/dashboard");
+    else if (email.includes("@admission")) navigate("/admission/dashboard");
+    else if (email.includes("@staff")) navigate("/staff/portal");
+    else if (email.includes("@exam")) navigate("/exam/dashboard");
+    else navigate("/student/dashboard");
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] relative overflow-hidden font-sans">
-      
-      {/* Decorative Background Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-50 rounded-full blur-[120px] opacity-60"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#002147]/10 rounded-full blur-[120px] opacity-60"></div>
-
-      <div className="w-full max-w-[450px] p-8 md:p-12 relative z-10">
-        {/* Logo & Header */}
+    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] font-sans p-6">
+      <div className="w-full max-w-[450px]">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-[2rem] shadow-xl border border-slate-100 mb-6 group hover:scale-105 transition-transform duration-500">
-             <img src="/logo.png" alt="Skyward" className="w-14 h-14 object-contain" />
-          </div>
-          <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter">Welcome <span className="text-red-600">Back</span></h2>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Skyward Student & Staff Portal</p>
+          <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter">Skyward <span className="text-red-600">Portal</span></h2>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Secure Multi-Role Access</p>
         </div>
 
-        {/* Login Form Card */}
-        <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,33,71,0.1)] border border-white/20">
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* Email Field */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Email Address</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
-                  <Mail size={18} />
-                </div>
-                <input 
-                  type="email" 
-                  required
-                  placeholder="name@skyward.edu.ng"
-                  className="w-full bg-slate-50 border-none py-4 pl-14 pr-6 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                />
-              </div>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4">Email Address</label>
+              <input 
+                type="email" required placeholder="user@skyward.edu.ng"
+                className="w-full bg-slate-50 p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-red-600/20"
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+              />
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center px-4">
-                <label className="text-[10px] font-black text-[#002147] uppercase tracking-widest">Password</label>
-                <button type="button" className="text-[10px] font-black text-red-600 uppercase hover:underline">Forgot?</button>
-              </div>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
-                  <Lock size={18} />
-                </div>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4">Password</label>
+              <div className="relative">
                 <input 
-                  type={showPassword ? "text" : "password"} 
-                  required
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 border-none py-4 pl-14 pr-14 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
+                  type={showPassword ? "text" : "password"} required placeholder="••••••••"
+                  className="w-full bg-slate-50 p-4 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-red-600/20"
                   onChange={(e) => setFormData({...formData, password: e.target.value})}
                 />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-5 flex items-center text-slate-400 hover:text-[#002147]"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-4 text-slate-400">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* Login Button */}
-            <button 
-              type="submit"
-              className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-red-600 shadow-lg shadow-blue-900/10 hover:shadow-red-600/20 transition-all group active:scale-[0.98]"
-            >
-              Secure Login <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <button type="submit" className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all">
+              Login to System
             </button>
           </form>
-        </div>
-
-        {/* Footer Info */}
-        <div className="mt-10 flex flex-col items-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full border border-green-100">
-            <ShieldCheck size={14} className="text-green-600" />
-            <span className="text-[9px] font-black text-green-700 uppercase tracking-tighter">End-to-end encrypted portal</span>
-          </div>
-          <p className="text-slate-400 text-[10px] font-bold">
-            Don't have an account? <button onClick={() => navigate('/courses')} className="text-[#002147] hover:text-red-600 underline">Apply Now</button>
-          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+// --- GENERIC DASHBOARD COMPONENT (Ga kowane Role) ---
+const DashboardWrapper = ({ title, color }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen bg-slate-50 p-12">
+      <div className="max-w-4xl mx-auto bg-white p-10 rounded-[40px] shadow-sm border border-slate-100">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className={`text-4xl font-black uppercase tracking-tighter ${color}`}>{title}</h1>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Skyward Management System</p>
+          </div>
+          <button 
+            onClick={() => navigate("/")} 
+            className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all"
+          >
+            <LogOut size={16} /> Logout
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 bg-slate-50 rounded-3xl h-32 flex items-end font-black text-slate-300 uppercase">Statistics</div>
+          <div className="p-6 bg-slate-50 rounded-3xl h-32 flex items-end font-black text-slate-300 uppercase">Recent Activity</div>
+          <div className="p-6 bg-slate-50 rounded-3xl h-32 flex items-end font-black text-slate-300 uppercase">Notifications</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN APP COMPONENT ---
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        
+        {/* Duk matsayi da Dashboard dinsa */}
+        <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector Dashboard" color="text-blue-900" />} />
+        <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor Dashboard" color="text-purple-900" />} />
+        <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant Portal" color="text-green-600" />} />
+        <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission Office" color="text-orange-600" />} />
+        <Route path="/staff/portal" element={<DashboardWrapper title="Staff Portal" color="text-red-600" />} />
+        <Route path="/exam/dashboard" element={<DashboardWrapper title="Exam Officer" color="text-indigo-600" />} />
+        <Route path="/student/dashboard" element={<DashboardWrapper title="Student Center" color="text-slate-700" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
