@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // NAMED IMPORTS
 import { Header } from "./components/Header";
@@ -38,33 +38,21 @@ import { auth, db } from "./firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-// --- UPDATED SECURITY COMPONENT (FIXED REDIRECT BUG) ---
+// --- PROFESSIONAL SECURITY COMPONENT (STRICT SYNC) ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  // Karanta storage kai tsaye lokacin render
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
+  const location = useLocation();
 
-  useEffect(() => {
-    // Brief delay to ensure localStorage is synced
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#002147] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-white/20 border-t-red-600 rounded-full animate-spin"></div>
-      </div>
-    );
+  // Wannan zai hana 'flickering' da kuma korar mutum ba gaira ba dalili
+  if (!isAuth || isAuth !== "true") {
+    // Tura shi login tare da adana inda yake son zuwa (state)
+    return <Navigate to="/portal/login" state={{ from: location }} replace />;
   }
 
-  if (!userRole || isAuth !== "true") {
-    return <Navigate to="/portal/login" replace />;
-  }
-
-  if (!allowedRoles.includes(userRole)) {
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    // Idan bashi da ikon shiga nan, tura shi Home
     return <Navigate to="/" replace />;
   }
 
@@ -94,12 +82,11 @@ function App() {
         });
 
         localStorage.setItem("skyward_admin_setup", "done");
-        console.log("SUCCESS: Admin user created in Firebase!");
+        console.log("SUCCESS: Admin user created!");
       } catch (error) {
         if (error.code === "auth/email-already-in-use") {
           localStorage.setItem("skyward_admin_setup", "done");
         }
-        console.log("Admin check: Ready.");
       }
     };
 
@@ -111,11 +98,12 @@ function App() {
       <Router>
         <div className="flex flex-col min-h-screen bg-slate-50">
           
-          {/* HEADER LOGIC - Hidden in Portals */}
+          {/* HEADER LOGIC */}
           <Routes>
             <Route path="/portal/*" element={null} />
             <Route path="/admin/*" element={null} />
             <Route path="/staff/*" element={null} />
+            <Route path="/skyward-secure-access" element={null} />
             <Route path="*" element={<Header />} />
           </Routes>
           
@@ -183,21 +171,38 @@ function App() {
               } />
 
               {/* SHARED STUDENT TOOLS */}
-              <Route path="/portal/payments" element={<PaymentPortal />} /> 
-              <Route path="/portal/registration" element={<CourseRegistration />} />
-              <Route path="/portal/check-result" element={<CheckResult />} />
-              <Route path="/portal/exam-timetable" element={<ExamTimetable />} />
+              <Route path="/portal/payments" element={
+                <ProtectedRoute allowedRoles={["student"]}>
+                  <PaymentPortal />
+                </ProtectedRoute>
+              } /> 
+              <Route path="/portal/registration" element={
+                <ProtectedRoute allowedRoles={["student"]}>
+                  <CourseRegistration />
+                </ProtectedRoute>
+              } />
+              <Route path="/portal/check-result" element={
+                <ProtectedRoute allowedRoles={["student"]}>
+                  <CheckResult />
+                </ProtectedRoute>
+              } />
+              <Route path="/portal/exam-timetable" element={
+                <ProtectedRoute allowedRoles={["student"]}>
+                  <ExamTimetable />
+                </ProtectedRoute>
+              } />
 
               {/* CATCH-ALL REDIRECT */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
 
-          {/* FOOTER LOGIC - Hidden in Portals */}
+          {/* FOOTER LOGIC */}
           <Routes>
             <Route path="/portal/*" element={null} />
             <Route path="/admin/*" element={null} />
             <Route path="/staff/*" element={null} />
+            <Route path="/skyward-secure-access" element={null} />
             <Route path="*" element={<Footer />} />
           </Routes>
         </div>
