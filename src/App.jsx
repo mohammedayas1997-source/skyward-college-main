@@ -12,7 +12,7 @@ import ELibrary from "./pages/ELibrary";
 import ContactHelpDesk from './pages/ContactHelpDesk'; 
 import CheckResult from "./pages/CheckResult";
 import AboutDetail from "./pages/AboutDetail";
-import Login from "./pages/Login";
+import Login from "./pages/Login"; // Wannan zai zama na Students kadai
 import Contact from "./pages/Contact";
 import Apply from "./pages/Apply";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -27,7 +27,7 @@ import AdmissionDashboard from "./pages/AdmissionDashboard";
 import ExamTimetable from "./pages/ExamTimetable";
 import StaffDashboard from "./pages/StaffDashboard";
 import RectorDashboard from "./pages/RectorDashboard";
-import UnifiedLogin from "./components/UnifiedLogin";
+import UnifiedLogin from "./components/UnifiedLogin"; // Wannan na Staff/Admin ne
 import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
@@ -38,21 +38,19 @@ import { auth, db } from "./firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-// --- PROFESSIONAL SECURITY COMPONENT (STRICT SYNC) ---
+// --- PROFESSIONAL SECURITY COMPONENT ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  // Karanta storage kai tsaye lokacin render
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
   const location = useLocation();
 
-  // Wannan zai hana 'flickering' da kuma korar mutum ba gaira ba dalili
   if (!isAuth || isAuth !== "true") {
-    // Tura shi login tare da adana inda yake son zuwa (state)
-    return <Navigate to="/portal/login" state={{ from: location }} replace />;
+    // Idan dalibi ne, tura shi student-login, idan wasu ne, tura su unified login
+    const isStudentRoute = location.pathname.startsWith("/portal/dashboard") || location.pathname.startsWith("/portal/payments");
+    return <Navigate to={isStudentRoute ? "/portal/student-login" : "/portal/login"} state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    // Idan bashi da ikon shiga nan, tura shi Home
     return <Navigate to="/" replace />;
   }
 
@@ -61,35 +59,23 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 function App() {
 
-  // --- AUTOMATIC ADMIN SETUP ---
   useEffect(() => {
     const createFirstAdmin = async () => {
       const setupFlag = localStorage.getItem("skyward_admin_setup");
       if (setupFlag === "done") return;
-
       try {
-        const userCredential = await createUserWithEmailAndPassword(
-          auth, 
-          "admin@skyward.edu.ng", 
-          "Skyward@2026"
-        );
-        
+        const userCredential = await createUserWithEmailAndPassword(auth, "admin@skyward.edu.ng", "Skyward@2026");
         await setDoc(doc(db, "users", userCredential.user.uid), {
           fullName: "Main Admin",
           email: "admin@skyward.edu.ng",
           role: "admin",
           createdAt: new Date()
         });
-
         localStorage.setItem("skyward_admin_setup", "done");
-        console.log("SUCCESS: Admin user created!");
       } catch (error) {
-        if (error.code === "auth/email-already-in-use") {
-          localStorage.setItem("skyward_admin_setup", "done");
-        }
+        if (error.code === "auth/email-already-in-use") localStorage.setItem("skyward_admin_setup", "done");
       }
     };
-
     createFirstAdmin();
   }, []);
 
@@ -98,7 +84,6 @@ function App() {
       <Router>
         <div className="flex flex-col min-h-screen bg-slate-50">
           
-          {/* HEADER LOGIC */}
           <Routes>
             <Route path="/portal/*" element={null} />
             <Route path="/admin/*" element={null} />
@@ -120,14 +105,17 @@ function App() {
               <Route path="/help-desk" element={<ContactHelpDesk />} />
               <Route path="/admission/apply" element={<Apply />} />
               
-              {/* LOGIN PAGES */}
+              {/* --- DUAL LOGIN SYSTEM --- */}
+              {/* 1. Kofar Dalibai (Student Only) */}
+              <Route path="/portal/student-login" element={<Login />} />
+              
+              {/* 2. Kofar Kowa da Kowa (Admin, Staff, Proprietor) */}
               <Route path="/portal/login" element={<UnifiedLogin />} />
-              <Route path="/portal/student-login" element={<Login userType="student" />} />
-              <Route path="/portal/staff-login" element={<Login userType="staff" />} />
-              <Route path="/skyward-secure-access" element={<AdminLogin />} />
+              <Route path="/skyward-secure-access" element={<UnifiedLogin />} />
+              
               <Route path="/portal/audit" element={<AuditTrail />} />
               
-              {/* --- PROTECTED PORTAL ROUTES --- */}
+              {/* --- PROTECTED ROUTES --- */}
               <Route path="/portal/proprietor" element={
                 <ProtectedRoute allowedRoles={["proprietor"]}>
                   <ProprietorDashboard />
@@ -170,34 +158,19 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* SHARED STUDENT TOOLS */}
               <Route path="/portal/payments" element={
-                <ProtectedRoute allowedRoles={["student"]}>
+                <ProtectedRoute allowedRoles={["student", "proprietor", "accountant"]}>
                   <PaymentPortal />
                 </ProtectedRoute>
               } /> 
-              <Route path="/portal/registration" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <CourseRegistration />
-                </ProtectedRoute>
-              } />
-              <Route path="/portal/check-result" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <CheckResult />
-                </ProtectedRoute>
-              } />
-              <Route path="/portal/exam-timetable" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <ExamTimetable />
-                </ProtectedRoute>
-              } />
+              <Route path="/portal/registration" element={<ProtectedRoute allowedRoles={["student"]}><CourseRegistration /></ProtectedRoute>} />
+              <Route path="/portal/check-result" element={<ProtectedRoute allowedRoles={["student"]}><CheckResult /></ProtectedRoute>} />
+              <Route path="/portal/exam-timetable" element={<ProtectedRoute allowedRoles={["student"]}><ExamTimetable /></ProtectedRoute>} />
 
-              {/* CATCH-ALL REDIRECT */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
 
-          {/* FOOTER LOGIC */}
           <Routes>
             <Route path="/portal/*" element={null} />
             <Route path="/admin/*" element={null} />

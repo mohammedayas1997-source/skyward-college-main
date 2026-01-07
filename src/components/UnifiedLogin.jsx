@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase"; // Ensure this path is correct
+import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { ShieldCheck, Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import { ShieldCheck, Lock, User, Loader2, AlertCircle } from "lucide-react";
 
 const UnifiedLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -19,137 +18,123 @@ const UnifiedLogin = () => {
 
     const lowerEmail = email.toLowerCase().trim();
 
-    // --- AUTHORIZED ADMINISTRATIVE ACCOUNTS ---
-    const authorizedUsers = {
-      "owner@skyward.edu.ng": { role: "proprietor", path: "/portal/proprietor" },
-      "admin@skyward.edu.ng": { role: "admin", path: "/admin/dashboard" },
-      "rector@skyward.edu.ng": { role: "rector", path: "/portal/rector" },
-      "finance@skyward.edu.ng": { role: "accountant", path: "/admin/accountant" },
-      "exams@skyward.edu.ng": { role: "exam-officer", path: "/admin/exam-office" },
-      "admission@skyward.edu.ng": { role: "admission-officer", path: "/admin/admission" },
-      "news@skyward.edu.ng": { role: "news-admin", path: "/admin/news" }
-    };
-
     try {
-      // 1. Firebase Authentication
-      await signInWithEmailAndPassword(auth, lowerEmail, password);
+      // 1. Firebase Authentication - Tantance Email da Password
+      const userCredential = await signInWithEmailAndPassword(auth, lowerEmail, password);
+      
+      if (userCredential.user) {
+        // Share tsoffin bayanan session
+        localStorage.clear();
+        localStorage.setItem("isAuth", "true");
 
-      // 2. Role Determination
-      let userRole = "";
-      let targetPath = "";
+        let role = "";
+        let destination = "";
 
-      if (authorizedUsers[lowerEmail]) {
-        userRole = authorizedUsers[lowerEmail].role;
-        targetPath = authorizedUsers[lowerEmail].path;
-      } else if (lowerEmail.includes("staff")) {
-        userRole = "staff";
-        targetPath = "/staff/dashboard";
-      } else {
-        userRole = "student";
-        targetPath = "/portal/student-dashboard";
+        // 2. Tantance Matsayin Mutum (The Logic Fix)
+        // Ba ma sake duba ".includes('staff')" kadai ba
+        
+        if (lowerEmail === "owner@skyward.edu.ng") {
+          role = "proprietor";
+          destination = "/portal/proprietor";
+        } else if (lowerEmail === "admin@skyward.edu.ng") {
+          role = "admin";
+          destination = "/admin/dashboard";
+        } else if (lowerEmail === "rector@skyward.edu.ng") {
+          role = "rector";
+          destination = "/portal/rector";
+        } else if (lowerEmail === "finance@skyward.edu.ng") {
+          role = "accountant";
+          destination = "/admin/accountant";
+        } else if (lowerEmail === "exams@skyward.edu.ng") {
+          role = "exam-officer";
+          destination = "/admin/exam-office";
+        } else if (lowerEmail.includes("staff")) {
+          role = "staff";
+          destination = "/staff/dashboard";
+        } else {
+          // Idan dalibi ne ya shigo nan, tura shi Dashboard din sa
+          role = "student";
+          destination = "/portal/dashboard";
+        }
+
+        // 3. Adana Matsayin (Role) a Storage
+        localStorage.setItem("userRole", role);
+
+        // 4. Redirect zuwa Dashboard
+        setTimeout(() => {
+          navigate(destination, { replace: true });
+        }, 300);
       }
 
-      // 3. CRITICAL FIX: Set Storage first
-      localStorage.setItem("userRole", userRole);
-      localStorage.setItem("isAuth", "true");
-
-      // 4. SYNC DELAY: Wait 100ms to ensure storage is registered before the Guard checks it
-      setTimeout(() => {
-        navigate(targetPath);
-      }, 100);
-
     } catch (err) {
-      setError("Authentication Failed: Invalid credentials or unauthorized access.");
-      console.error("Login Error:", err.message);
+      console.error("Login Error:", err.code);
+      // Fassarar kurakuran Firebase
+      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+        setError("Invalid Email or Password. Please try again.");
+      } else {
+        setError("Authentication Failed. Check your connection.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#002147] flex items-center justify-center p-4 font-sans relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-600/10 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]"></div>
-
-      <div className="w-full max-w-[450px] bg-white rounded-[40px] shadow-2xl p-8 md:p-12 relative z-10 animate-in fade-in zoom-in duration-500">
-        
-        {/* Logo Section */}
-        <div className="text-center mb-10">
-          <div className="inline-flex p-4 bg-red-50 rounded-[24px] mb-4 group hover:bg-red-600 transition-all duration-500 cursor-pointer">
-            <ShieldCheck size={40} className="text-red-600 group-hover:text-white transition-colors" />
+    <div className="min-h-screen flex items-center justify-center bg-[#011627] px-6">
+      <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl p-10">
+        <div className="text-center mb-8">
+          <div className="bg-red-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl rotate-3">
+            <ShieldCheck className="text-white" size={32} />
           </div>
-          <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter">Skyward Portal</h2>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">Central Authentication System</p>
+          <h1 className="text-[#002147] text-2xl font-black uppercase tracking-tighter italic">Skyward Command</h1>
+          <p className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em] mt-2">Institutional Management Portal</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 flex items-center gap-3 text-[10px] font-black border border-red-100 uppercase animate-bounce">
-            <AlertCircle size={18} /> {error}
-          </div>
-        )}
-
         <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-slate-500 ml-1 tracking-widest">Institutional Email</label>
-            <div className="relative group">
-              <Mail className="absolute left-4 top-4 text-slate-300 group-focus-within:text-red-600 transition-colors" size={18} />
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-[10px] font-black border border-red-100 uppercase flex items-center gap-2">
+              <AlertCircle size={16}/> {error}
+            </div>
+          )}
+          
+          <div>
+            <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 mb-2">Login ID / Email</label>
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
               <input 
                 type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@skyward.edu.ng" 
-                className="w-full bg-slate-50 border border-slate-100 p-4 pl-12 rounded-2xl outline-none focus:border-red-600/30 focus:bg-white transition-all font-bold text-sm"
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required 
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 ring-red-600 outline-none font-bold text-sm" 
+                placeholder="admin@skyward.edu.ng" 
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center px-1">
-              <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Password</label>
-              <button type="button" className="text-[9px] font-black uppercase text-red-600 hover:underline">Forgot Access?</button>
-            </div>
-            <div className="relative group">
-              <Lock className="absolute left-4 top-4 text-slate-300 group-focus-within:text-red-600 transition-colors" size={18} />
+          <div>
+            <label className="block text-[10px] font-black text-[#002147] uppercase ml-2 mb-2">Secure Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
               <input 
-                type={showPassword ? "text" : "password"} 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required 
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 ring-red-600 outline-none font-bold text-sm" 
                 placeholder="••••••••" 
-                className="w-full bg-slate-50 border border-slate-100 p-4 pl-12 pr-12 rounded-2xl outline-none focus:border-red-600/30 focus:bg-white transition-all font-bold text-sm"
               />
-              <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-4 text-slate-300 hover:text-slate-600 transition-colors"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
             </div>
           </div>
 
           <button 
             type="submit" 
-            disabled={loading}
-            className="w-full bg-[#002147] hover:bg-red-600 text-white p-5 rounded-[24px] font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-blue-900/20 transition-all active:scale-95 flex items-center justify-center gap-3 group disabled:opacity-70"
+            disabled={loading} 
+            className="w-full bg-[#002147] text-white font-black py-5 rounded-[20px] uppercase text-[11px] hover:bg-red-600 transition-all flex items-center justify-center gap-2 shadow-lg"
           >
-            {loading ? (
-              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            ) : (
-              <>
-                Initialize Access <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
+            {loading ? <Loader2 className="animate-spin" /> : "Authorize Entry"}
           </button>
         </form>
-
-        <div className="mt-10 text-center">
-          <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">
-            Protected by Skyward Security Framework v4.0
-          </p>
-        </div>
       </div>
     </div>
   );
