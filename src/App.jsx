@@ -1,56 +1,55 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-// NAMED IMPORTS
+// ... (Duka imports dinka na sauran pages suna nan kamar yadda ka turo su)
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Home } from "./pages/Home";
-
-// DEFAULT IMPORTS
 import Admission from "./pages/Admission";
 import ELibrary from "./pages/ELibrary"; 
 import ContactHelpDesk from './pages/ContactHelpDesk'; 
 import CheckResult from "./pages/CheckResult";
 import AboutDetail from "./pages/AboutDetail";
-import Login from "./pages/Login"; // Wannan zai zama na Students kadai
+import Login from "./pages/Login"; 
 import Contact from "./pages/Contact";
 import Apply from "./pages/Apply";
 import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminLogin from "./pages/AdminLogin";
 import ExamOfficerDashboard from "./pages/ExamOfficerDashboard";
 import CourseRegistration from "./pages/CourseRegistration";
 import Courses from "./pages/Courses"; 
 import PaymentPortal from "./pages/PaymentPortal";
 import AccountantDashboard from "./pages/AccountantDashboard";
-import AdmissionDashboard from "./pages/AdmissionDashboard";
 import ExamTimetable from "./pages/ExamTimetable";
 import StaffDashboard from "./pages/StaffDashboard";
 import RectorDashboard from "./pages/RectorDashboard";
-import UnifiedLogin from "./components/UnifiedLogin"; // Wannan na Staff/Admin ne
+import UnifiedLogin from "./components/UnifiedLogin"; 
 import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
-
-// --- NOTIFICATION CONTEXT & FIREBASE ---
 import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 
-// --- PROFESSIONAL SECURITY COMPONENT ---
+// --- PROFESSIONAL SECURITY COMPONENT (FIXED) ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
   const location = useLocation();
 
+  // Tabbatar an yi login (String check "true")
   if (!isAuth || isAuth !== "true") {
-    // Idan dalibi ne, tura shi student-login, idan wasu ne, tura su unified login
-    const isStudentRoute = location.pathname.startsWith("/portal/dashboard") || location.pathname.startsWith("/portal/payments");
+    const isStudentRoute = location.pathname.startsWith("/portal/dashboard") || 
+                           location.pathname.startsWith("/portal/payments") ||
+                           location.pathname.startsWith("/portal/registration");
+    
     return <Navigate to={isStudentRoute ? "/portal/student-login" : "/portal/login"} state={{ from: location }} replace />;
   }
 
+  // Idan role din baya cikin jerin allowedRoles, tura shi Home
   if (allowedRoles && !allowedRoles.includes(userRole)) {
+    console.warn(`Unauthorized access attempt to ${location.pathname} by role: ${userRole}`);
     return <Navigate to="/" replace />;
   }
 
@@ -58,7 +57,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 function App() {
-
+  // Admin Setup logic dinka yana nan daram
   useEffect(() => {
     const createFirstAdmin = async () => {
       const setupFlag = localStorage.getItem("skyward_admin_setup");
@@ -105,17 +104,14 @@ function App() {
               <Route path="/help-desk" element={<ContactHelpDesk />} />
               <Route path="/admission/apply" element={<Apply />} />
               
-              {/* --- DUAL LOGIN SYSTEM --- */}
-              {/* 1. Kofar Dalibai (Student Only) */}
+              {/* LOGIN ROUTES */}
               <Route path="/portal/student-login" element={<Login />} />
-              
-              {/* 2. Kofar Kowa da Kowa (Admin, Staff, Proprietor) */}
               <Route path="/portal/login" element={<UnifiedLogin />} />
               <Route path="/skyward-secure-access" element={<UnifiedLogin />} />
               
               <Route path="/portal/audit" element={<AuditTrail />} />
               
-              {/* --- PROTECTED ROUTES --- */}
+              {/* --- SECURE ROUTES --- */}
               <Route path="/portal/proprietor" element={
                 <ProtectedRoute allowedRoles={["proprietor"]}>
                   <ProprietorDashboard />
@@ -158,11 +154,13 @@ function App() {
                 </ProtectedRoute>
               } />
 
+              {/* SHARED SECURE ROUTES */}
               <Route path="/portal/payments" element={
                 <ProtectedRoute allowedRoles={["student", "proprietor", "accountant"]}>
                   <PaymentPortal />
                 </ProtectedRoute>
               } /> 
+
               <Route path="/portal/registration" element={<ProtectedRoute allowedRoles={["student"]}><CourseRegistration /></ProtectedRoute>} />
               <Route path="/portal/check-result" element={<ProtectedRoute allowedRoles={["student"]}><CheckResult /></ProtectedRoute>} />
               <Route path="/portal/exam-timetable" element={<ProtectedRoute allowedRoles={["student"]}><ExamTimetable /></ProtectedRoute>} />

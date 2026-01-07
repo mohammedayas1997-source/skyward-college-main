@@ -18,19 +18,16 @@ const Login = () => {
 
     const lowerEmail = email.toLowerCase().trim();
     
-    // --- SECURITY CHECK: ALLOW STAFF & MANAGEMENT ONLY ---
-    const managementEmails = [
-      "owner@skyward.edu.ng", 
-      "rector@skyward.edu.ng", 
-      "admin@skyward.edu.ng", 
-      "finance@skyward.edu.ng"
-    ];
-
-    const isManagement = managementEmails.includes(lowerEmail);
+    // --- CIKAKKEN TSARO: MANAGEMENT & STAFF ONLY ---
+    // Mun fito da kowane email daki-daki domin kaucewa kuskure
+    const isProprietor = lowerEmail === "owner@skyward.edu.ng";
+    const isAdmin = lowerEmail === "admin@skyward.edu.ng";
+    const isRector = lowerEmail === "rector@skyward.edu.ng";
+    const isAccountant = lowerEmail === "finance@skyward.edu.ng";
     const isStaff = lowerEmail.includes("staff");
 
-    // Idan ba Management bane kuma ba Staff bane, kore shi
-    if (!isManagement && !isStaff) {
+    // Idan baka daya daga cikin wadannan ba, to kai dalibi ne - KORE SHI!
+    if (!isProprietor && !isAdmin && !isRector && !isAccountant && !isStaff) {
       setError("Access Denied: This portal is for Staff and Management only.");
       setLoading(false);
       return;
@@ -40,24 +37,24 @@ const Login = () => {
       // 1. Firebase Authentication
       await signInWithEmailAndPassword(auth, lowerEmail, password);
 
-      // 2. Clear session for fresh login
+      // 2. Clear Session
       localStorage.clear();
       localStorage.setItem("isAuth", "true");
 
-      // 3. Smart Redirect Logic
+      // 3. Tura kowa gidansa (Redirection Logic)
       let role = "";
       let destination = "";
 
-      if (lowerEmail === "owner@skyward.edu.ng") {
+      if (isProprietor) {
         role = "proprietor";
         destination = "/portal/proprietor";
-      } else if (lowerEmail === "admin@skyward.edu.ng") {
+      } else if (isAdmin) {
         role = "admin";
         destination = "/admin/dashboard";
-      } else if (lowerEmail === "rector@skyward.edu.ng") {
+      } else if (isRector) {
         role = "rector";
         destination = "/portal/rector";
-      } else if (lowerEmail === "finance@skyward.edu.ng") {
+      } else if (isAccountant) {
         role = "accountant";
         destination = "/admin/accountant";
       } else {
@@ -65,12 +62,15 @@ const Login = () => {
         destination = "/staff/dashboard";
       }
 
-      // 4. Save and Go
       localStorage.setItem("userRole", role);
-      navigate(destination, { replace: true });
+      
+      // Dan jinkiri kadan domin tabbatar da localStorage ya zauna
+      setTimeout(() => {
+        navigate(destination, { replace: true });
+      }, 200);
 
     } catch (error) {
-      setError("Authentication Failed: Invalid Credentials.");
+      setError("Authentication Failed: Invalid Email or Password.");
     } finally {
       setLoading(false);
     }
@@ -78,18 +78,18 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#001524] px-6">
-      <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl overflow-hidden p-10">
+      <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl overflow-hidden p-10 border border-white/20">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-red-600 rounded-2xl mx-auto mb-4 flex items-center justify-center rotate-3 shadow-lg">
             <ShieldCheck className="text-white" size={32} />
           </div>
-          <h2 className="text-[#002147] text-2xl font-black uppercase tracking-tight italic">Management Hub</h2>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Authorized Access Only</p>
+          <h2 className="text-[#002147] text-2xl font-black uppercase tracking-tight italic">Management Portal</h2>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Authorized Access Control</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleLogin}>
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase border border-red-100 animate-pulse">
+            <div className="bg-red-50 text-red-600 p-3 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase border border-red-100">
               <AlertCircle size={16} /> {error}
             </div>
           )}
@@ -129,7 +129,7 @@ const Login = () => {
             disabled={loading}
             className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 disabled:bg-slate-300"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : "Unlock Dashboard"}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Entry"}
           </button>
         </form>
       </div>
