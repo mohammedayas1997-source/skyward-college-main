@@ -1,25 +1,54 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, LogOut } from "lucide-react";
+// Shigo da Firebase config dinka
+import { auth, db } from "./firebase"; 
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 // --- LOGIN COMPONENT ---
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = formData.email.toLowerCase();
+    setLoading(true);
 
-    // ROLE-BASED LOGIC (Maimakon Email kadai, nan gaba za mu sa Firebase)
-    if (email.includes("@rector")) navigate("/rector/dashboard");
-    else if (email.includes("@proprietor")) navigate("/proprietor/dashboard");
-    else if (email.includes("@accountant")) navigate("/accountant/dashboard");
-    else if (email.includes("@admission")) navigate("/admission/dashboard");
-    else if (email.includes("@staff")) navigate("/staff/portal");
-    else if (email.includes("@exam")) navigate("/exam/dashboard");
-    else navigate("/student/dashboard");
+    try {
+      // 1. Shiga da Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(
+        auth, 
+        formData.email, 
+        formData.password
+      );
+      const user = userCredential.user;
+
+      // 2. Nemo Role din sa daga Firestore collection na "users"
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      
+      if (userDoc.exists()) {
+        const role = userDoc.data().role;
+        
+        // 3. Tura shi shafin da ya dace dangane da ROLE
+        if (role === "rector") navigate("/rector/dashboard");
+        else if (role === "proprietor") navigate("/proprietor/dashboard");
+        else if (role === "accountant") navigate("/accountant/dashboard");
+        else if (role === "admission") navigate("/admission/dashboard");
+        else if (role === "staff") navigate("/staff/portal");
+        else if (role === "exam") navigate("/exam/dashboard");
+        else if (role === "student") navigate("/student/dashboard");
+        else alert("Ba a saita matsayinka a system ba.");
+      } else {
+        alert("Ba a sami bayananka a database din ma'aikata ba.");
+      }
+    } catch (error) {
+      alert("Kuskure wurin Login: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,8 +84,12 @@ const Login = () => {
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all">
-              Login to System
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all disabled:opacity-50"
+            >
+              {loading ? "Verifying..." : "Login to System"}
             </button>
           </form>
         </div>
@@ -65,9 +98,15 @@ const Login = () => {
   );
 };
 
-// --- GENERIC DASHBOARD COMPONENT (Ga kowane Role) ---
+// --- GENERIC DASHBOARD COMPONENT ---
 const DashboardWrapper = ({ title, color }) => {
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-12">
       <div className="max-w-4xl mx-auto bg-white p-10 rounded-[40px] shadow-sm border border-slate-100">
@@ -77,7 +116,7 @@ const DashboardWrapper = ({ title, color }) => {
             <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Skyward Management System</p>
           </div>
           <button 
-            onClick={() => navigate("/")} 
+            onClick={handleLogout} 
             className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all"
           >
             <LogOut size={16} /> Logout
@@ -99,8 +138,6 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        
-        {/* Duk matsayi da Dashboard dinsa */}
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector Dashboard" color="text-blue-900" />} />
         <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor Dashboard" color="text-purple-900" />} />
         <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant Portal" color="text-green-600" />} />
