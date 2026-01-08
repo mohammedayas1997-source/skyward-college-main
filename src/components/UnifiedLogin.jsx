@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase"; 
+import { auth, db } from "../firebase"; // Na kara db a nan
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore"; // Na kara wadannan domin duba Role
 import { Lock, User, ShieldCheck, Loader2, AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 const UnifiedLogin = () => {
@@ -12,7 +13,6 @@ const UnifiedLogin = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Clear session on load
   useEffect(() => {
     const clearSession = async () => {
       try {
@@ -32,51 +32,51 @@ const UnifiedLogin = () => {
 
     const lowerEmail = email.toLowerCase().trim();
     
-    // 1. ROLE DETERMINATION LOGIC
-    let role = "";
-    let destination = "";
-
-    if (lowerEmail === "owner@skyward.edu.ng") {
-      role = "proprietor";
-      destination = "/portal/proprietor";
-    } else if (lowerEmail === "admin@skyward.edu.ng") {
-      role = "admin";
-      destination = "/admin/dashboard";
-    } else if (lowerEmail === "rector@skyward.edu.ng") {
-      role = "rector";
-      destination = "/portal/rector";
-    } else if (lowerEmail === "finance@skyward.edu.ng") {
-      role = "accountant";
-      destination = "/admin/accountant";
-    } else if (lowerEmail.includes("staff")) {
-      role = "staff";
-      destination = "/staff/dashboard";
-    } else {
-      setError("ACCESS DENIED: Restricted to Management & Staff.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // 2. FIREBASE AUTH
+      // 1. FIREBASE AUTHENTICATION
       const userCredential = await signInWithEmailAndPassword(auth, lowerEmail, password);
-      
-      if (userCredential.user) {
-        // 3. SECURE STORAGE
-        localStorage.setItem("isAuth", "true");
-        localStorage.setItem("userRole", role);
-        localStorage.setItem("userEmail", lowerEmail);
+      const user = userCredential.user;
 
-        // 4. SMART DELAY FOR BROWSER PERSISTENCE
-        setTimeout(() => {
-          navigate(destination, { replace: true });
-        }, 300);
+      if (user) {
+        // 2. FETCH ROLE FROM FIRESTORE (Dynamic Check)
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const role = userData.role ? userData.role.toLowerCase().trim() : "";
+
+          // 3. SECURE STORAGE
+          localStorage.setItem("isAuth", "true");
+          localStorage.setItem("userRole", role);
+          localStorage.setItem("userEmail", lowerEmail);
+
+          // 4. SMART REDIRECTION BASED ON ROLE
+          let destination = "/";
+          if (role === "admin") destination = "/admin/dashboard";
+          else if (role === "proprietor") destination = "/portal/proprietor";
+          else if (role === "rector") destination = "/portal/rector";
+          else if (role === "accountant" || role === "finance") destination = "/admin/accountant";
+          else if (role === "exam-officer" || role === "exam") destination = "/admin/exam-office";
+          else if (role === "admission-officer" || role === "admission") destination = "/admin/admission-officer";
+          else if (role === "staff" || role === "lecturer") destination = "/staff/dashboard";
+          else if (role === "student") destination = "/portal/dashboard";
+
+          setTimeout(() => {
+            navigate(destination, { replace: true });
+          }, 300);
+        } else {
+          setError("PROFILE ERROR: No role assigned to this account.");
+          await signOut(auth);
+        }
       }
     } catch (error) {
-      if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
+      console.error("Login Error:", error.code);
+      if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
         setError("Invalid official credentials. Access Revoked.");
+      } else if (error.code === "auth/too-many-requests") {
+        setError("Account temporarily locked due to many attempts.");
       } else {
-        setError("Network instability detected. Check connection.");
+        setError("Security gateway timeout. Check connection.");
       }
     } finally {
       setLoading(false);
@@ -85,14 +85,10 @@ const UnifiedLogin = () => {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] relative overflow-hidden font-sans">
-      
-      {/* Dynamic Background Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] bg-red-100 rounded-full blur-[130px] opacity-50" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] bg-[#002147]/10 rounded-full blur-[130px] opacity-50" />
 
       <div className="w-full max-w-[480px] p-6 relative z-10">
-        
-        {/* Branding Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-[2.2rem] shadow-2xl border border-slate-100 mb-6 group hover:rotate-6 transition-transform duration-500">
              <img src="/logo.png" alt="Skyward" className="w-14 h-14 object-contain" />
@@ -101,17 +97,14 @@ const UnifiedLogin = () => {
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Advanced Command & Control</p>
         </div>
 
-        {/* Glassmorphic Login Card */}
         <div className="bg-white/70 backdrop-blur-2xl p-8 md:p-12 rounded-[3.5rem] shadow-[0_30px_60px_rgba(0,33,71,0.08)] border border-white/40">
           <form onSubmit={handleLogin} className="space-y-6">
-            
             {error && (
               <div className="bg-red-50 text-red-700 p-4 rounded-2xl flex items-center gap-3 text-[10px] font-black border border-red-100 animate-pulse">
                 <AlertCircle size={16} /> {error}
               </div>
             )}
 
-            {/* Email Field */}
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Official Email</label>
               <div className="relative group">
@@ -122,14 +115,13 @@ const UnifiedLogin = () => {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@skyward.edu.ng"
+                  placeholder="name@skyward.edu.ng"
                   className="w-full bg-slate-100/50 border-none py-5 pl-14 pr-6 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
                   required
                 />
               </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Security Pin</label>
               <div className="relative group">
@@ -154,7 +146,6 @@ const UnifiedLogin = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button 
               type="submit"
               disabled={loading}
@@ -167,7 +158,6 @@ const UnifiedLogin = () => {
           </form>
         </div>
 
-        {/* Security Footer */}
         <div className="mt-8 flex flex-col items-center gap-4">
           <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full border border-slate-200">
             <ShieldCheck size={14} className="text-[#002147]" />
