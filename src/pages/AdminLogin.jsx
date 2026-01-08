@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase"; // Na tabbatar an saka 'db' a nan
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore"; // Don duba role a database
 import { ShieldCheck, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 
 const AdminLogin = () => {
@@ -18,47 +19,57 @@ const AdminLogin = () => {
     const email = e.target.email.value.toLowerCase().trim();
     const password = e.target.password.value;
 
-    // Jerin ma'aikata da inda ya kamata su nufa
-    const authorizedUsers = {
-      "owner@skyward.edu.ng": { role: "proprietor", path: "/portal/proprietor" },
-      "admin@skyward.edu.ng": { role: "admin", path: "/admin/dashboard" },
-      "rector@skyward.edu.ng": { role: "rector", path: "/portal/rector" },
-      "finance@skyward.edu.ng": { role: "accountant", path: "/admin/accountant" },
-      "exams@skyward.edu.ng": { role: "exam-officer", path: "/admin/exam-office" },
-      "admission@skyward.edu.ng": { role: "admission-officer", path: "/admin/admission" },
-      "news@skyward.edu.ng": { role: "news-admin", path: "/admin/news" }
-    };
-
-    // 1. Duba idan email din yana cikin wadanda aka amincewa
-    if (!authorizedUsers[email]) {
-      setError("Access Denied: Unauthorized Administrative ID.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // 2. Shiga ta Firebase
-      await signInWithEmailAndPassword(auth, email, password);
-      
-      const userData = authorizedUsers[email];
-      
-      // 3. GYARA MAI KYAU: Goge komai na tsohon login don gujewa conflict
-      localStorage.clear();
+      // 1. Shiga ta Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      // 4. Sanya sabbin bayanai na wannan Admin din
-      localStorage.setItem("userRole", userData.role);
-      localStorage.setItem("isAuth", "true");
-      localStorage.setItem("skyward_admin_setup", "done");
+      // 2. Nemo Matsayin Ma'aikaci (Role) daga Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData.role ? userData.role.toLowerCase().trim() : "";
 
-      // 5. JINKIRI (DELAY): Wannan 500ms din yana da matukar muhimmanci 
-      // domin baiwa App.js damar ganin LocalStorage kafin a canza shafi
-      setTimeout(() => {
-        navigate(userData.path, { replace: true });
-      }, 500);
+        // 3. Saita Inda kowa zai dosa (Dynamic Paths)
+        let destination = "/";
+        if (role === "admin") destination = "/admin/dashboard";
+        else if (role === "proprietor") destination = "/portal/proprietor";
+        else if (role === "rector") destination = "/portal/rector";
+        else if (role === "accountant" || role === "finance") destination = "/admin/accountant";
+        else if (role === "exam-officer" || role === "exam") destination = "/admin/exam-office";
+        else if (role === "admission-officer" || role === "admission") destination = "/admin/admission-officer";
+        else if (role === "news-admin") destination = "/admin/news";
+        else if (role === "staff" || role === "lecturer") destination = "/staff/dashboard";
+
+        // 4. SECURE STORAGE (Goge tsohon sannan a saka sabo)
+        localStorage.clear();
+        localStorage.setItem("isAuth", "true");
+        localStorage.setItem("userRole", role);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("skyward_admin_setup", "done");
+
+        // 5. JINKIRI (DELAY) - Don tabbatar da LocalStorage ya adana
+        setTimeout(() => {
+          navigate(destination, { replace: true });
+        }, 500);
+
+      } else {
+        // Idan babu shi a Firestore, kada a bar shi ya zauna a login
+        setError("ACCESS DENIED: No official profile found in Database.");
+        await auth.signOut();
+        setLoading(false);
+      }
 
     } catch (err) {
-      setError("Login Failed: Please verify your security credentials.");
-      console.error("Auth Error:", err.message);
+      console.error("Auth Error:", err.code);
+      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+        setError("Login Failed: Incorrect email or security pin.");
+      } else if (err.code === "auth/user-not-found") {
+        setError("Unauthorized ID: This account is not registered.");
+      } else {
+        setError("Network Error: Could not reach the security server.");
+      }
       setLoading(false);
     }
   };
@@ -93,8 +104,8 @@ const AdminLogin = () => {
                   name="email"
                   type="email" 
                   required
-                  placeholder="admin@skyward.edu.ng"
-                  className="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner"
+                  placeholder="name@skyward.edu.ng"
+                  className="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner outline-none"
                 />
               </div>
             </div>
@@ -110,7 +121,7 @@ const AdminLogin = () => {
                   type={showPassword ? "text" : "password"} 
                   required
                   placeholder="••••••••"
-                  className="w-full pl-14 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner"
+                  className="w-full pl-14 pr-14 py-5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-red-600 focus:outline-none transition-all text-sm font-bold shadow-inner outline-none"
                 />
                 <button 
                   type="button"
@@ -123,12 +134,13 @@ const AdminLogin = () => {
             </div>
 
             <button 
+              type="submit"
               disabled={loading}
               className={`w-full ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#002147] hover:bg-red-600'} text-white font-black py-5 rounded-[25px] uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3 mt-4`}
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin" size={20} /> Verifying...
+                  <Loader2 className="animate-spin" size={20} /> Authorizing...
                 </>
               ) : (
                 "Authorize Access"
@@ -148,7 +160,7 @@ const AdminLogin = () => {
           <button 
             type="button"
             onClick={() => navigate("/")} 
-            className="text-slate-500 text-[10px] font-black uppercase hover:text-white transition-colors tracking-widest"
+            className="text-slate-500 text-[10px] font-black uppercase hover:text-white transition-colors tracking-widest outline-none"
           >
             ← Terminate & Return Home
           </button>
