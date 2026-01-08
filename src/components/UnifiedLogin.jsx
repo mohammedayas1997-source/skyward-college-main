@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase"; 
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore"; 
-import { Lock, User, ShieldCheck, Loader2, AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"; 
+import { Lock, User, ShieldCheck, Loader2, AlertCircle, ArrowRight, Eye, EyeOff, Hash } from "lucide-react";
 
 const UnifiedLogin = () => {
-  const [email, setEmail] = useState("");
+  const [idNumber, setIdNumber] = useState(""); // An canza daga email zuwa idNumber
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,70 +30,67 @@ const UnifiedLogin = () => {
     setLoading(true);
     setError("");
 
-    const lowerEmail = email.toLowerCase().trim();
+    // Gyara ID Number: Maida babban harafi sannan a cire sarari
+    const formattedId = idNumber.toUpperCase().trim();
     
     try {
-      // 1. FIREBASE AUTH
-      const userCredential = await signInWithEmailAndPassword(auth, lowerEmail, password);
+      // 1. NEMO EMAIL DIN DA YAKE DA WANNAN ID NUMBER A FIRESTORE
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("idNumber", "==", formattedId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error("Invalid ID Number. Please check and try again.");
+      }
+
+      // Dauko bayanan mutum na farko da aka samu (Email dinsa)
+      const userDocSnapshot = querySnapshot.docs[0];
+      const userData = userDocSnapshot.data();
+      const emailToUse = userData.email;
+
+      // 2. FIREBASE AUTH (Amfani da email din da aka samo)
+      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
       const user = userCredential.user;
 
       if (user) {
-        // 2. FETCH ROLE FROM FIRESTORE
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        // 3. TANTANCE ROLE DA SMART REDIRECTION
+        const role = userData.role ? userData.role.toLowerCase().trim() : "";
         
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          // Mu tabbatar role din kanana ne (lowercase) kuma babu sarari (trim)
-          const role = userData.role ? userData.role.toLowerCase().trim() : "";
-          
-          console.log("User Role Found:", role); // Wannan zai taimaka mana wajen debugging
+        localStorage.setItem("isAuth", "true");
+        localStorage.setItem("userRole", role);
+        localStorage.setItem("userEmail", emailToUse);
+        localStorage.setItem("idNumber", formattedId);
 
-          // 3. SECURE STORAGE
-          localStorage.setItem("isAuth", "true");
-          localStorage.setItem("userRole", role);
-          localStorage.setItem("userEmail", lowerEmail);
+        let destination = "/";
 
-          // 4. SMART REDIRECTION (GYARARRE)
-          let destination = "/";
-
-          // Duba sunayen roles din da kyau a nan:
-          if (role === "admin") {
-            destination = "/admin/dashboard";
-          } else if (role === "proprietor") {
-            destination = "/portal/proprietor";
-          } else if (role === "rector") {
-            destination = "/portal/rector";
-          } else if (role === "accountant" || role === "finance") {
-            destination = "/admin/accountant";
-          } else if (role === "exam_officer" || role === "exam-officer" || role === "exam") {
-            // Na kara "exam_officer" domin wani lokacin underscore ake amfani da shi
-            destination = "/admin/exam-office";
-          } else if (role === "admission_officer" || role === "admission-officer" || role === "admission") {
-            destination = "/admin/admission-officer";
-          } else if (role === "staff" || role === "lecturer") {
-            destination = "/staff/dashboard";
-          } else if (role === "student") {
-            destination = "/portal/dashboard";
-          } else {
-            // Idan an samu role din amma bamu sa shi a jerin sama ba
-            destination = "/"; 
-          }
-
-          setTimeout(() => {
-            navigate(destination, { replace: true });
-          }, 300);
-
-        } else {
-          setError("PROFILE ERROR: No role assigned in database.");
-          await signOut(auth);
+        if (role === "admin") {
+          destination = "/admin/dashboard";
+        } else if (role === "proprietor") {
+          destination = "/portal/proprietor";
+        } else if (role === "rector") {
+          destination = "/portal/rector";
+        } else if (role === "accountant" || role === "finance") {
+          destination = "/admin/accountant";
+        } else if (role === "exam_officer" || role === "exam-officer" || role === "exam") {
+          destination = "/admin/exam-office";
+        } else if (role === "admission_officer" || role === "admission-officer" || role === "admission") {
+          destination = "/admin/admission-officer";
+        } else if (role === "staff" || role === "lecturer") {
+          destination = "/staff/dashboard";
+        } else if (role === "student") {
+          destination = "/portal/dashboard";
         }
+
+        setTimeout(() => {
+          navigate(destination, { replace: true });
+        }, 300);
       }
     } catch (error) {
-      console.error("Login Error:", error.code);
-      if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
-        setError("Invalid email or password.");
+      console.error("Login Error:", error.message);
+      if (error.code === "auth/invalid-credential") {
+        setError("Invalid ID Number or Password.");
       } else {
-        setError("System Access Error. Please try again.");
+        setError(error.message || "Access Error. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -111,7 +108,7 @@ const UnifiedLogin = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-[2.2rem] shadow-2xl border border-slate-100 mb-6 group hover:rotate-6 transition-transform duration-500">
              <img src="/logo.png" alt="Skyward" className="w-14 h-14 object-contain" />
           </div>
-          <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">Staff <span className="text-red-600">Portal</span></h2>
+          <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">Skyward <span className="text-red-600">Portal</span></h2>
           <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Authentication Gateway</p>
         </div>
 
@@ -124,15 +121,16 @@ const UnifiedLogin = () => {
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Email Address</label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">ID Number / Staff ID</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
-                  <User size={18} />
+                  <Hash size={18} />
                 </div>
                 <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text" 
+                  placeholder="SKW/2026/001"
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value)}
                   className="w-full bg-slate-100/50 border-none py-5 pl-14 pr-6 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
                   required
                 />
