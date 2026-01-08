@@ -2,24 +2,25 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase"; 
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"; 
-import { Lock, User, ShieldCheck, Loader2, AlertCircle, ArrowRight, Eye, EyeOff, Hash } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore"; 
+import { Lock, Mail, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 const UnifiedLogin = () => {
-  const [idNumber, setIdNumber] = useState(""); // An canza daga email zuwa idNumber
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Clear session on mount to ensure a clean login
   useEffect(() => {
     const clearSession = async () => {
       try {
         await signOut(auth);
         localStorage.clear();
       } catch (err) {
-        console.error("SignOut Error", err);
+        console.error("Session Clear Error", err);
       }
     };
     clearSession();
@@ -30,56 +31,43 @@ const UnifiedLogin = () => {
     setLoading(true);
     setError("");
 
-    // Gyara ID Number: Maida babban harafi sannan a cire sarari
-    const formattedId = idNumber.toUpperCase().trim();
-    
     try {
-      // 1. NEMO EMAIL DIN DA YAKE DA WANNAN ID NUMBER A FIRESTORE
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("idNumber", "==", formattedId));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        throw new Error("Invalid ID Number. Please check and try again.");
-      }
-
-      // Dauko bayanan mutum na farko da aka samu (Email dinsa)
-      const userDocSnapshot = querySnapshot.docs[0];
-      const userData = userDocSnapshot.data();
-      const emailToUse = userData.email;
-
-      // 2. FIREBASE AUTH (Amfani da email din da aka samo)
-      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
+      // 1. FIREBASE AUTHENTICATION (Using Email)
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
 
       if (user) {
-        // 3. TANTANCE ROLE DA SMART REDIRECTION
+        // 2. FETCH ROLE FROM FIRESTORE
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+          throw new Error("User profile not found in database.");
+        }
+
+        const userData = userDoc.data();
         const role = userData.role ? userData.role.toLowerCase().trim() : "";
         
+        // Save session data
         localStorage.setItem("isAuth", "true");
         localStorage.setItem("userRole", role);
-        localStorage.setItem("userEmail", emailToUse);
-        localStorage.setItem("idNumber", formattedId);
+        localStorage.setItem("userEmail", email);
 
-        let destination = "/";
+        // 3. AUTOMATED SMART REDIRECT
+        const routes = {
+          admin: "/admin/dashboard",
+          proprietor: "/portal/proprietor",
+          rector: "/portal/rector",
+          accountant: "/admin/accountant",
+          finance: "/admin/accountant",
+          exam: "/admin/exam-office",
+          admission: "/admin/admission-officer",
+          staff: "/staff/dashboard",
+          lecturer: "/staff/dashboard",
+          student: "/portal/dashboard"
+        };
 
-        if (role === "admin") {
-          destination = "/admin/dashboard";
-        } else if (role === "proprietor") {
-          destination = "/portal/proprietor";
-        } else if (role === "rector") {
-          destination = "/portal/rector";
-        } else if (role === "accountant" || role === "finance") {
-          destination = "/admin/accountant";
-        } else if (role === "exam_officer" || role === "exam-officer" || role === "exam") {
-          destination = "/admin/exam-office";
-        } else if (role === "admission_officer" || role === "admission-officer" || role === "admission") {
-          destination = "/admin/admission-officer";
-        } else if (role === "staff" || role === "lecturer") {
-          destination = "/staff/dashboard";
-        } else if (role === "student") {
-          destination = "/portal/dashboard";
-        }
+        const destination = routes[role] || "/";
 
         setTimeout(() => {
           navigate(destination, { replace: true });
@@ -87,10 +75,10 @@ const UnifiedLogin = () => {
       }
     } catch (error) {
       console.error("Login Error:", error.message);
-      if (error.code === "auth/invalid-credential") {
-        setError("Invalid ID Number or Password.");
+      if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
+        setError("Invalid Email or Password.");
       } else {
-        setError(error.message || "Access Error. Please try again.");
+        setError(error.message || "Access denied. Please contact support.");
       }
     } finally {
       setLoading(false);
@@ -98,7 +86,7 @@ const UnifiedLogin = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] relative overflow-hidden font-sans">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] relative overflow-hidden font-sans text-left">
       {/* Background Decor */}
       <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] bg-red-100 rounded-full blur-[130px] opacity-50" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] bg-[#002147]/10 rounded-full blur-[130px] opacity-50" />
@@ -109,7 +97,7 @@ const UnifiedLogin = () => {
              <img src="/logo.png" alt="Skyward" className="w-14 h-14 object-contain" />
           </div>
           <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">Skyward <span className="text-red-600">Portal</span></h2>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Authentication Gateway</p>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3">Universal Access Gateway</p>
         </div>
 
         <div className="bg-white/70 backdrop-blur-2xl p-8 md:p-12 rounded-[3.5rem] shadow-[0_30px_60px_rgba(0,33,71,0.08)] border border-white/40">
@@ -121,16 +109,16 @@ const UnifiedLogin = () => {
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">ID Number / Staff ID</label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Email Address</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
-                  <Hash size={18} />
+                  <Mail size={18} />
                 </div>
                 <input 
-                  type="text" 
-                  placeholder="SKW/2026/001"
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
+                  type="email" 
+                  placeholder="user@skyward.edu.ng"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-100/50 border-none py-5 pl-14 pr-6 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
                   required
                 />
@@ -138,7 +126,7 @@ const UnifiedLogin = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Password</label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Security Password</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
                   <Lock size={18} />
