@@ -7,7 +7,7 @@ import {
   LayoutDashboard, UploadCloud, Users, FileCheck, 
   Settings, LogOut, Bell, Search, Clock, CheckCircle, FileText, X,
   Key, ShieldCheck, Loader2, Send, ChevronRight, BookOpen, AlertCircle, UserCheck, Trash2, Edit3, Plus,
-  Printer, Lock, Globe // Na tabbatar wadannan sabbin icons din suna nan
+  Printer, Lock, Globe 
 } from "lucide-react";
 
 const ExamOfficerDashboard = () => {
@@ -27,7 +27,7 @@ const ExamOfficerDashboard = () => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [editingResult, setEditingResult] = useState(null);
 
-  // --- 1. FETCH STAFF & THEIR COURSES ---
+  // --- 1. FETCH STAFF ---
   useEffect(() => {
     const q = query(collection(db, "users"), where("role", "==", "staff"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -37,7 +37,7 @@ const ExamOfficerDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. FETCH PENDING ADMISSIONS ---
+  // --- 2. FETCH ADMISSIONS ---
   useEffect(() => {
     const q = query(collection(db, "admissions"), where("status", "==", "Approved"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -47,7 +47,7 @@ const ExamOfficerDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- 3. FETCH ALL REGISTERED STUDENTS ---
+  // --- 3. FETCH STUDENTS ---
   useEffect(() => {
     const q = query(collection(db, "users"), where("role", "==", "student"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -57,7 +57,7 @@ const ExamOfficerDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- 4. FETCH RESULTS (REAL-TIME FROM LECTURERS) ---
+  // --- 4. FETCH RESULTS ---
   useEffect(() => {
     const q = collection(db, "results");
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -67,69 +67,53 @@ const ExamOfficerDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- NEW HANDLERS (RECTOR APPROVAL & PRINTING) ---
-  
-  // Neman izinin Rector
+  // --- LOGIC HANDLERS ---
   const requestRectorApproval = async (id) => {
     try {
       await updateDoc(doc(db, "results", id), { rectorStatus: "Pending Approval" });
-      alert("An aika wa Rector bukatar amincewa!");
+      alert("Bukata ta tafi wajen Rector!");
     } catch (e) { alert(e.message); }
   };
 
-  // Tura wa dalibi bayan Rector ya amince
   const handleApproveResult = async (id) => {
     try {
       await updateDoc(doc(db, "results", id), { 
         status: "Published",
         publishedAt: serverTimestamp() 
       });
-      alert("An tura sakamakon zuwa Portal din dalibi!");
+      alert("An tura result zuwa portal!");
     } catch (e) { alert(e.message); }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   const handleDeleteStudent = async (id) => {
-    if(window.confirm("Are you sure? This will remove the student permanently.")){
+    if(window.confirm("Are you sure?")){
       try {
         await deleteDoc(doc(db, "users", id));
-        alert("Student Deleted.");
       } catch (e) { alert(e.message); }
     }
   };
 
   const generateStudentAccount = async (student) => {
     setLoadingId(student.id || "new");
-    const initialPassword = "Welcome@GTI2026"; 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, student.email, initialPassword);
+      const userCredential = await createUserWithEmailAndPassword(auth, student.email, "Welcome@GTI2026");
       const uid = userCredential.user.uid;
-      
       await setDoc(doc(db, "users", uid), {
-        uid: uid,
-        fullName: student.name || student.fullName,
-        email: student.email,
-        admissionNo: student.admissionNo,
-        course: student.course,
-        role: "student",
-        isFirstLogin: true, 
-        status: "Active",
-        createdAt: serverTimestamp()
+        uid, fullName: student.name || student.fullName, email: student.email,
+        admissionNo: student.admissionNo, role: "student", createdAt: serverTimestamp()
       });
-
       if(student.id) await updateDoc(doc(db, "admissions", student.id), { accountCreated: true });
-      alert(`Portal Account Created. Password: ${initialPassword}`);
-    } catch (error) { alert("Error: " + error.message); } 
+      alert("Account Created!");
+    } catch (error) { alert(error.message); } 
     finally { setLoadingId(null); setShowAddStudent(false); }
   };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#f8fafc] font-sans text-left text-slate-900">
       
-      {/* SIDEBAR (PRESERVED) */}
+      {/* SIDEBAR */}
       <aside className="w-full md:w-72 bg-[#001529] text-white flex flex-col md:sticky md:top-0 md:h-screen shadow-2xl z-50">
         <div className="p-8 border-b border-white/5">
           <div className="flex items-center gap-3 mb-2">
@@ -147,7 +131,7 @@ const ExamOfficerDashboard = () => {
         </nav>
 
         <div className="p-6">
-          <button onClick={() => navigate("/portal/login")} className="w-full flex items-center justify-center gap-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white p-4 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.2em]">
+          <button onClick={() => navigate("/portal/login")} className="w-full flex items-center justify-center gap-3 bg-red-500/10 text-red-400 hover:bg-red-50 hover:text-white p-4 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.2em]">
             <LogOut size={18} /> Sign Out
           </button>
         </div>
@@ -158,7 +142,7 @@ const ExamOfficerDashboard = () => {
         <header className="flex flex-col lg:flex-row justify-between items-center mb-12 gap-6 bg-white p-6 rounded-[30px] shadow-sm border border-slate-100">
           <div className="relative w-full lg:w-96">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input type="text" placeholder="Search Database..." className="pl-14 pr-6 py-4 w-full bg-slate-50 rounded-2xl outline-none text-[12px] font-bold border border-transparent focus:bg-white focus:border-red-600/20 transition-all" onChange={(e) => setSearchTerm(e.target.value)} />
+            <input type="text" placeholder="Search Database..." className="pl-14 pr-6 py-4 w-full bg-slate-50 rounded-2xl outline-none text-[12px] font-bold border border-transparent focus:bg-white focus:border-red-600/20 transition-all" />
           </div>
           <div className="flex items-center gap-4">
              <button onClick={() => setShowAddStudent(true)} className="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-wider flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg">
@@ -178,68 +162,49 @@ const ExamOfficerDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* 1. STAFF DIRECTORY */}
                 <section className="xl:col-span-2 bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Users size={18}/></div> Staff Course Assignment
-                    </h3>
+                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3"><Users size={18}/> Staff Directory</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {staffList.map((staff) => (
-                            <div key={staff.id} className="p-5 bg-slate-50 rounded-[25px] border border-transparent hover:border-blue-100 transition-all flex items-center gap-4">
-                                <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600 font-black italic">
-                                    {staff.fullName?.charAt(0)}
-                                </div>
-                                <div>
-                                    <h4 className="text-[12px] font-black text-[#002147] uppercase">{staff.fullName}</h4>
-                                    <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">{staff.course || "General Studies"}</p>
-                                </div>
+                            <div key={staff.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center gap-4">
+                                <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600 font-black italic">{staff.fullName?.charAt(0)}</div>
+                                <div><h4 className="text-[12px] font-black text-[#002147] uppercase">{staff.fullName}</h4><p className="text-[9px] font-bold text-blue-500 uppercase">{staff.course || "Staff"}</p></div>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                {/* 2. ADMISSION SYNC */}
                 <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
-                        <div className="p-3 bg-red-50 text-red-600 rounded-2xl"><Key size={18} /></div> Admission Sync
-                    </h3>
+                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3"><Key size={18} /> Admission Sync</h3>
                     <div className="space-y-4 max-h-[400px] overflow-y-auto">
                         {approvedStudents.filter(s => !s.accountCreated).map((student) => (
                             <div key={student.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center justify-between">
-                                <div>
-                                    <p className="text-[11px] font-black text-[#002147] uppercase">{student.name}</p>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase">{student.course}</p>
-                                </div>
-                                <button onClick={() => generateStudentAccount(student)} className="h-10 w-10 flex items-center justify-center bg-white text-[#002147] rounded-xl border border-slate-200 hover:bg-emerald-500 hover:text-white transition-all shadow-sm">
-                                    {loadingId === student.id ? <Loader2 size={16} className="animate-spin"/> : <UserCheck size={18} />}
-                                </button>
+                                <div><p className="text-[11px] font-black text-[#002147] uppercase">{student.name}</p></div>
+                                <button onClick={() => generateStudentAccount(student)} className="h-10 w-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-blue-600"><UserCheck size={18} /></button>
                             </div>
                         ))}
                     </div>
                 </section>
             </div>
 
-            {/* 3. ENHANCED RESULTS PIPELINE (WITH RECTOR & PRINT) */}
+            {/* RESULTS PIPELINE WITH ICONS */}
             <section className="mt-10 bg-white p-10 rounded-[45px] shadow-sm border border-slate-100">
-                <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><UploadCloud size={20}/></div> Verification Pipeline
-                </h3>
+                <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3"><UploadCloud size={20}/> Verification Pipeline</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {incomingResults.map((result) => (
-                        <div key={result.id} className="p-6 bg-slate-50 rounded-[35px] border border-transparent hover:bg-white hover:border-slate-100 shadow-sm transition-all">
+                        <div key={result.id} className="p-6 bg-slate-50 rounded-[35px] border border-transparent hover:bg-white shadow-sm transition-all">
                             <div className="flex justify-between items-start mb-4">
-                                <span className="text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase italic">{result.courseCode}</span>
+                                <span className="text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase">{result.courseCode}</span>
                                 <div className="flex gap-2">
                                   <button onClick={handlePrint} className="text-slate-400 hover:text-blue-600"><Printer size={16}/></button>
                                   <button onClick={() => setEditingResult(result)} className="text-slate-400 hover:text-blue-600"><Edit3 size={16}/></button>
                                 </div>
                             </div>
-                            <h4 className="text-sm font-black text-[#002147] uppercase mb-1">{result.studentName || result.courseName}</h4>
+                            <h4 className="text-sm font-black text-[#002147] uppercase mb-1">{result.studentName || "Semester Results"}</h4>
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-widest">Score: {result.score} | Grade: {result.grade}</p>
                             
-                            {/* APPROVAL LOGIC */}
                             {!result.rectorStatus ? (
-                                <button onClick={() => requestRectorApproval(result.id)} className="w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2">
+                                <button onClick={() => requestRectorApproval(result.id)} className="w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 italic">
                                     <ShieldCheck size={16}/> Request Rector Approval
                                 </button>
                             ) : result.rectorStatus === "Pending Approval" ? (
@@ -247,8 +212,8 @@ const ExamOfficerDashboard = () => {
                                     <Clock size={16}/> Waiting for Rector...
                                 </div>
                             ) : result.rectorStatus === "Approved" && result.status !== "Published" ? (
-                                <button onClick={() => handleApproveResult(result.id)} className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 animate-pulse">
-                                    <Globe size={16}/> Publish to Student Portal
+                                <button onClick={() => handleApproveResult(result.id)} className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-700">
+                                    <Globe size={16}/> Publish to Portal
                                 </button>
                             ) : (
                                 <div className="w-full py-4 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2">
@@ -262,40 +227,36 @@ const ExamOfficerDashboard = () => {
           </>
         )}
 
-        {/* --- STUDENT DIRECTORY TAB --- */}
+        {/* STUDENT SYNC TAB */}
         {activeTab === "Student Sync" && (
             <section className="bg-white p-10 rounded-[45px] shadow-sm border border-slate-100">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="text-[10px] font-black text-slate-400 uppercase border-b border-slate-50">
-                                <th className="pb-6">Student Name</th>
-                                <th className="pb-6">ID Number</th>
-                                <th className="pb-6 text-right">Management</th>
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="text-[10px] font-black text-slate-400 uppercase border-b border-slate-50">
+                            <th className="pb-6">Student Name</th>
+                            <th className="pb-6 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                        {allStudents.map((std) => (
+                            <tr key={std.id}>
+                                <td className="py-6 text-[12px] font-black text-[#002147] uppercase">{std.fullName}</td>
+                                <td className="py-6 text-right">
+                                    <button onClick={() => handleDeleteStudent(std.id)} className="text-red-500"><Trash2 size={16}/></button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {allStudents.map((std) => (
-                                <tr key={std.id} className="group hover:bg-slate-50 transition-all">
-                                    <td className="py-6 text-[12px] font-black text-[#002147] uppercase">{std.fullName}</td>
-                                    <td className="py-6 text-[11px] font-bold text-slate-500">{std.admissionNo}</td>
-                                    <td className="py-6 text-right">
-                                        <button onClick={() => handleDeleteStudent(std.id)} className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={16}/></button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                    </tbody>
+                </table>
             </section>
         )}
 
-        {/* MODAL FOR ADDING STUDENT */}
+        {/* ADD STUDENT MODAL */}
         {showAddStudent && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
                 <div className="bg-white w-full max-w-md rounded-[40px] p-10 shadow-2xl">
                     <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-xl font-black text-[#002147] uppercase italic">Add Student</h2>
+                        <h2 className="text-xl font-black text-[#002147] uppercase">Add Student</h2>
                         <button onClick={() => setShowAddStudent(false)} className="text-slate-400"><X size={24}/></button>
                     </div>
                     <form className="space-y-4" onSubmit={(e) => {
@@ -303,22 +264,22 @@ const ExamOfficerDashboard = () => {
                         const data = new FormData(e.target);
                         generateStudentAccount(Object.fromEntries(data));
                     }}>
-                        <input name="name" placeholder="Full Name" className="w-full p-5 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-red-600/20" required />
-                        <input name="email" type="email" placeholder="Email" className="w-full p-5 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-red-600/20" required />
-                        <input name="admissionNo" placeholder="Admission No" className="w-full p-5 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-red-600/20" required />
-                        <button type="submit" disabled={loadingId === "new"} className="w-full py-5 bg-[#002147] text-white rounded-[25px] font-black uppercase text-[11px] flex items-center justify-center gap-2">
-                            {loadingId === "new" ? <Loader2 className="animate-spin" size={18}/> : "Register & Create Account"}
+                        <input name="name" placeholder="Full Name" className="w-full p-5 bg-slate-50 rounded-2xl outline-none" required />
+                        <input name="email" type="email" placeholder="Email" className="w-full p-5 bg-slate-50 rounded-2xl outline-none" required />
+                        <input name="admissionNo" placeholder="Admission No" className="w-full p-5 bg-slate-50 rounded-2xl outline-none" required />
+                        <button type="submit" className="w-full py-5 bg-[#002147] text-white rounded-[25px] font-black uppercase text-[11px] flex items-center justify-center gap-2">
+                            {loadingId === "new" ? <Loader2 className="animate-spin" size={18}/> : "Register"}
                         </button>
                     </form>
                 </div>
             </div>
         )}
-
       </main>
     </div>
   );
 };
 
+// COMPONENT HELPER
 const NavItem = ({ icon, label, active = false, onClick }) => (
   <div onClick={onClick} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 group ${active ? "bg-red-600 text-white shadow-xl translate-x-2" : "hover:bg-white/5 text-slate-500 hover:text-white"}`}>
     <span className={`${active ? "text-white" : "group-hover:text-red-500"}`}>{icon}</span>
