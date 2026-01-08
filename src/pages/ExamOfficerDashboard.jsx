@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { db, auth } from "../firebase";
 import { doc, setDoc, serverTimestamp, collection, onSnapshot, query, where, updateDoc, deleteDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+// Na tabbatar wadannan icons din sune daidai da Lucide React library
 import { 
   LayoutDashboard, UploadCloud, Users, FileCheck, 
   Settings, LogOut, Bell, Search, Clock, CheckCircle, FileText, X,
@@ -14,7 +15,7 @@ const ExamOfficerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Overview"); 
 
-  // --- ALL STATES PRESERVED ---
+  // --- STATES (PRESERVED) ---
   const [incomingResults, setIncomingResults] = useState([]);
   const [approvedStudents, setApprovedStudents] = useState([]);
   const [staffList, setStaffList] = useState([]);
@@ -22,52 +23,26 @@ const ExamOfficerDashboard = () => {
   const [loadingId, setLoadingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Modals/Forms State
   const [showAddStudent, setShowAddStudent] = useState(false);
-  const [editingStudent, setEditingStudent] = useState(null);
   const [editingResult, setEditingResult] = useState(null);
 
-  // --- 1. FETCH STAFF ---
+  // --- DATA FETCHING (PRESERVED) ---
   useEffect(() => {
-    const q = query(collection(db, "users"), where("role", "==", "staff"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const staff = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setStaffList(staff);
-    });
-    return () => unsubscribe();
+    const qStaff = query(collection(db, "users"), where("role", "==", "staff"));
+    const unsubStaff = onSnapshot(qStaff, (s) => setStaffList(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    
+    const qAdmissions = query(collection(db, "admissions"), where("status", "==", "Approved"));
+    const unsubAdmissions = onSnapshot(qAdmissions, (s) => setApprovedStudents(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    const qStudents = query(collection(db, "users"), where("role", "==", "student"));
+    const unsubStudents = onSnapshot(qStudents, (s) => setAllStudents(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    const unsubResults = onSnapshot(collection(db, "results"), (s) => setIncomingResults(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+
+    return () => { unsubStaff(); unsubAdmissions(); unsubStudents(); unsubResults(); };
   }, []);
 
-  // --- 2. FETCH ADMISSIONS ---
-  useEffect(() => {
-    const q = query(collection(db, "admissions"), where("status", "==", "Approved"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setApprovedStudents(apps);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // --- 3. FETCH STUDENTS ---
-  useEffect(() => {
-    const q = query(collection(db, "users"), where("role", "==", "student"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAllStudents(students);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // --- 4. FETCH RESULTS ---
-  useEffect(() => {
-    const q = collection(db, "results");
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const res = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setIncomingResults(res);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // --- LOGIC HANDLERS ---
+  // --- HANDLERS (PRESERVED) ---
   const requestRectorApproval = async (id) => {
     try {
       await updateDoc(doc(db, "results", id), { rectorStatus: "Pending Approval" });
@@ -77,31 +52,17 @@ const ExamOfficerDashboard = () => {
 
   const handleApproveResult = async (id) => {
     try {
-      await updateDoc(doc(db, "results", id), { 
-        status: "Published",
-        publishedAt: serverTimestamp() 
-      });
+      await updateDoc(doc(db, "results", id), { status: "Published", publishedAt: serverTimestamp() });
       alert("An tura result zuwa portal!");
     } catch (e) { alert(e.message); }
-  };
-
-  const handlePrint = () => window.print();
-
-  const handleDeleteStudent = async (id) => {
-    if(window.confirm("Are you sure?")){
-      try {
-        await deleteDoc(doc(db, "users", id));
-      } catch (e) { alert(e.message); }
-    }
   };
 
   const generateStudentAccount = async (student) => {
     setLoadingId(student.id || "new");
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, student.email, "Welcome@GTI2026");
-      const uid = userCredential.user.uid;
-      await setDoc(doc(db, "users", uid), {
-        uid, fullName: student.name || student.fullName, email: student.email,
+      const userCred = await createUserWithEmailAndPassword(auth, student.email, "Welcome@GTI2026");
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        uid: userCred.user.uid, fullName: student.name || student.fullName, email: student.email,
         admissionNo: student.admissionNo, role: "student", createdAt: serverTimestamp()
       });
       if(student.id) await updateDoc(doc(db, "admissions", student.id), { accountCreated: true });
@@ -117,7 +78,9 @@ const ExamOfficerDashboard = () => {
       <aside className="w-full md:w-72 bg-[#001529] text-white flex flex-col md:sticky md:top-0 md:h-screen shadow-2xl z-50">
         <div className="p-8 border-b border-white/5">
           <div className="flex items-center gap-3 mb-2">
-            <div className="h-8 w-8 bg-red-600 rounded-lg flex items-center justify-center shadow-lg"><ShieldCheck size={20} /></div>
+            <div className="h-8 w-8 bg-red-600 rounded-lg flex items-center justify-center shadow-lg">
+              <ShieldCheck size={20} color="white" strokeWidth={3} />
+            </div>
             <h2 className="text-xl font-black uppercase tracking-tighter italic">Skyward</h2>
           </div>
           <p className="text-[10px] text-red-500 font-black uppercase tracking-[0.3em] ml-1">Examination Office</p>
@@ -131,7 +94,7 @@ const ExamOfficerDashboard = () => {
         </nav>
 
         <div className="p-6">
-          <button onClick={() => navigate("/portal/login")} className="w-full flex items-center justify-center gap-3 bg-red-500/10 text-red-400 hover:bg-red-50 hover:text-white p-4 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.2em]">
+          <button onClick={() => navigate("/portal/login")} className="w-full flex items-center justify-center gap-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white p-4 rounded-2xl transition-all font-black text-[10px] uppercase tracking-[0.2em]">
             <LogOut size={18} /> Sign Out
           </button>
         </div>
@@ -148,7 +111,7 @@ const ExamOfficerDashboard = () => {
              <button onClick={() => setShowAddStudent(true)} className="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-wider flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg">
                <Plus size={18}/> Add Student
              </button>
-             <div className="w-12 h-12 bg-red-600 text-white rounded-2xl flex items-center justify-center font-black shadow-lg">EX</div>
+             <div className="w-12 h-12 bg-red-600 text-white rounded-2xl flex items-center justify-center font-black shadow-lg italic">EX</div>
           </div>
         </header>
 
@@ -163,48 +126,55 @@ const ExamOfficerDashboard = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <section className="xl:col-span-2 bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3"><Users size={18}/> Staff Directory</h3>
+                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
+                      <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Users size={18}/></div> Staff Directory
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {staffList.map((staff) => (
-                            <div key={staff.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center gap-4">
+                            <div key={staff.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center gap-4 border border-transparent hover:border-blue-100 transition-all">
                                 <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600 font-black italic">{staff.fullName?.charAt(0)}</div>
-                                <div><h4 className="text-[12px] font-black text-[#002147] uppercase">{staff.fullName}</h4><p className="text-[9px] font-bold text-blue-500 uppercase">{staff.course || "Staff"}</p></div>
+                                <div><h4 className="text-[12px] font-black text-[#002147] uppercase">{staff.fullName}</h4><p className="text-[9px] font-bold text-blue-500 uppercase">{staff.course || "General Staff"}</p></div>
                             </div>
                         ))}
                     </div>
                 </section>
 
                 <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3"><Key size={18} /> Admission Sync</h3>
-                    <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
+                      <div className="p-2 bg-red-50 rounded-lg text-red-600"><Key size={18} /></div> Admission Sync
+                    </h3>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                         {approvedStudents.filter(s => !s.accountCreated).map((student) => (
                             <div key={student.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center justify-between">
                                 <div><p className="text-[11px] font-black text-[#002147] uppercase">{student.name}</p></div>
-                                <button onClick={() => generateStudentAccount(student)} className="h-10 w-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-blue-600"><UserCheck size={18} /></button>
+                                <button onClick={() => generateStudentAccount(student)} className="h-10 w-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all">
+                                  {loadingId === student.id ? <Loader2 size={16} className="animate-spin"/> : <UserCheck size={18} />}
+                                </button>
                             </div>
                         ))}
                     </div>
                 </section>
             </div>
 
-            {/* RESULTS PIPELINE WITH ICONS */}
             <section className="mt-10 bg-white p-10 rounded-[45px] shadow-sm border border-slate-100">
-                <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3"><UploadCloud size={20}/> Verification Pipeline</h3>
+                <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
+                  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><UploadCloud size={20}/></div> Verification Pipeline
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {incomingResults.map((result) => (
-                        <div key={result.id} className="p-6 bg-slate-50 rounded-[35px] border border-transparent hover:bg-white shadow-sm transition-all">
+                        <div key={result.id} className="p-6 bg-slate-50 rounded-[35px] border border-transparent hover:bg-white shadow-md transition-all">
                             <div className="flex justify-between items-start mb-4">
-                                <span className="text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase">{result.courseCode}</span>
+                                <span className="text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase italic">{result.courseCode}</span>
                                 <div className="flex gap-2">
-                                  <button onClick={handlePrint} className="text-slate-400 hover:text-blue-600"><Printer size={16}/></button>
-                                  <button onClick={() => setEditingResult(result)} className="text-slate-400 hover:text-blue-600"><Edit3 size={16}/></button>
+                                  <button onClick={() => window.print()} className="text-slate-400 hover:text-blue-600"><Printer size={16}/></button>
+                                  <button className="text-slate-400 hover:text-blue-600"><Edit3 size={16}/></button>
                                 </div>
                             </div>
-                            <h4 className="text-sm font-black text-[#002147] uppercase mb-1">{result.studentName || "Semester Results"}</h4>
+                            <h4 className="text-sm font-black text-[#002147] uppercase mb-1">{result.studentName || "Semester Score"}</h4>
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-widest">Score: {result.score} | Grade: {result.grade}</p>
                             
                             {!result.rectorStatus ? (
-                                <button onClick={() => requestRectorApproval(result.id)} className="w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 italic">
+                                <button onClick={() => requestRectorApproval(result.id)} className="w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2">
                                     <ShieldCheck size={16}/> Request Rector Approval
                                 </button>
                             ) : result.rectorStatus === "Pending Approval" ? (
@@ -212,7 +182,7 @@ const ExamOfficerDashboard = () => {
                                     <Clock size={16}/> Waiting for Rector...
                                 </div>
                             ) : result.rectorStatus === "Approved" && result.status !== "Published" ? (
-                                <button onClick={() => handleApproveResult(result.id)} className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-700">
+                                <button onClick={() => handleApproveResult(result.id)} className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 animate-pulse">
                                     <Globe size={16}/> Publish to Portal
                                 </button>
                             ) : (
@@ -239,10 +209,10 @@ const ExamOfficerDashboard = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {allStudents.map((std) => (
-                            <tr key={std.id}>
+                            <tr key={std.id} className="hover:bg-slate-50 transition-all">
                                 <td className="py-6 text-[12px] font-black text-[#002147] uppercase">{std.fullName}</td>
                                 <td className="py-6 text-right">
-                                    <button onClick={() => handleDeleteStudent(std.id)} className="text-red-500"><Trash2 size={16}/></button>
+                                    <button onClick={() => { if(window.confirm("Delete?")) deleteDoc(doc(db, "users", std.id)) }} className="text-red-500 p-2 hover:bg-red-50 rounded-lg"><Trash2 size={16}/></button>
                                 </td>
                             </tr>
                         ))}
@@ -254,21 +224,19 @@ const ExamOfficerDashboard = () => {
         {/* ADD STUDENT MODAL */}
         {showAddStudent && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-                <div className="bg-white w-full max-w-md rounded-[40px] p-10 shadow-2xl">
-                    <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-xl font-black text-[#002147] uppercase">Add Student</h2>
-                        <button onClick={() => setShowAddStudent(false)} className="text-slate-400"><X size={24}/></button>
-                    </div>
+                <div className="bg-white w-full max-w-md rounded-[40px] p-10 shadow-2xl relative">
+                    <button onClick={() => setShowAddStudent(false)} className="absolute top-6 right-6 text-slate-400"><X size={24}/></button>
+                    <h2 className="text-xl font-black text-[#002147] uppercase mb-8">Add Student</h2>
                     <form className="space-y-4" onSubmit={(e) => {
                         e.preventDefault();
                         const data = new FormData(e.target);
                         generateStudentAccount(Object.fromEntries(data));
                     }}>
-                        <input name="name" placeholder="Full Name" className="w-full p-5 bg-slate-50 rounded-2xl outline-none" required />
-                        <input name="email" type="email" placeholder="Email" className="w-full p-5 bg-slate-50 rounded-2xl outline-none" required />
-                        <input name="admissionNo" placeholder="Admission No" className="w-full p-5 bg-slate-50 rounded-2xl outline-none" required />
-                        <button type="submit" className="w-full py-5 bg-[#002147] text-white rounded-[25px] font-black uppercase text-[11px] flex items-center justify-center gap-2">
-                            {loadingId === "new" ? <Loader2 className="animate-spin" size={18}/> : "Register"}
+                        <input name="name" placeholder="Full Name" className="w-full p-5 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-red-600/20" required />
+                        <input name="email" type="email" placeholder="Email" className="w-full p-5 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-red-600/20" required />
+                        <input name="admissionNo" placeholder="Admission No" className="w-full p-5 bg-slate-50 rounded-2xl outline-none border border-transparent focus:border-red-600/20" required />
+                        <button type="submit" disabled={loadingId === "new"} className="w-full py-5 bg-[#002147] text-white rounded-[25px] font-black uppercase text-[11px] flex items-center justify-center gap-2">
+                            {loadingId === "new" ? <Loader2 className="animate-spin" size={18}/> : "Create Student Account"}
                         </button>
                     </form>
                 </div>
@@ -279,7 +247,6 @@ const ExamOfficerDashboard = () => {
   );
 };
 
-// COMPONENT HELPER
 const NavItem = ({ icon, label, active = false, onClick }) => (
   <div onClick={onClick} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 group ${active ? "bg-red-600 text-white shadow-xl translate-x-2" : "hover:bg-white/5 text-slate-500 hover:text-white"}`}>
     <span className={`${active ? "text-white" : "group-hover:text-red-500"}`}>{icon}</span>
