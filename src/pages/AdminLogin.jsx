@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, LogOut, Loader2, ShieldCheck } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LogOut, Loader2, Hash, AlertCircle } from "lucide-react";
 // Firebase Imports
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 
-// --- UNIVERSAL LOGIN COMPONENT ---
+// --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [identifier, setIdentifier] = useState(""); // Zai iya zama Email ko ID
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -20,22 +21,36 @@ const Login = () => {
     setError("");
 
     try {
-      // 1. Authenticate with Firebase Auth using Email
-      const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        formData.email.trim(), 
-        formData.password
-      );
-      const user = userCredential.user;
+      let emailToAuth = identifier.trim();
 
-      // 2. Fetch the User's Role from Firestore "users" collection
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      // 1. Check if Input is Student ID or Email
+      if (!identifier.includes("@")) {
+        // STUDENT ID PATH
+        const studentId = identifier.toUpperCase().trim();
+        const q = query(collection(db, "users"), where("idNumber", "==", studentId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error("Invalid Student ID Number.");
+        }
+        // Dauko email din da ke hade da wannan ID din
+        emailToAuth = querySnapshot.docs[0].data().email;
+      } else {
+        // STAFF/ADMIN EMAIL PATH
+        if (!identifier.toLowerCase().endsWith("@skyward.edu.ng")) {
+          throw new Error("Staff must use official @skyward.edu.ng email.");
+        }
+      }
+
+      // 2. Firebase Auth Login
+      const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
+      
+      // 3. Role Checking & Routing
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
       if (userDoc.exists()) {
         const role = userDoc.data().role?.toLowerCase();
-        
-        // 3. Automated Routing based on Role
-        const dashboardRoutes = {
+        const routes = {
           student: "/student/dashboard",
           rector: "/rector/dashboard",
           proprietor: "/proprietor/dashboard",
@@ -45,16 +60,16 @@ const Login = () => {
           exam: "/exam/dashboard"
         };
 
-        if (dashboardRoutes[role]) {
-          navigate(dashboardRoutes[role]);
+        if (routes[role]) {
+          navigate(routes[role]);
         } else {
-          setError("Authorized but no dashboard assigned to this role.");
+          setError("No dashboard assigned to this role.");
         }
       } else {
         setError("User record not found in database.");
       }
-    } catch (error) {
-      setError("Login failed. Please check your email and password.");
+    } catch (err) {
+      setError(err.message.includes("auth/") ? "Invalid credentials." : err.message);
     } finally {
       setLoading(false);
     }
@@ -67,25 +82,30 @@ const Login = () => {
           <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">
             Skyward <span className="text-red-600">Portal</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Universal Access Point</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2 italic">Unified Authentication</p>
         </div>
 
         <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase text-center border border-red-100 italic">
-                {error}
+              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase text-center border border-red-100 italic flex items-center justify-center gap-2">
+                <AlertCircle size={14} /> {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Email Address</label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">
+                {identifier.includes("@") ? "Staff Email" : "Student ID / Email"}
+              </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-4 text-slate-400" size={18} />
+                <div className="absolute left-4 top-4 text-slate-400">
+                   {identifier.includes("@") ? <Mail size={18} /> : <Hash size={18} />}
+                </div>
                 <input 
-                  type="email" required placeholder="name@skyward.edu.ng"
+                  type="text" required 
+                  placeholder={identifier.includes("@") ? "name@skyward.edu.ng" : "SKW/2026/001"}
                   className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-red-600/20"
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setIdentifier(e.target.value)}
                 />
               </div>
             </div>
@@ -97,7 +117,7 @@ const Login = () => {
                 <input 
                   type={showPassword ? "text" : "password"} required placeholder="••••••••"
                   className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-red-600/20"
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-4 text-slate-400">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -107,9 +127,9 @@ const Login = () => {
 
             <button 
               type="submit" disabled={loading}
-              className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all shadow-lg"
+              className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all shadow-lg flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="animate-spin mx-auto" size={18} /> : "Sign In to Portal"}
+              {loading ? <Loader2 className="animate-spin" size={18} /> : "Authorize Access"}
             </button>
           </form>
         </div>
@@ -118,11 +138,10 @@ const Login = () => {
   );
 };
 
-// --- GENERIC DASHBOARD (PREVENTS REPETITION) ---
+// --- REMAINING COMPONENTS (DashboardWrapper & App) STAY THE SAME ---
 const DashboardWrapper = ({ title, color }) => {
   const navigate = useNavigate();
   const handleLogout = async () => { await signOut(auth); navigate("/"); };
-
   return (
     <div className="min-h-screen bg-slate-50 p-12">
       <div className="max-w-5xl mx-auto bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-100 text-left">
