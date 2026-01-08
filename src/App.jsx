@@ -30,6 +30,7 @@ import ProprietorDashboard from "./pages/ProprietorDashboard";
 import AdmissionOfficerDashboard from "./pages/AdmissionOfficerDashboard";
 import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
+import AddUser from "./admin/AddUser";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -131,6 +132,15 @@ function App() {
                   <PaymentPortal />
                 </ProtectedRoute>
               } /> 
+
+              <Route 
+                path="/admin/add-user" 
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "rector", "proprietor"]}>
+                    <AddUser />
+                  </ProtectedRoute>
+                } 
+              />
 
               <Route path="/portal/registration" element={<ProtectedRoute allowedRoles={["student"]}><CourseRegistration /></ProtectedRoute>} />
               <Route path="/portal/check-result" element={<ProtectedRoute allowedRoles={["student"]}><CheckResult /></ProtectedRoute>} />
