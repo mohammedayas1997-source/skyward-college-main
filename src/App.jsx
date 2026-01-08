@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-// ALL YOUR IMPORTS PRESERVED
+// DUKKAN IMPORTS DINKA SUNA NAN DARAM
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Home } from "./pages/Home";
@@ -31,32 +31,59 @@ import AdmissionOfficerDashboard from "./pages/AdmissionOfficerDashboard";
 import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
 import AddUser from "./admin/AddUser";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import ForgotPassword from "./pages/ForgotPassword";
 
 // --- GYARARREN SECURITY COMPONENT ---
+// Wannan bangaren ne yake hana shiga dashboard idan ba a yi login ba
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const userRole = localStorage.getItem("userRole");
-  const isAuth = localStorage.getItem("isAuth");
+  const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-  // Idan mutum bai yi login ba, muna tura shi shafin login na kowa (UnifiedLogin)
-  if (!isAuth || isAuth !== "true") {
-    // Mun hada kowa ya tafi shafi daya domin kuskuren ya kau
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Idan akwai user, mu duba Role dinsa a Firestore
+        const docRef = doc(db, "users", firebaseUser.uid);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const role = docSnap.data().role?.toLowerCase().trim();
+          setUserRole(role);
+          setUser(firebaseUser);
+          
+          // Ajiye a localStorage don sauran components
+          localStorage.setItem("userRole", role);
+          localStorage.setItem("isAuth", "true");
+        }
+      } else {
+        setUser(null);
+        localStorage.clear();
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#001524] text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="font-black italic tracking-widest uppercase text-xs">Verifying Skyward Access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return <Navigate to="/portal/login" state={{ from: location }} replace />;
   }
 
-  // Waiting state yayin da ake tantancewa
-  if (!userRole && isAuth === "true") {
-    return <div className="min-h-screen flex items-center justify-center bg-[#001524] text-white font-bold italic tracking-widest">VERIFYING ACCESS...</div>;
-  }
-
-  const normalizedRole = userRole ? userRole.toLowerCase().trim() : "";
-
-  // Tabbatar cewa Role din mutum yana cikin wadanda aka bari su gani
-  if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
-    console.error("Unauthorized Role:", normalizedRole);
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
     return <Navigate to="/" replace />;
   }
 
@@ -64,6 +91,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 function App() {
+  // WANNAN AUTOMATIC ADMIN SETUP DINKA YANA NAN
   useEffect(() => {
     const createFirstAdmin = async () => {
       const setupFlag = localStorage.getItem("skyward_admin_setup");
@@ -117,7 +145,7 @@ function App() {
               <Route path="/portal/audit" element={<AuditTrail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               
-              {/* --- SECURE ROUTES --- */}
+              {/* --- SECURE ROUTES (DASHBOARDS) --- */}
               <Route path="/portal/proprietor" element={<ProtectedRoute allowedRoles={["proprietor"]}><ProprietorDashboard /></ProtectedRoute>} />
               <Route path="/portal/rector" element={<ProtectedRoute allowedRoles={["rector"]}><RectorDashboard /></ProtectedRoute>} />
               <Route path="/staff/dashboard" element={<ProtectedRoute allowedRoles={["staff", "lecturer"]}><StaffDashboard /></ProtectedRoute>} />
@@ -127,20 +155,18 @@ function App() {
               <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
               <Route path="/portal/dashboard" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
 
+              {/* SHARED SECURE ROUTES */}
               <Route path="/portal/payments" element={
                 <ProtectedRoute allowedRoles={["student", "proprietor", "accountant"]}>
                   <PaymentPortal />
                 </ProtectedRoute>
               } /> 
 
-              <Route 
-                path="/admin/add-user" 
-                element={
-                  <ProtectedRoute allowedRoles={["admin", "rector", "proprietor"]}>
-                    <AddUser />
-                  </ProtectedRoute>
-                } 
-              />
+              <Route path="/admin/add-user" element={
+                <ProtectedRoute allowedRoles={["admin", "rector", "proprietor"]}>
+                  <AddUser />
+                </ProtectedRoute>
+              } />
 
               <Route path="/portal/registration" element={<ProtectedRoute allowedRoles={["student"]}><CourseRegistration /></ProtectedRoute>} />
               <Route path="/portal/check-result" element={<ProtectedRoute allowedRoles={["student"]}><CheckResult /></ProtectedRoute>} />
