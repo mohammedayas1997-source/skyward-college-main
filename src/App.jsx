@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-// NAMED IMPORTS
+// ALL YOUR IMPORTS PRESERVED
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { Home } from "./pages/Home";
-
-// DEFAULT IMPORTS
 import Admission from "./pages/Admission";
 import ELibrary from "./pages/ELibrary"; 
 import ContactHelpDesk from './pages/ContactHelpDesk'; 
@@ -30,31 +28,32 @@ import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
 import AdmissionOfficerDashboard from "./pages/AdmissionOfficerDashboard";
-
-// --- NOTIFICATION CONTEXT & FIREBASE ---
 import { NotificationProvider } from "./components/NotificationContext";
 import { auth, db } from "./firebase"; 
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import ForgotPassword from "./pages/ForgotPassword";
 
-// --- INGANTAACCEN SECURITY COMPONENT ---
+// --- GYARARREN SECURITY COMPONENT ---
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userRole = localStorage.getItem("userRole");
   const isAuth = localStorage.getItem("isAuth");
   const location = useLocation();
 
+  // Idan mutum bai yi login ba, muna tura shi shafin login na kowa (UnifiedLogin)
   if (!isAuth || isAuth !== "true") {
-    const isStudentRoute = location.pathname.startsWith("/portal/dashboard");
-    return <Navigate to={isStudentRoute ? "/portal/student-login" : "/portal/login"} state={{ from: location }} replace />;
+    // Mun hada kowa ya tafi shafi daya domin kuskuren ya kau
+    return <Navigate to="/portal/login" state={{ from: location }} replace />;
   }
 
+  // Waiting state yayin da ake tantancewa
   if (!userRole && isAuth === "true") {
     return <div className="min-h-screen flex items-center justify-center bg-[#001524] text-white font-bold italic tracking-widest">VERIFYING ACCESS...</div>;
   }
 
   const normalizedRole = userRole ? userRole.toLowerCase().trim() : "";
 
+  // Tabbatar cewa Role din mutum yana cikin wadanda aka bari su gani
   if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
     console.error("Unauthorized Role:", normalizedRole);
     return <Navigate to="/" replace />;
@@ -118,62 +117,14 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               
               {/* --- SECURE ROUTES --- */}
-              
-              {/* 1. PROPRIETOR */}
-              <Route path="/portal/proprietor" element={
-                <ProtectedRoute allowedRoles={["proprietor"]}>
-                  <ProprietorDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 2. RECTOR */}
-              <Route path="/portal/rector" element={
-                <ProtectedRoute allowedRoles={["rector"]}>
-                  <RectorDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 3. STAFF / LECTURER */}
-              <Route path="/staff/dashboard" element={
-                <ProtectedRoute allowedRoles={["staff", "lecturer"]}>
-                  <StaffDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 4. EXAM OFFICER */}
-              <Route path="/admin/exam-office" element={
-                <ProtectedRoute allowedRoles={["exam-officer", "exam"]}>
-                  <ExamOfficerDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 5. ACCOUNTANT / BURSARY */}
-              <Route path="/admin/accountant" element={
-                <ProtectedRoute allowedRoles={["accountant", "bursar"]}>
-                  <AccountantDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 6. ADMISSION OFFICER */}
-              <Route path="/admin/admission-officer" element={
-                <ProtectedRoute allowedRoles={["admission-officer", "admission"]}>
-                  <AdmissionOfficerDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 7. ADMIN (IT/SYSTEM) */}
-              <Route path="/admin/dashboard" element={
-                <ProtectedRoute allowedRoles={["admin"]}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-
-              {/* 8. STUDENT & PORTAL SERVICES */}
-              <Route path="/portal/dashboard" element={
-                <ProtectedRoute allowedRoles={["student"]}>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              } />
+              <Route path="/portal/proprietor" element={<ProtectedRoute allowedRoles={["proprietor"]}><ProprietorDashboard /></ProtectedRoute>} />
+              <Route path="/portal/rector" element={<ProtectedRoute allowedRoles={["rector"]}><RectorDashboard /></ProtectedRoute>} />
+              <Route path="/staff/dashboard" element={<ProtectedRoute allowedRoles={["staff", "lecturer"]}><StaffDashboard /></ProtectedRoute>} />
+              <Route path="/admin/exam-office" element={<ProtectedRoute allowedRoles={["exam-officer", "exam"]}><ExamOfficerDashboard /></ProtectedRoute>} />
+              <Route path="/admin/accountant" element={<ProtectedRoute allowedRoles={["accountant", "bursar"]}><AccountantDashboard /></ProtectedRoute>} />
+              <Route path="/admin/admission-officer" element={<ProtectedRoute allowedRoles={["admission-officer", "admission"]}><AdmissionOfficerDashboard /></ProtectedRoute>} />
+              <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/portal/dashboard" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
 
               <Route path="/portal/payments" element={
                 <ProtectedRoute allowedRoles={["student", "proprietor", "accountant"]}>
