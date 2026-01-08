@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, LogOut, Hash, Loader2, ShieldCheck } from "lucide-react";
-// Import Firebase configuration
+import { Mail, Lock, Eye, EyeOff, LogOut, Hash, Loader2 } from "lucide-react";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
@@ -22,8 +21,7 @@ const Login = () => {
     try {
       let emailToSignIn = formData.identifier.trim();
 
-      // --- LOGIC FOR STUDENTS (ID NUMBER ACCESS) ---
-      // If the input does not contain "@", treat it as a Student ID
+      // STUDENT LOGIC: If no "@", it's a Student ID
       if (!formData.identifier.includes("@")) {
         const studentId = formData.identifier.toUpperCase().trim();
         const q = query(
@@ -36,38 +34,29 @@ const Login = () => {
         if (querySnapshot.empty) {
           throw new Error("Invalid Student ID Number.");
         }
-        // Retrieve the hidden email associated with this ID
         emailToSignIn = querySnapshot.docs[0].data().email;
       }
 
-      // 1. Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        emailToSignIn, 
-        formData.password
-      );
-      const user = userCredential.user;
-
-      // 2. Fetch User Role and Profile
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userCredential = await signInWithEmailAndPassword(auth, emailToSignIn, formData.password);
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
       if (userDoc.exists()) {
         const role = userDoc.data().role;
-        
-        // 3. Role-Based Redirection
-        if (role === "student") navigate("/student/dashboard");
-        else if (role === "rector") navigate("/rector/dashboard");
-        else if (role === "proprietor") navigate("/proprietor/dashboard");
-        else if (role === "accountant") navigate("/accountant/dashboard");
-        else if (role === "admission") navigate("/admission/dashboard");
-        else if (role === "staff") navigate("/staff/portal");
-        else if (role === "exam") navigate("/exam/dashboard");
-        else setError("User role not configured in the system.");
+        const routes = {
+          student: "/student/dashboard",
+          rector: "/rector/dashboard",
+          proprietor: "/proprietor/dashboard",
+          accountant: "/accountant/dashboard",
+          admission: "/admission/dashboard",
+          staff: "/staff/portal",
+          exam: "/exam/dashboard"
+        };
+        navigate(routes[role] || "/");
       } else {
-        setError("User profile not found in database.");
+        setError("User profile not found.");
       }
     } catch (error) {
-      setError(error.message.includes("auth/") ? "Invalid credentials. Please try again." : error.message);
+      setError("Authentication failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -80,9 +69,7 @@ const Login = () => {
           <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">
             Skyward <span className="text-red-600">Portal</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">
-            Secure Academic Gateway
-          </p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">Authorized Access Only</p>
         </div>
 
         <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100">
@@ -94,8 +81,9 @@ const Login = () => {
             )}
 
             <div className="space-y-2">
+              {/* REMOVED "STAFF ID" FROM LABEL */}
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">
-                {formData.identifier.includes("@") ? "Staff Email Address" : "Student ID Number"}
+                {formData.identifier.includes("@") ? "Email Address" : "Student ID Number"}
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-4 text-slate-400">
@@ -103,15 +91,15 @@ const Login = () => {
                 </div>
                 <input 
                   type="text" required 
-                  placeholder={formData.identifier.includes("@") ? "staff@skyward.edu" : "SKW/STU/2026/001"}
-                  className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-red-600/20 font-bold placeholder:font-normal"
+                  placeholder={formData.identifier.includes("@") ? "example@skyward.edu" : "Enter Student ID"}
+                  className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-red-600/20 font-bold"
                   onChange={(e) => setFormData({...formData, identifier: e.target.value})}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Secret Password</label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-4 text-slate-400" size={18} />
                 <input 
@@ -139,58 +127,44 @@ const Login = () => {
   );
 };
 
-// --- GENERIC DASHBOARD COMPONENT ---
+// --- REMAINING COMPONENTS STAY THE SAME ---
 const DashboardWrapper = ({ title, color }) => {
   const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/");
-  };
+  const handleLogout = async () => { await signOut(auth); navigate("/"); };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-left">
+    <div className="min-h-screen bg-slate-50 p-6 md:p-12">
       <div className="max-w-5xl mx-auto bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
-        <div className="flex justify-between items-center mb-10 border-b border-slate-50 pb-8">
+        <div className="flex justify-between items-center mb-10 border-b pb-8">
           <div>
             <h1 className={`text-4xl font-black uppercase tracking-tighter ${color} italic`}>{title}</h1>
-            <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] mt-2">Skyward Management System</p>
+            <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] mt-2">Skyward System</p>
           </div>
-          <button 
-            onClick={handleLogout} 
-            className="flex items-center gap-3 px-8 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm"
-          >
+          <button onClick={handleLogout} className="flex items-center gap-3 px-8 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all">
             <LogOut size={16} /> Sign Out
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col justify-end min-h-[140px]">
-            <span className="text-[#002147] font-black text-[10px] uppercase tracking-widest">Active Sessions</span>
-          </div>
-          <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col justify-end min-h-[140px]">
-             <span className="text-[#002147] font-black text-[10px] uppercase tracking-widest">Personal Records</span>
-          </div>
-          <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col justify-end min-h-[140px]">
-             <span className="text-[#002147] font-black text-[10px] uppercase tracking-widest">System Alerts</span>
-          </div>
+            <div className="h-32 bg-slate-50 rounded-[2rem] border border-slate-100"></div>
+            <div className="h-32 bg-slate-50 rounded-[2rem] border border-slate-100"></div>
+            <div className="h-32 bg-slate-50 rounded-[2rem] border border-slate-100"></div>
         </div>
       </div>
     </div>
   );
 };
 
-// --- MAIN APP COMPONENT ---
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector Portal" color="text-blue-900" />} />
-        <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor Dashboard" color="text-purple-900" />} />
+        <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor Center" color="text-purple-900" />} />
         <Route path="/accountant/dashboard" element={<DashboardWrapper title="Finance Unit" color="text-green-600" />} />
         <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission Office" color="text-orange-600" />} />
         <Route path="/staff/portal" element={<DashboardWrapper title="Academic Staff" color="text-red-600" />} />
-        <Route path="/exam/dashboard" element={<DashboardWrapper title="Examination Center" color="text-indigo-600" />} />
+        <Route path="/exam/dashboard" element={<DashboardWrapper title="Exam Center" color="text-indigo-600" />} />
         <Route path="/student/dashboard" element={<DashboardWrapper title="Student Center" color="text-slate-700" />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
