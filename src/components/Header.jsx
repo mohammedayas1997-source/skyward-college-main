@@ -58,21 +58,23 @@ export const Header = () => {
                 </ul>
               </li>
 
-              {/* Portal Dropdown - AN GYARA NAN */}
+              {/* Portal Dropdown - AN GYARA NAN DON SUYI AIKI DA APP.JS */}
               <li className="relative group hover:text-red-600 cursor-pointer py-2">
                 <span className="flex items-center gap-1">Portal <ChevronDown size={15}/></span>
                 <ul className="absolute right-0 top-full hidden group-hover:block bg-white shadow-2xl border-t-4 border-red-600 w-64 z-[100] py-2 text-slate-700">
                   <li className="px-4 py-2 hover:bg-slate-100 border-b border-slate-50 flex items-center gap-2 font-bold uppercase text-[9px]">
                     <Lock size={15} className="text-blue-600" />
-                    <Link to="/portal/student-login">Student Portal</Link>
+                    {/* Canzawa daga /portal/student-login zuwa /portal/login domin UnifiedLogin */}
+                    <Link to="/portal/login" className="block w-full">Student Portal</Link>
                   </li>
                   <li className="px-4 py-2 hover:bg-slate-100 border-b border-slate-50 flex items-center gap-2 font-bold uppercase text-[9px]">
                     <Lock size={15} className="text-green-600" />
-                    <Link to="/portal/staff-login">Staff/Lecturer Portal</Link>
+                    {/* Canzawa daga /portal/staff-login zuwa /portal/login */}
+                    <Link to="/portal/login" className="block w-full">Staff/Lecturer Portal</Link>
                   </li>
                   <li className="px-4 py-2 hover:bg-red-50 flex items-center gap-2 font-bold uppercase text-[9px] text-red-600">
                     <ShieldAlert size={15} />
-                    <Link to="/portal/login">Admin Access (Proprietor/Rector)</Link>
+                    <Link to="/portal/login" className="block w-full">Admin Access (Proprietor/Rector)</Link>
                   </li>
                 </ul>
               </li>
@@ -80,8 +82,7 @@ export const Header = () => {
               <li><Link to="/e-library" className="hover:text-red-600 flex items-center gap-1"><BookOpen size={12} className="text-red-600" /> E-Library</Link></li>
               <li><Link to="/help-desk" className="hover:text-red-600 flex items-center gap-1"><Headphones size={12} className="text-red-600" /> Help Desk</Link></li>
               
-              {/* PORTAL ACCESS BUTTON */}
-            //  <li>
+              <li>
                 <button 
                   onClick={() => navigate("/portal/login")}
                   className="bg-red-600 text-white px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#002147] transition-all shadow-md active:scale-95"
@@ -116,9 +117,9 @@ export const Header = () => {
               <li><Link onClick={() => setIsMenuOpen(false)} to="/news" className="flex items-center gap-2 py-2 border-b border-white/10 text-red-400"><Newspaper size={18} /> Latest News</Link></li>
               <li><Link onClick={() => setIsMenuOpen(false)} to="/admission" className="block py-2 border-b border-white/10 text-slate-300">Admissions</Link></li>
               
-              {/* MOBILE LOGIN OPTIONS */}
-              <li><Link onClick={() => setIsMenuOpen(false)} to="/portal/student-login" className="block py-2 border-b border-white/10 flex items-center gap-2"><Lock size={16}/> Student Portal</Link></li>
-              <li><Link onClick={() => setIsMenuOpen(false)} to="/portal/staff-login" className="block py-2 border-b border-white/10 flex items-center gap-2 text-green-400"><Lock size={16}/> Staff Portal</Link></li>
+              {/* MOBILE LOGIN OPTIONS - GYARARRE */}
+              <li><Link onClick={() => setIsMenuOpen(false)} to="/portal/login" className="block py-2 border-b border-white/10 flex items-center gap-2"><Lock size={16}/> Student Portal</Link></li>
+              <li><Link onClick={() => setIsMenuOpen(false)} to="/portal/login" className="block py-2 border-b border-white/10 flex items-center gap-2 text-green-400"><Lock size={16}/> Staff Portal</Link></li>
               <li><Link onClick={() => setIsMenuOpen(false)} to="/portal/login" className="block py-2 border-b border-white/10 flex items-center gap-2 text-red-400"><ShieldAlert size={16}/> Admin/Rector</Link></li>
               
               <li><Link onClick={() => setIsMenuOpen(false)} to="/e-library" className="block py-2 border-b border-white/10">E-Library</Link></li>

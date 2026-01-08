@@ -7,7 +7,6 @@ export const Home = () => {
   const slides = [
     "/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", 
     "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
-    
   ];
 
   useEffect(() => {
@@ -23,8 +22,6 @@ export const Home = () => {
       {/* 1. HERO SECTION */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900">
         
-        {/* LATEST NEWS AN CIRE SHI DAGA NAN YA KOMA SAMA A HEADER INDA ICONS SUKE */}
-
         {/* Background Slider */}
         {slides.map((img, index) => (
           <img
@@ -46,23 +43,37 @@ export const Home = () => {
             Skyward College <br />
             <span className="text-red-600">of Travels And Tourism</span>
           </h1>
-          <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium leading-relaxed mb-10">
+          <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium leading-relaxed mb-6">
             Start a career that enables you to work at the Airport, Airline, Travel Agencies, Tourism Organisations and luxury Hotels.
           </p>
-          <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium leading-relaxed mb-10">
+          <p className="text-slate-200 text-sm md:text-lg max-w-3xl font-medium leading-relaxed mb-10 opacity-80">
             Empowering the next generation of travel professionals with global standards in Yola.
           </p>
 
+          {/* GYARARREN BUTTONS - AN KARA STUDENT DA STAFF PORTAL */}
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/admission/apply">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95">
+              <button className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95">
                 Start Application
               </button>
             </Link>
 
             <Link to="/courses">
-              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-95">
+              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all active:scale-95">
                 Our Courses
+              </button>
+            </Link>
+
+            {/* Sabbin Buttons don saurin shiga Portal */}
+            <Link to="/portal/login">
+              <button className="bg-[#002147] hover:bg-blue-900 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 border border-white/10">
+                Student Portal
+              </button>
+            </Link>
+
+            <Link to="/portal/login">
+              <button className="bg-slate-800 hover:bg-black text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 border border-white/10">
+                Staff Portal
               </button>
             </Link>
           </div>
