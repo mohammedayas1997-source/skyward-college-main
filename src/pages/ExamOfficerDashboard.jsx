@@ -11,6 +11,9 @@ import {
 
 const ExamOfficerDashboard = () => {
   const navigate = useNavigate();
+  // --- NEW STATE FOR NAVIGATION ---
+  const [activeTab, setActiveTab] = useState("Overview"); 
+
   const [incomingResults, setIncomingResults] = useState([]);
   const [approvedStudents, setApprovedStudents] = useState([]);
   const [staffList, setStaffList] = useState([]);
@@ -38,7 +41,6 @@ const ExamOfficerDashboard = () => {
   }, []);
 
   // --- 3. SIMULATED INCOMING RESULTS LOGIC ---
-  // A gaskiya wannan zai fito ne daga table din "results" na Firebase
   useEffect(() => {
     const mockResults = [
       { id: "RES01", courseCode: "GST 101", courseName: "Use of English", staff: "Dr. Adamu", students: 120, status: "Pending Approval" },
@@ -73,7 +75,6 @@ const ExamOfficerDashboard = () => {
         createdAt: serverTimestamp()
       });
 
-      // Update admission record to show account is created
       await updateDoc(doc(db, "admissions", student.id), { accountCreated: true });
       
       alert(`Portal Account Created for ${student.name}. Password is: ${initialPassword}`);
@@ -98,10 +99,30 @@ const ExamOfficerDashboard = () => {
         </div>
         
         <nav className="flex-grow p-6 space-y-3 mt-4">
-          <NavItem icon={<LayoutDashboard size={18}/>} label="Overview" active />
-          <NavItem icon={<BookOpen size={18}/>} label="Staff & Courses" />
-          <NavItem icon={<Users size={18}/>} label="Student Sync" />
-          <NavItem icon={<FileCheck size={18}/>} label="Transcripts" />
+          <NavItem 
+            icon={<LayoutDashboard size={18}/>} 
+            label="Overview" 
+            active={activeTab === "Overview"} 
+            onClick={() => setActiveTab("Overview")} 
+          />
+          <NavItem 
+            icon={<BookOpen size={18}/>} 
+            label="Staff & Courses" 
+            active={activeTab === "Staff & Courses"} 
+            onClick={() => setActiveTab("Staff & Courses")} 
+          />
+          <NavItem 
+            icon={<Users size={18}/>} 
+            label="Student Sync" 
+            active={activeTab === "Student Sync"} 
+            onClick={() => setActiveTab("Student Sync")} 
+          />
+          <NavItem 
+            icon={<FileCheck size={18}/>} 
+            label="Transcripts" 
+            active={activeTab === "Transcripts"} 
+            onClick={() => setActiveTab("Transcripts")} 
+          />
         </nav>
 
         <div className="p-6">
@@ -127,108 +148,110 @@ const ExamOfficerDashboard = () => {
           </div>
         </header>
 
-        {/* TOP STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-12">
-          <StatsCard title="Total Staff" value={staffList.length} icon={<Users size={20}/>} color="blue" />
-          <StatsCard title="Active Courses" value="24" icon={<BookOpen size={20}/>} color="amber" />
-          <StatsCard title="Pending Sync" value={approvedStudents.filter(s => !s.accountCreated).length} icon={<Clock size={20}/>} color="red" />
-          <StatsCard title="Published" value="156" icon={<CheckCircle size={20}/>} color="emerald" />
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            
-            {/* LECTURER & COURSE DIRECTORY */}
-            <section className="xl:col-span-2 bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-                <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] flex items-center gap-3">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Users size={18}/></div> Staff Course Assignment
-                    </h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {staffList.map((staff) => (
-                        <div key={staff.id} className="p-5 bg-slate-50 rounded-[25px] border border-transparent hover:border-blue-100 transition-all">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600 font-black italic">
-                                    {staff.fullName?.charAt(0)}
-                                </div>
-                                <div>
-                                    <h4 className="text-[12px] font-black text-[#002147] uppercase">{staff.fullName}</h4>
-                                    <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">{staff.course || "General Studies"}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* STUDENT ACCOUNT SYNC (REAL-TIME) */}
-            <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
-                <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
-                    <div className="p-3 bg-red-50 text-red-600 rounded-2xl"><Key size={18} /></div> Portal Access Sync
-                </h3>
-                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                    {approvedStudents.filter(s => !s.accountCreated).map((student) => (
-                        <div key={student.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
-                            <div>
-                                <p className="text-[11px] font-black text-[#002147] uppercase">{student.name}</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">{student.course}</p>
-                            </div>
-                            <button 
-                                onClick={() => generateStudentAccount(student)}
-                                disabled={loadingId === student.id}
-                                className="h-10 w-10 flex items-center justify-center bg-white text-[#002147] rounded-xl border border-slate-200 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
-                            >
-                                {loadingId === student.id ? <Loader2 size={16} className="animate-spin"/> : <UserCheck size={18} />}
-                            </button>
-                        </div>
-                    ))}
-                    {approvedStudents.filter(s => !s.accountCreated).length === 0 && (
-                        <div className="text-center py-10">
-                            <CheckCircle className="mx-auto text-emerald-500 mb-2" size={30}/>
-                            <p className="text-[10px] font-black text-slate-400 uppercase">All accounts synced</p>
-                        </div>
-                    )}
-                </div>
-            </section>
-        </div>
-
-        {/* INCOMING RESULTS FEED */}
-        <section className="mt-10 bg-white p-10 rounded-[45px] shadow-sm border border-slate-100">
-            <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
-                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><FileText size={20}/></div> Verification Pipeline
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {incomingResults.map((result) => (
-                    <div key={result.id} className="p-6 bg-slate-50 rounded-[35px] border border-transparent hover:bg-white hover:border-slate-100 hover:shadow-xl transition-all">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase italic">{result.courseCode}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{result.students} Students</span>
-                        </div>
-                        <h4 className="text-sm font-black text-[#002147] uppercase mb-1">{result.courseName}</h4>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-widest">Lecturer: {result.staff}</p>
-                        
-                        {result.status === "Pending Approval" ? (
-                            <button onClick={() => handleApproveResult(result.id)} className="w-full py-4 bg-[#001529] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
-                                <FileCheck size={16}/> Approve Result
-                            </button>
-                        ) : (
-                            <div className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2">
-                                <CheckCircle size={16}/> Successfully Published
-                            </div>
-                        )}
-                    </div>
-                ))}
+        {/* CONDITIONALLY RENDER CONTENT BASED ON TAB */}
+        {activeTab === "Overview" && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-12">
+              <StatsCard title="Total Staff" value={staffList.length} icon={<Users size={20}/>} color="blue" />
+              <StatsCard title="Active Courses" value="24" icon={<BookOpen size={20}/>} color="amber" />
+              <StatsCard title="Pending Sync" value={approvedStudents.filter(s => !s.accountCreated).length} icon={<Clock size={20}/>} color="red" />
+              <StatsCard title="Published" value="156" icon={<CheckCircle size={20}/>} color="emerald" />
             </div>
-        </section>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <section className="xl:col-span-2 bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
+                    <div className="flex justify-between items-center mb-8">
+                        <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] flex items-center gap-3">
+                            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Users size={18}/></div> Staff Course Assignment
+                        </h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {staffList.map((staff) => (
+                            <div key={staff.id} className="p-5 bg-slate-50 rounded-[25px] border border-transparent hover:border-blue-100 transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-blue-600 font-black italic">
+                                        {staff.fullName?.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-[12px] font-black text-[#002147] uppercase">{staff.fullName}</h4>
+                                        <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">{staff.course || "General Studies"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
+                    <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
+                        <div className="p-3 bg-red-50 text-red-600 rounded-2xl"><Key size={18} /></div> Portal Access Sync
+                    </h3>
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        {approvedStudents.filter(s => !s.accountCreated).map((student) => (
+                            <div key={student.id} className="p-5 bg-slate-50 rounded-[25px] flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                                <div>
+                                    <p className="text-[11px] font-black text-[#002147] uppercase">{student.name}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase">{student.course}</p>
+                                </div>
+                                <button 
+                                    onClick={() => generateStudentAccount(student)}
+                                    disabled={loadingId === student.id}
+                                    className="h-10 w-10 flex items-center justify-center bg-white text-[#002147] rounded-xl border border-slate-200 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                >
+                                    {loadingId === student.id ? <Loader2 size={16} className="animate-spin"/> : <UserCheck size={18} />}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            </div>
+
+            <section className="mt-10 bg-white p-10 rounded-[45px] shadow-sm border border-slate-100">
+                <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><FileText size={20}/></div> Verification Pipeline
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {incomingResults.map((result) => (
+                        <div key={result.id} className="p-6 bg-slate-50 rounded-[35px] border border-transparent hover:bg-white hover:border-slate-100 hover:shadow-xl transition-all">
+                            <div className="flex justify-between items-start mb-4">
+                                <span className="text-[10px] font-black text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase italic">{result.courseCode}</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{result.students} Students</span>
+                            </div>
+                            <h4 className="text-sm font-black text-[#002147] uppercase mb-1">{result.courseName}</h4>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-6 tracking-widest">Lecturer: {result.staff}</p>
+                            
+                            {result.status === "Pending Approval" ? (
+                                <button onClick={() => handleApproveResult(result.id)} className="w-full py-4 bg-[#001529] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all flex items-center justify-center gap-2">
+                                    <FileCheck size={16}/> Approve Result
+                                </button>
+                            ) : (
+                                <div className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2">
+                                    <CheckCircle size={16}/> Successfully Published
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </section>
+          </>
+        )}
+
+        {/* PLACEHOLDERS FOR OTHER TABS */}
+        {activeTab === "Staff & Courses" && <div className="p-20 text-center font-black text-slate-300 uppercase italic">Staff Directory Loaded...</div>}
+        {activeTab === "Student Sync" && <div className="p-20 text-center font-black text-slate-300 uppercase italic">Database Sync Terminal...</div>}
+        {activeTab === "Transcripts" && <div className="p-20 text-center font-black text-slate-300 uppercase italic">Transcript Generation Module...</div>}
 
       </main>
     </div>
   );
 };
 
-// Reusable Components
-const NavItem = ({ icon, label, active = false }) => (
-  <div className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 group ${active ? "bg-red-600 text-white shadow-xl translate-x-2" : "hover:bg-white/5 text-slate-500 hover:text-white"}`}>
+// NavItem with onClick handler
+const NavItem = ({ icon, label, active = false, onClick }) => (
+  <div 
+    onClick={onClick}
+    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 group ${active ? "bg-red-600 text-white shadow-xl translate-x-2" : "hover:bg-white/5 text-slate-500 hover:text-white"}`}
+  >
     <span className={`${active ? "text-white" : "group-hover:text-red-500"}`}>{icon}</span>
     <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
   </div>
