@@ -29,7 +29,7 @@ import UnifiedLogin from "./components/UnifiedLogin";
 import AuditTrail from "./components/AuditTrail";
 import News from "./pages/News";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
-import AdmissionOfficerDashboard from "./pages/AdmissionOfficerDashboard"; // Na kara wannan
+import AdmissionOfficerDashboard from "./pages/AdmissionOfficerDashboard";
 
 // --- NOTIFICATION CONTEXT & FIREBASE ---
 import { NotificationProvider } from "./components/NotificationContext";
@@ -133,9 +133,9 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* 3. STAFF */}
+              {/* 3. STAFF / LECTURER */}
               <Route path="/staff/dashboard" element={
-                <ProtectedRoute allowedRoles={["staff"]}>
+                <ProtectedRoute allowedRoles={["staff", "lecturer"]}>
                   <StaffDashboard />
                 </ProtectedRoute>
               } />
@@ -147,9 +147,9 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* 5. ACCOUNTANT */}
+              {/* 5. ACCOUNTANT / BURSARY */}
               <Route path="/admin/accountant" element={
-                <ProtectedRoute allowedRoles={["accountant"]}>
+                <ProtectedRoute allowedRoles={["accountant", "bursar"]}>
                   <AccountantDashboard />
                 </ProtectedRoute>
               } />
@@ -161,7 +161,7 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* 7. ADMIN */}
+              {/* 7. ADMIN (IT/SYSTEM) */}
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminDashboard />
