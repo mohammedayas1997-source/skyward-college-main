@@ -65,7 +65,6 @@ export const Home = () => {
              <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
              <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap">Courses</Link>
              
-             {/* E-LIBRARY CLICKABLE BUTTON */}
              <button 
                 onClick={() => setIsLibraryOpen(true)}
                 className="flex items-center gap-1 hover:text-red-600 transition-colors cursor-pointer uppercase"
@@ -91,28 +90,20 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* --- E-LIBRARY SELECTION MODAL --- */}
+      {/* --- E-LIBRARY MODAL --- */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
             <button onClick={() => setIsLibraryOpen(false)} className="absolute top-8 right-8 p-3 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all">
               <X size={24} />
             </button>
-            
             <div className="mb-10">
               <h2 className="text-[#002147] text-3xl font-black uppercase tracking-tighter mb-2">Skyward E-Library</h2>
               <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Select a digital library to access research materials and textbooks</p>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {eLibraryLinks.map((lib, i) => (
-                <a 
-                  key={i} 
-                  href={lib.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="group flex items-center justify-between p-6 bg-slate-50 rounded-2xl hover:bg-[#002147] transition-all border border-slate-100"
-                >
+                <a key={i} href={lib.url} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between p-6 bg-slate-50 rounded-2xl hover:bg-[#002147] transition-all border border-slate-100">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black text-red-600 uppercase mb-1 tracking-widest">{lib.category}</span>
                     <span className="text-[#002147] group-hover:text-white font-black text-lg transition-colors leading-tight">{lib.name}</span>
@@ -201,7 +192,7 @@ export const Home = () => {
 
       <Gallery />
 
-      {/* 5. FOOTER */}
+      {/* 5. FOOTER - UPDATED SECTION */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
            <div className="space-y-6">
@@ -209,7 +200,10 @@ export const Home = () => {
                 <img src="/logo.png" alt="Logo" className="h-16 w-16 bg-white p-2 rounded-xl" />
                 <h4 className="font-black text-2xl tracking-tighter">SKYWARD</h4>
               </div>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed">Leading Aviation and Tourism College providing world-class professional training since 2010.</p>
+              {/* Sabon bayanin da ka nema a kasan logo */}
+              <p className="text-slate-400 text-sm font-medium leading-relaxed italic">
+                Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage. Our industry-recognized programs provide you with the practical skills and confidence needed to secure high-paying roles in leading airlines, international airports, travel agencies, and luxury hotels worldwide. Your journey to professional excellence starts with a single click. Don't wait for the future—create it now. Apply today and let your dreams take flight!
+              </p>
            </div>
            <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
