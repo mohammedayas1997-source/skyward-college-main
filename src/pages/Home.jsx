@@ -125,14 +125,14 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white text-left relative">
       
-      {/* 1. MAIN HEADER (Inda Logo da Suna suke a sama) */}
+      {/* 1. MAIN HEADER */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3">
              <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
              <div className="flex flex-col">
                 <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
-                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">College of  Travels and Tourism</span>
+                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase text-nowrap">College of Travels and Tourism</span>
              </div>
           </Link>
           
@@ -185,7 +185,12 @@ export const Home = () => {
         ))}
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
           <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-          <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-none mb-8 tracking-tighter">Skyward College of Travel <span className="text-red-600">Tourism</span></h1>
+          
+          {/* GYARAN SUNA: Na rage girman font kadan kuma na saka wrap don 'and' din ya fito */}
+          <h1 className="text-white text-3xl md:text-7xl font-black uppercase leading-[1.1] mb-8 tracking-tighter max-w-5xl">
+            Skyward College of Travels <span className="text-red-600">and Tourism</span>
+          </h1>
+
           <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
           <div className="flex gap-4">
             <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl">Start Application</Link>
@@ -231,7 +236,7 @@ export const Home = () => {
 
       <Gallery />
 
-      {/* 5. FOOTER (Logon kasa da bayanan asali) */}
+      {/* 5. FOOTER */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
            <div className="space-y-6">
@@ -270,7 +275,6 @@ export const Home = () => {
            &copy; 2026 Skyward College of Travels and Tourism. All Rights Reserved.
         </div>
       </footer>
-
     </section>
   );
 };
