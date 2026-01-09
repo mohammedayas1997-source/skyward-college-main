@@ -125,7 +125,7 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative">
       
-      {/* 1. MAIN HEADER - Fixed z-index and pointer-events */}
+      {/* 1. MAIN HEADER - Restored with original icon/button functionality */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -137,13 +137,24 @@ export const Home = () => {
           </Link>
           
           <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center relative z-[110]">
-             <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80">Home</Link>
+             <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
              <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer">Courses</Link>
+             <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer">Gallery</Link>
              <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer">Apply Now</Link>
+             <Link to="/portal/login" className="flex items-center gap-1 hover:text-red-600 transition-colors cursor-pointer">
+                <Users size={14} />
+                Portal
+             </Link>
           </div>
-          <button className="md:hidden text-[#002147] cursor-pointer relative z-[110]">
-            <Menu size={24} />
-          </button>
+
+          <div className="md:hidden flex items-center gap-4 relative z-[110]">
+            <Link to="/portal/login" className="text-[#002147] cursor-pointer">
+              <Users size={20} />
+            </Link>
+            <button className="text-[#002147] cursor-pointer">
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -229,7 +240,7 @@ export const Home = () => {
 
       <Gallery />
 
-      {/* 5. FOOTER - Updated Address and Phone */}
+      {/* 5. FOOTER */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30 pointer-events-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
            <div className="space-y-6">
