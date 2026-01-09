@@ -268,7 +268,7 @@ export const Home = () => {
                 <li className="flex items-center gap-3">
                   <Phone size={18} className="text-red-600 shrink-0" /> 
                   <span>+234 7071913131</span>
-                </li>
+                </li>s
                 <li className="flex items-center gap-3">
                   <Mail size={18} className="text-red-600 shrink-0" /> 
                   <span>info@skywardcollege.com</span>
