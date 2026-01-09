@@ -19,7 +19,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Plane size={24} />, 
       desc: "Master Global Distribution Systems (GDS). Learn Amadeus and Sabre.",
-      img: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop",
+      img: "/1767965179277.jpg", // Hoton Air Ticketing
       outcomes: ["Proficiency in Amadeus & Sabre GDS", "IATA Geography", "Advanced Fare Construction"],
       careers: ["Airline Ticketing Officer", "Travel Consultant"]
     },
@@ -29,7 +29,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Users size={24} />, 
       desc: "Develop high-level communication and problem-solving skills.",
-      img: "https://images.unsplash.com/photo-1521791136364-798a7bc0d262?q=80&w=2071&auto=format&fit=crop",
+      img: "/1767965255899.jpg", // Hoton Customer Service
       outcomes: ["Effective Communication", "Crisis Management", "Professional Ethics"],
       careers: ["Guest Relations Executive", "Customer Experience Officer"]
     },
@@ -39,7 +39,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Globe size={24} />, 
       desc: "Comprehensive training on managing international tour packages.",
-      img: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965449892.jpg", // Hoton Travel & Tourism Ops
       outcomes: ["Tour Packaging", "Destination Marketing", "Global Geography"],
       careers: ["Tour Operator", "Destination Manager"]
     },
@@ -49,7 +49,7 @@ export const Home = () => {
       fee: "₦400,000", 
       icon: <Headphones size={24} />, 
       desc: "Professional training for aspiring flight attendants and safety.",
-      img: "https://images.unsplash.com/photo-1506012733851-bb60a3322b7d?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965537113.jpg", // Hoton Cabin Crew
       outcomes: ["Safety & Emergency Procedures (SEP)", "Aviation Medicine & First Aid", "In-flight Catering & Service"],
       careers: ["Commercial Flight Attendant", "VIP Corporate Cabin Crew"]
     },
@@ -59,7 +59,7 @@ export const Home = () => {
       fee: "₦300,000", 
       icon: <Briefcase size={24} />, 
       desc: "Advanced training on flight planning, meteorology and navigation.",
-      img: "https://images.unsplash.com/photo-1436491865332-7a61a109c0f3?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965629751.jpg", // Hoton Flight Dispatcher
       outcomes: ["Advanced Flight Planning", "Meteorology", "Navigation"],
       careers: ["Flight Dispatcher", "Operations Control Officer"]
     },
@@ -69,7 +69,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Layout size={24} />, 
       desc: "Essential training on airport operations and passenger handling.",
-      img: "https://images.unsplash.com/photo-1473862170180-84427c485aca?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965722394.jpg", // Hoton Airport Ground Ops
       outcomes: ["Passenger Handling", "Ramp Safety", "Baggage Control"],
       careers: ["Ground Staff", "Passenger Service Agent"]
     },
@@ -79,7 +79,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Ship size={24} />, 
       desc: "Understand the logistics of air transport and Dangerous Goods (DGR).",
-      img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965799313.jpg", // Hoton Cargo
       outcomes: ["Air Waybill Documentation", "Dangerous Goods (DGR)", "Logistics"],
       careers: ["Air Cargo Agent", "Logistics Coordinator"]
     },
@@ -89,7 +89,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <FileText size={24} />, 
       desc: "Expert knowledge on international travel documents and visas.",
-      img: "https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965884821.jpg", // Hoton Visa Processing
       outcomes: ["Global Visa Categories", "Embassy Standards", "Document Verification"],
       careers: ["Visa Consultant", "Global Mobility Specialist"]
     },
@@ -99,7 +99,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Building2 size={24} />, 
       desc: "Business-focused training on how to start a travel agency.",
-      img: "https://images.unsplash.com/photo-1435224668334-0f82ec57b40a?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767965961676.jpg", // Hoton Travel Agency Mgmt
       outcomes: ["Business Plan Development", "Agency Finance", "Digital Marketing"],
       careers: ["Travel Agency Owner", "Business Manager"]
     },
@@ -109,7 +109,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Hotel size={24} />, 
       desc: "Training in world-class hospitality and guest satisfaction.",
-      img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop",
+      img: "/1767966074821.jpg", // Hoton Hotel Mgmt
       outcomes: ["Front Office Operations", "Food & Beverage Management", "Event Planning"],
       careers: ["Hotel Manager", "Hospitality Coordinator"]
     }
@@ -185,12 +185,9 @@ export const Home = () => {
         ))}
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
           <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-          
-          {/* GYARAN SUNA: Na rage girman font kadan kuma na saka wrap don 'and' din ya fito */}
           <h1 className="text-white text-3xl md:text-7xl font-black uppercase leading-[1.1] mb-8 tracking-tighter max-w-5xl">
             Skyward College of Travels <span className="text-red-600">and Tourism</span>
           </h1>
-
           <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
           <div className="flex gap-4">
             <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl">Start Application</Link>
@@ -209,9 +206,9 @@ export const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {featuredCourses.map((course, idx) => (
               <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group">
-                <div className="relative h-32 w-full overflow-hidden">
+                <div className="relative h-40 w-full overflow-hidden">
                    <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                   <div className="absolute inset-0 bg-[#002147]/20 group-hover:bg-transparent transition-colors"></div>
+                   <div className="absolute inset-0 bg-[#002147]/10 group-hover:bg-transparent transition-colors"></div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow text-center items-center">
                   <div className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl">{course.icon}</div>
