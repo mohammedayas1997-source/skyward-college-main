@@ -6,22 +6,21 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { Lock, Mail, Loader2, AlertCircle, Eye, EyeOff, Hash } from "lucide-react";
 
 const UnifiedLogin = () => {
-  const [identifier, setIdentifier] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Email ko Student ID
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // 1. CLEAR SESSION ON MOUNT
-  // Wannan yana tabbatar da cewa duk wani tsohon login ya fita kafin a fara sabo
+  // Share session don sabon shiga
   useEffect(() => {
     const clearSession = async () => {
       try {
         await signOut(auth);
         localStorage.clear();
       } catch (err) {
-        console.error("Session logout error:", err);
+        console.error("Logout error", err);
       }
     };
     clearSession();
@@ -33,70 +32,66 @@ const UnifiedLogin = () => {
     setError("");
 
     try {
-      let emailToAuth = identifier.trim();
+      let emailToAuth = "";
+      const input = identifier.trim();
 
-      // 2. IDENTITY RESOLVER (Student ID vs Email)
-      if (!identifier.includes("@")) {
-        const studentId = identifier.toUpperCase().trim();
+      // --- TSARIN LOGIN MAI BASIRA ---
+      
+      // 1. Idan Staff ne (Yana sa Email dake da @)
+      if (input.includes("@")) {
+        if (!input.toLowerCase().endsWith("@skyward.edu.ng")) {
+          throw new Error("Staff must use official @skyward.edu.ng email.");
+        }
+        emailToAuth = input;
+      } 
+      // 2. Idan Dalibi ne (Ba ya sa @, sai dai Student ID)
+      else {
+        const studentId = input.toUpperCase();
+        // Nemo wannan ID din a Firestore don gano Email din dalibin
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          throw new Error("Student ID not found in our records.");
+          throw new Error("Student ID not found. Contact Admin.");
         }
         
-        const studentData = querySnapshot.docs[0].data();
-        emailToAuth = studentData.email;
-      } else {
-        // Staff/Admin Email Validation
-        if (!identifier.toLowerCase().endsWith("@skyward.edu.ng")) {
-          throw new Error("Unauthorized email domain. Use @skyward.edu.ng");
-        }
+        // Ciro email din dake boye a bayanan dalibin
+        emailToAuth = querySnapshot.docs[0].data().email;
       }
 
-      // 3. AUTHENTICATION
+      // --- SIGN IN ---
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const user = userCredential.user;
 
-      // 4. ROLE RETRIEVAL & PERSISTENCE
+      // --- ROLE CHECKING ---
       const userDoc = await getDoc(doc(db, "users", user.uid));
+      
+      if (userDoc.exists()) {
+        const role = userDoc.data().role?.toLowerCase().trim();
+        localStorage.setItem("isAuth", "true");
+        localStorage.setItem("userRole", role);
 
-      if (!userDoc.exists()) {
-        throw new Error("Access denied. No user profile found.");
+        // Paths dangane da Role
+        const routes = {
+          admin: "/admin/dashboard",
+          proprietor: "/portal/proprietor",
+          rector: "/portal/rector",
+          accountant: "/admin/accountant",
+          exam: "/admin/exam-office",
+          admission: "/admin/admission-officer",
+          staff: "/staff/dashboard",
+          student: "/portal/dashboard"
+        };
+
+        navigate(routes[role] || "/", { replace: true });
+      } else {
+        throw new Error("User record missing in database.");
       }
 
-      const role = userDoc.data().role?.toLowerCase().trim();
-      
-      // Ajiye bayanan da ProtectedRoute zai bukata
-      localStorage.setItem("isAuth", "true");
-      localStorage.setItem("userRole", role);
-
-      // 5. SMART REDIRECT ENGINE
-      const routes = {
-        admin: "/admin/dashboard",
-        proprietor: "/portal/proprietor",
-        rector: "/portal/rector",
-        accountant: "/admin/accountant",
-        exam: "/admin/exam-office",
-        admission: "/admin/admission-officer",
-        staff: "/staff/dashboard",
-        student: "/portal/dashboard"
-      };
-
-      const destination = routes[role] || "/";
-      
-      // Dan jinkiri kadan don UI yayi kyau
-      setTimeout(() => {
-        navigate(destination, { replace: true });
-      }, 500);
-
     } catch (err) {
-      console.error("Login attempt failed:", err.code);
-      // Translation of Firebase errors
+      console.error("Error:", err.code);
       if (err.code === "auth/invalid-credential") {
-        setError("Invalid ID/Email or password.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Account temporarily locked due to many attempts.");
+        setError("Invalid credentials. Check your Email/ID and Password.");
       } else {
         setError(err.message);
       }
@@ -106,46 +101,42 @@ const UnifiedLogin = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] relative overflow-hidden font-sans text-left">
-      {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] bg-red-100 rounded-full blur-[130px] opacity-50" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] bg-[#002147]/10 rounded-full blur-[130px] opacity-50" />
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] font-sans text-left relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] bg-red-50 rounded-full blur-[100px]" />
+      <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-[100px]" />
 
-      <div className="w-full max-w-[480px] p-6 relative z-10">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-[2.2rem] shadow-2xl border border-slate-100 mb-6 group hover:rotate-6 transition-transform duration-500">
-             <img src="/logo.png" alt="Skyward" className="w-14 h-14 object-contain" />
-          </div>
-          <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">
-            Skyward <span className="text-red-600">Portal</span>
+      <div className="w-full max-w-[460px] p-6 relative z-10">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl font-black text-[#002147] uppercase tracking-tighter italic">
+            SKYWARD <span className="text-red-600">PORTAL</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-3 italic">Dual-Authentication Gateway</p>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-3 italic">
+             {identifier.includes("@") ? "Staff Access Point" : "Student Access Point"}
+          </p>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-2xl p-8 md:p-12 rounded-[3.5rem] shadow-[0_30px_60px_rgba(0,33,71,0.08)] border border-white/40">
+        <div className="bg-white p-10 rounded-[3rem] shadow-[0_30px_70px_-10px_rgba(0,33,71,0.1)] border border-slate-100">
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-2xl flex items-center gap-3 text-[10px] font-black border border-red-100 animate-pulse">
+              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase flex items-center gap-3 border border-red-100 animate-pulse">
                 <AlertCircle size={16} /> {error}
               </div>
             )}
 
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">
-                {identifier.includes("@") ? "Official Email" : "Student ID / Email"}
+                {identifier.includes("@") ? "Staff Email Address" : "Student ID Number"}
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
+                <div className="absolute left-5 top-5 text-slate-300 group-focus-within:text-red-600 transition-colors">
                   {identifier.includes("@") ? <Mail size={18} /> : <Hash size={18} />}
                 </div>
                 <input 
-                  type="text" 
-                  autoComplete="username"
-                  placeholder={identifier.includes("@") ? "user@skyward.edu.ng" : "SKW/2026/001"}
-                  value={identifier}
+                  type="text" required
+                  placeholder={identifier.includes("@") ? "name@skyward.edu.ng" : "SKW/2026/001"}
+                  className="w-full bg-slate-50 p-5 pl-14 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-red-600/10 focus:bg-white transition-all shadow-inner"
                   onChange={(e) => setIdentifier(e.target.value)}
-                  className="w-full bg-slate-100/50 border-none py-5 pl-14 pr-6 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
-                  required
                 />
               </div>
             </div>
@@ -153,33 +144,23 @@ const UnifiedLogin = () => {
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Security Password</label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-5 flex items-center text-slate-400 group-focus-within:text-red-600 transition-colors">
-                  <Lock size={18} />
-                </div>
+                <Lock className="absolute left-5 top-5 text-slate-300 group-focus-within:text-red-600 transition-colors" size={18} />
                 <input 
-                  type={showPassword ? "text" : "password"} 
-                  autoComplete="current-password"
-                  value={password}
+                  type={showPassword ? "text" : "password"} required placeholder="••••••••"
+                  className="w-full bg-slate-50 p-5 pl-14 pr-14 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-red-600/10 focus:bg-white transition-all shadow-inner"
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-100/50 border-none py-5 pl-14 pr-14 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-red-600/20 transition-all outline-none"
-                  required
                 />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-5 flex items-center text-slate-400 hover:text-red-600 transition-colors"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-5 text-slate-300 hover:text-red-600">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             <button 
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#002147] text-white py-5 rounded-[2rem] font-black uppercase text-[11px] tracking-[0.25em] flex items-center justify-center gap-3 hover:bg-red-600 transition-all active:scale-[0.97] disabled:bg-slate-300 shadow-xl shadow-blue-900/10"
+              type="submit" disabled={loading}
+              className="w-full bg-[#002147] text-white py-5 rounded-[2rem] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-red-600 transition-all shadow-xl active:scale-95 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Access"}
+              {loading ? <Loader2 className="animate-spin mx-auto" size={20} /> : "Authorize Sign-In"}
             </button>
           </form>
         </div>

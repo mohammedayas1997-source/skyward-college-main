@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { Mail, Lock, Hash, Loader2, AlertCircle, ChevronRight } from "lucide-react";
+import { Mail, Lock, Hash, Loader2, AlertCircle, ChevronRight, Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
-  const [identifier, setIdentifier] = useState(""); // Email ko ID Number
+  const [identifier, setIdentifier] = useState(""); // Zai iya zama Email ko Student ID
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // Na kara wannan don ganin password
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -20,22 +21,27 @@ const Login = () => {
     try {
       let emailToAuth = identifier.trim();
 
-      // 1. DYNAMIC IDENTITY RESOLVER
-      // Idan babu "@", muna kallon sa a matsayin Student ID
+      // 1. DYNAMIC IDENTITY RESOLVER (Strict Staff/Student Logic)
       if (!identifier.includes("@")) {
+        // STUDENT PATH: Dole ID Number ne idan babu @
         const studentId = identifier.toUpperCase().trim();
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          throw new Error("Student ID not found. Please verify your ID Number.");
+          throw new Error("Student ID number not found. Contact Admin.");
         }
         
-        // Ciro email din da ke boye a jikin wannan ID din a Firestore
+        // Nemo ainihin email din dalibin daga Firestore
         emailToAuth = querySnapshot.docs[0].data().email;
+      } else {
+        // STAFF PATH: Idan akwai @, to Email ne na Staff
+        if (!identifier.toLowerCase().endsWith("@skyward.edu.ng")) {
+          throw new Error("Official @skyward.edu.ng email required for staff.");
+        }
       }
 
-      // 2. FIREBASE AUTHENTICATION (The Core)
+      // 2. FIREBASE AUTHENTICATION
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const user = userCredential.user;
 
@@ -46,7 +52,7 @@ const Login = () => {
         const userData = userDoc.data();
         const role = userData.role.toLowerCase().trim();
 
-        // Muna adana role a localStorage don ProtectedRoute ya gani
+        // Adana role a localStorage
         localStorage.setItem("userRole", role);
         localStorage.setItem("isAuth", "true");
 
@@ -66,15 +72,19 @@ const Login = () => {
         navigate(targetRoute, { replace: true });
 
       } else {
-        throw new Error("Profile record not found in Skyward database.");
+        throw new Error("Access denied. User profile missing.");
       }
 
     } catch (err) {
       console.error("Login Error:", err.code);
-      let message = err.message;
+      let message = "Login failed. Please check your credentials.";
+      
       if (err.code === "auth/invalid-credential") {
-        message = "Incorrect credentials. Please check your ID/Email and Password.";
+        message = "Incorrect Password or Identity.";
+      } else if (err.message) {
+        message = err.message;
       }
+      
       setError(message);
     } finally {
       setLoading(false);
@@ -84,15 +94,13 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
       <div className="w-full max-w-md">
-        {/* BRANDING */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-[#001524] italic tracking-tighter">
             SKYWARD <span className="text-red-600">PORTAL</span>
           </h1>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Centralized Login System</p>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-2 italic">Unified Authentication</p>
         </div>
 
-        {/* LOGIN FORM */}
         <div className="bg-white p-10 rounded-[2.5rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)] border border-slate-100">
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
@@ -103,7 +111,7 @@ const Login = () => {
 
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#001524] uppercase ml-4 tracking-widest">
-                {identifier.includes("@") ? "Official Email" : "Student ID Number"}
+                {identifier.includes("@") ? "Staff Official Email" : "Student ID Number"}
               </label>
               <div className="relative group">
                 <div className="absolute left-4 top-4 text-slate-300 group-focus-within:text-red-600 transition-colors">
@@ -112,7 +120,7 @@ const Login = () => {
                 <input 
                   type="text" required
                   placeholder={identifier.includes("@") ? "name@skyward.edu.ng" : "SKW/2026/001"}
-                  className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none ring-2 ring-transparent focus:ring-red-600/10 focus:bg-white border border-slate-100 transition-all"
+                  className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none ring-2 ring-transparent focus:ring-red-600/10 focus:bg-white border border-slate-100 transition-all shadow-inner"
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
               </div>
@@ -125,16 +133,24 @@ const Login = () => {
                   <Lock size={18} />
                 </div>
                 <input 
-                  type="password" required placeholder="••••••••"
-                  className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none ring-2 ring-transparent focus:ring-red-600/10 focus:bg-white border border-slate-100 transition-all"
+                  type={showPassword ? "text" : "password"} 
+                  required placeholder="••••••••"
+                  className="w-full bg-slate-50 p-4 pl-12 pr-12 rounded-2xl text-sm font-bold outline-none ring-2 ring-transparent focus:ring-red-600/10 focus:bg-white border border-slate-100 transition-all shadow-inner"
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-4 text-slate-300 hover:text-red-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
             <button 
               type="submit" disabled={loading}
-              className="w-full bg-[#001524] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95"
+              className="w-full bg-[#001524] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={18} />
