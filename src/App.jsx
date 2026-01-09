@@ -192,6 +192,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/" element={<Login />} />
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
         <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
