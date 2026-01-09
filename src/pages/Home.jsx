@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Gallery from "../components/Gallery";
-import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
+import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu } from "lucide-react";
 
 export const Home = () => {
   const [current, setCurrent] = useState(0);
@@ -125,26 +125,31 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white text-left relative">
       
-      {/* 1. HEADER / NAVIGATION (Logon sama) */}
-      <nav className="absolute top-0 w-full z-[80] px-6 py-4 flex justify-between items-center bg-transparent">
-        <div className="flex items-center gap-2">
-           <img src="/logo.png" alt="Logo" className="h-12 w-12 object-contain" />
-           <div className="flex flex-col">
-              <span className="text-white font-black text-xl leading-none">SKYWARD</span>
-              <span className="text-red-600 font-bold text-[10px] tracking-[0.2em]">COLLEGE</span>
-           </div>
+      {/* 1. MAIN HEADER (Inda Logo da Suna suke a sama) */}
+      <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-3">
+             <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
+             <div className="flex flex-col">
+                <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
+                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">College of Travels</span>
+             </div>
+          </Link>
+          
+          <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center">
+             <Link to="/" className="text-red-600">Home</Link>
+             <Link to="/courses" className="hover:text-red-600 transition-colors">Courses</Link>
+             <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-full hover:bg-red-600 transition-all">Apply Now</Link>
+          </div>
+          <button className="md:hidden text-[#002147]">
+            <Menu size={24} />
+          </button>
         </div>
-        <div className="hidden md:flex gap-8 text-white font-bold text-[10px] uppercase tracking-widest">
-           <Link to="/" className="hover:text-red-600">Home</Link>
-           <Link to="/courses" className="hover:text-red-600">Courses</Link>
-           <Link to="/about" className="hover:text-red-600">About</Link>
-           <Link to="/contact" className="hover:text-red-600">Contact</Link>
-        </div>
-      </nav>
+      </header>
 
       {/* --- MODAL DA BAYANAI --- */}
       {selectedCourse && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative">
             <button onClick={() => setSelectedCourse(null)} className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all z-10">
               <X size={20} />
@@ -174,16 +179,17 @@ export const Home = () => {
       )}
 
       {/* 2. HERO SECTION */}
-      <div className="relative w-full h-[500px] md:h-[750px] overflow-hidden bg-slate-900">
+      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/80">
-          <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-[0.8] mb-6 tracking-tighter">SKYWARD <br/><span className="text-red-600 text-3xl md:text-6xl italic">COLLEGE</span></h1>
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
+          <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
+          <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-none mb-8 tracking-tighter">Aviation & <span className="text-red-600">Tourism</span></h1>
           <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
           <div className="flex gap-4">
-            <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest">Apply Now</Link>
-            <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-full font-black uppercase text-xs border border-white/20">Student Portal</Link>
+            <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl">Start Application</Link>
+            <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-full font-black uppercase text-xs border border-white/20">Portal Access</Link>
           </div>
         </div>
       </div>
@@ -219,7 +225,7 @@ export const Home = () => {
       <div className="w-full bg-white py-24 px-6 text-center border-b">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-[#002147] text-3xl md:text-5xl font-black uppercase mb-8">Excellence in Training</h3>
-          <p className="text-slate-600 text-lg italic font-medium leading-loose italic">"To provide through teaching, research and other means, the development of knowledge and its practical application to the needs of community and professional integrity."</p>
+          <p className="text-slate-600 text-lg italic font-medium leading-loose">"To provide through teaching, research and other means, the development of knowledge and its practical application to the needs of community and professional integrity."</p>
         </div>
       </div>
 
@@ -230,38 +236,33 @@ export const Home = () => {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
            <div className="space-y-6">
               <div className="flex items-center gap-2">
-                <img src="/logo.png" alt="Logo" className="h-16 w-16" />
+                <img src="/logo.png" alt="Logo" className="h-16 w-16 bg-white p-2 rounded-xl" />
                 <h4 className="font-black text-2xl tracking-tighter">SKYWARD</h4>
               </div>
               <p className="text-slate-400 text-sm font-medium leading-relaxed">Leading Aviation and Tourism College providing world-class professional training since 2010.</p>
-              <div className="flex gap-4">
-                 <Facebook size={18} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-                 <Twitter size={18} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-                 <Instagram size={18} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-              </div>
            </div>
            <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Quick Links</h5>
               <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
                 <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
-                <li><Link to="/admission/apply" className="hover:text-red-600">Application</Link></li>
+                <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
                 <li><Link to="/portal/login" className="hover:text-red-600">Student Portal</Link></li>
               </ul>
            </div>
            <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Contact Us</h5>
               <ul className="space-y-4 text-slate-400 text-sm font-medium">
-                <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600" /> 123 Aviation Way, Airport Road, Nigeria.</li>
-                <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 800 000 0000</li>
+                <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600" /> Kaduna-Airport Road, Kaduna State, Nigeria.</li>
+                <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 800 123 4567</li>
                 <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
               </ul>
            </div>
            <div>
-              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Newsletter</h5>
-              <p className="text-slate-400 text-xs mb-4">Stay updated with our latest news.</p>
-              <div className="flex">
-                 <input type="email" placeholder="Email" className="bg-white/5 border border-white/10 p-3 rounded-l-lg w-full text-sm outline-none focus:border-red-600" />
-                 <button className="bg-red-600 p-3 rounded-r-lg font-bold text-xs">JOIN</button>
+              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Connect</h5>
+              <div className="flex gap-4 mb-4">
+                 <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+                 <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+                 <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
               </div>
            </div>
         </div>
