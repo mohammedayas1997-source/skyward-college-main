@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Gallery from "../components/Gallery";
-import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu } from "lucide-react";
+import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu, BookOpen } from "lucide-react";
 
 export const Home = () => {
   const [current, setCurrent] = useState(0);
@@ -10,6 +10,14 @@ export const Home = () => {
   const slides = [
     "/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", 
     "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
+  ];
+
+  // Links na E-Library don dalibai
+  const eLibraryLinks = [
+    { name: "IATA Publications", url: "https://www.iata.org/en/publications/" },
+    { name: "UN Tourism Library", url: "https://www.e-unwto.org/" },
+    { name: "Aviation PDF Books", url: "https://www.pdfdrive.com/aviation-books.html" },
+    { name: "Hospitality Management", url: "https://www.openwafe.org/" }
   ];
 
   const featuredCourses = [
@@ -138,12 +146,26 @@ export const Home = () => {
           
           <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center relative z-[110]">
              <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
-             <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer">Courses</Link>
+             <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap">Courses</Link>
+             
+             {/* E-LIBRARY DROPDOWN */}
+             <div className="group relative">
+               <button className="flex items-center gap-1 hover:text-red-600 transition-colors cursor-pointer uppercase">
+                 <BookOpen size={14} /> E-Library
+               </button>
+               <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-100 shadow-xl rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-2 z-[150]">
+                 {eLibraryLinks.map((link, i) => (
+                   <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-[9px] hover:bg-red-50 hover:text-red-600 rounded-lg">
+                     {link.name}
+                   </a>
+                 ))}
+               </div>
+             </div>
+
              <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer">Gallery</Link>
              <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer">Apply Now</Link>
              <Link to="/portal/login" className="flex items-center gap-1 hover:text-red-600 transition-colors cursor-pointer">
-                <Users size={14} />
-                Portal
+                <Users size={14} /> Portal
              </Link>
           </div>
 
@@ -186,12 +208,11 @@ export const Home = () => {
         </div>
       )}
 
-      {/* 2. HERO SECTION - UPDATED TO LEFT SIDE ALIGNMENT */}
+      {/* 2. HERO SECTION - LEFT SIDE ALIGNED */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        {/* Alignment Changed to items-start and text-left */}
         <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/70 to-transparent pointer-events-none">
           <div className="pointer-events-auto relative z-20 max-w-2xl"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
