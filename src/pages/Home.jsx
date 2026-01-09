@@ -132,7 +132,7 @@ export const Home = () => {
              <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
              <div className="flex flex-col">
                 <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
-                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">College of Travels</span>
+                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">College of Travels and Tourism</span>
              </div>
           </Link>
           
@@ -185,7 +185,7 @@ export const Home = () => {
         ))}
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
           <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-          <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-none mb-8 tracking-tighter">Aviation & <span className="text-red-600">Tourism</span></h1>
+          <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-none mb-8 tracking-tighter">Skyward College of Travel <span className="text-red-600">Tourism</span></h1>
           <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
           <div className="flex gap-4">
             <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl">Start Application</Link>
