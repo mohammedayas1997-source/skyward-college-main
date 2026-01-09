@@ -10,18 +10,18 @@ export const Home = () => {
     "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
   ];
 
-  // Jerin Courses guda 10 cif kamar yadda kace
+  // Jerin Courses dinka na asali guda 10 cif
   const featuredCourses = [
     { title: "Aviation Management", icon: <Plane size={24} />, desc: "Airport & Airline operations management." },
-    { title: "Travel & Tourism", icon: <Globe size={24} />, desc: "Global tourism and travel agency professional." },
-    { title: "Hotel Management", icon: <Hotel size={24} />, desc: "Luxury hospitality and catering services." },
-    { title: "IATA Foundation", icon: <Award size={24} />, desc: "International air transport association standards." },
-    { title: "Flight Dispatch", icon: <Briefcase size={24} />, desc: "Flight planning and operational control." },
-    { title: "Aviation Security", icon: <Shield size={24} />, desc: "Security management in aviation industry." },
-    { title: "Cabin Crew", icon: <Headphones size={24} />, desc: "In-flight safety and service professional training." },
-    { title: "Cargo Handling", icon: <Ship size={24} />, desc: "Managing air and sea freight logistics." },
-    { title: "Tour Guiding", icon: <Map size={24} />, desc: "Professional destination management and guiding." },
-    { title: "Drone Piloting", icon: <Camera size={24} />, desc: "Unmanned aerial vehicle operations and safety." }
+    { title: "Travel & Tourism Management", icon: <Globe size={24} />, desc: "Global tourism and travel agency professional." },
+    { title: "Hotel & Hospitality Management", icon: <Hotel size={24} />, desc: "Luxury hospitality and catering services." },
+    { title: "IATA Foundation Course", icon: <Award size={24} />, desc: "International air transport association standards." },
+    { title: "Flight Operation (Dispatch)", icon: <Briefcase size={24} />, desc: "Flight planning and operational control." },
+    { title: "Aviation Security Management", icon: <Shield size={24} />, desc: "Security management in aviation industry." },
+    { title: "Cabin Crew & In-flight Service", icon: <Headphones size={24} />, desc: "In-flight safety and service professional training." },
+    { title: "Air Cargo Handling", icon: <Ship size={24} />, desc: "Managing air and sea freight logistics." },
+    { title: "Tour Guiding & Operations", icon: <Map size={24} />, desc: "Professional destination management and guiding." },
+    { title: "Unmanned Aerial Vehicle (Drone)", icon: <Camera size={24} />, desc: "Unmanned aerial vehicle operations and safety." }
   ];
 
   useEffect(() => {
@@ -34,8 +34,8 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white text-left">
       
-      {/* 1. HERO SECTION (Tsohon Tsarinka) */}
-      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900">
+      {/* 1. HERO SECTION (Tsohon Tsarinka mai Kyau) */}
+      <div className="relative w-full h-[500px] md:h-[750px] overflow-hidden bg-slate-900">
         {slides.map((img, index) => (
           <img
             key={index}
@@ -47,45 +47,57 @@ export const Home = () => {
           />
         ))}
         
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/80">
+          {/* Logo Section */}
+          <div className="mb-8 animate-fade-in">
+             <h2 className="text-white text-3xl md:text-5xl font-black italic tracking-tighter uppercase">
+               Skyward <span className="text-red-600">College</span>
+             </h2>
+             <div className="h-1 w-20 bg-red-600 mx-auto mt-2"></div>
+          </div>
+
           <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">
-            Welcome to
+            Welcome to the future of
           </h2>
           <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-[0.9] max-w-5xl mb-8">
-            Skyward College <br />
-            <span className="text-red-600">of Travels And Tourism</span>
+            Aviation <br />
+            <span className="text-red-600">& Tourism</span>
           </h1>
-          <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium leading-relaxed mb-6">
+          <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium leading-relaxed mb-10">
             Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/admission/apply">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95">
-                Start Application
+              <button className="bg-red-600 hover:bg-red-700 text-white px-10 md:px-14 py-4 md:py-6 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95">
+                Apply Now
               </button>
             </Link>
             <Link to="/portal/login">
-              <button className="bg-[#002147] hover:bg-blue-900 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 border border-white/10">
-                Portal Access
+              <button className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white px-10 md:px-14 py-4 md:py-6 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all border border-white/30 active:scale-95">
+                Student Portal
               </button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 2. COURSES SECTION (Wanda na gyara ya zama guda 10) */}
-      <div className="w-full py-16 px-6 bg-[#f8fafc] -mt-10 relative z-20">
+      {/* 2. COURSES GRID (Biyar-Biyar a Layi Daya) */}
+      <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-20">
         <div className="max-w-7xl mx-auto">
-          <h3 className="text-[#002147] text-xl font-black mb-10 uppercase border-l-4 border-red-600 pl-4">Our Professional Courses</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+          <div className="flex items-center gap-4 mb-12">
+            <div className="h-8 w-2 bg-red-600 rounded-full"></div>
+            <h3 className="text-[#002147] text-2xl font-black uppercase tracking-tight">Professional Courses</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {featuredCourses.map((course, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 hover:-translate-y-2 transition-transform h-full flex flex-col items-center text-center">
-                <div className="text-red-600 mb-4 bg-red-50 w-fit p-3 rounded-2xl">
+              <div key={idx} className="bg-white p-8 rounded-[2rem] shadow-xl shadow-slate-200/60 border border-slate-100 hover:-translate-y-3 transition-all duration-300 h-full flex flex-col items-center text-center group">
+                <div className="text-red-600 mb-6 bg-red-50 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-red-600 group-hover:text-white transition-colors shadow-inner">
                   {course.icon}
                 </div>
-                <h4 className="text-[#002147] font-black uppercase text-[11px] mb-2 leading-tight">{course.title}</h4>
-                <p className="text-slate-500 text-[10px] font-bold leading-relaxed">
+                <h4 className="text-[#002147] font-black uppercase text-[12px] mb-3 leading-tight tracking-wide">{course.title}</h4>
+                <p className="text-slate-500 text-[11px] font-bold leading-relaxed">
                   {course.desc}
                 </p>
               </div>
@@ -94,24 +106,26 @@ export const Home = () => {
         </div>
       </div>
 
-      {/* 3. CORE PHILOSOPHY SECTION (Tsohon Tsarinka) */}
-      <div className="w-full bg-white py-24 px-6">
+      {/* 3. PHILOSOPHY SECTION */}
+      <div className="w-full bg-white py-28 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="h-1.5 w-24 bg-red-600 mx-auto mb-8"></div>
-          <h3 className="text-[#002147] text-3xl md:text-5xl font-black uppercase mb-8 leading-tight">
-            A Premier Institute for <br /> Aviation & Tourism
+          <span className="text-red-600 font-black text-xs uppercase tracking-[0.5em] block mb-6">Our Mission</span>
+          <h3 className="text-[#002147] text-3xl md:text-6xl font-black uppercase mb-10 leading-none tracking-tighter">
+            Excellence in <br /> <span className="text-slate-300">Aviation Training</span>
           </h3>
-          <p className="text-slate-600 text-lg md:text-xl leading-loose italic font-medium">
+          <p className="text-slate-600 text-lg md:text-2xl leading-relaxed italic font-medium max-w-3xl mx-auto">
             "To provide through teaching, research and other means, the development of knowledge and its practical application to the needs of community and professional integrity."
           </p>
-          <Link to="/courses" className="inline-block mt-10 text-red-600 font-black uppercase text-xs tracking-widest border-b-2 border-red-600 pb-1 hover:text-[#002147] hover:border-[#002147] transition-all">
-            View Full Prospectus
-          </Link>
+          <div className="mt-12">
+            <Link to="/about" className="text-[#002147] font-black uppercase text-xs tracking-widest border-b-4 border-red-600 pb-2 hover:text-red-600 transition-all">
+              Learn More About Us
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* 4. GALLERY SECTION */}
-      <div className="border-t border-slate-50">
+      {/* 4. GALLERY */}
+      <div className="border-t border-slate-100 bg-slate-50/50">
          <Gallery />
       </div>
 
