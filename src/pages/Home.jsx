@@ -19,7 +19,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Plane size={24} />, 
       desc: "Master Global Distribution Systems (GDS). Learn Amadeus and Sabre.",
-      img: "/1767965179277.jpg", // Hoton Air Ticketing
+      img: "/1767965179277.jpg", 
       outcomes: ["Proficiency in Amadeus & Sabre GDS", "IATA Geography", "Advanced Fare Construction"],
       careers: ["Airline Ticketing Officer", "Travel Consultant"]
     },
@@ -29,7 +29,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Users size={24} />, 
       desc: "Develop high-level communication and problem-solving skills.",
-      img: "/1767965255899.jpg", // Hoton Customer Service
+      img: "/1767965255899.jpg", 
       outcomes: ["Effective Communication", "Crisis Management", "Professional Ethics"],
       careers: ["Guest Relations Executive", "Customer Experience Officer"]
     },
@@ -39,7 +39,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Globe size={24} />, 
       desc: "Comprehensive training on managing international tour packages.",
-      img: "/1767965449892.jpg", // Hoton Travel & Tourism Ops
+      img: "/1767965449892.jpg", 
       outcomes: ["Tour Packaging", "Destination Marketing", "Global Geography"],
       careers: ["Tour Operator", "Destination Manager"]
     },
@@ -49,7 +49,7 @@ export const Home = () => {
       fee: "₦400,000", 
       icon: <Headphones size={24} />, 
       desc: "Professional training for aspiring flight attendants and safety.",
-      img: "/1767965537113.jpg", // Hoton Cabin Crew
+      img: "/1767965537113.jpg", 
       outcomes: ["Safety & Emergency Procedures (SEP)", "Aviation Medicine & First Aid", "In-flight Catering & Service"],
       careers: ["Commercial Flight Attendant", "VIP Corporate Cabin Crew"]
     },
@@ -59,7 +59,7 @@ export const Home = () => {
       fee: "₦300,000", 
       icon: <Briefcase size={24} />, 
       desc: "Advanced training on flight planning, meteorology and navigation.",
-      img: "/1767965629751.jpg", // Hoton Flight Dispatcher
+      img: "/1767965629751.jpg", 
       outcomes: ["Advanced Flight Planning", "Meteorology", "Navigation"],
       careers: ["Flight Dispatcher", "Operations Control Officer"]
     },
@@ -69,7 +69,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Layout size={24} />, 
       desc: "Essential training on airport operations and passenger handling.",
-      img: "/1767965722394.jpg", // Hoton Airport Ground Ops
+      img: "/1767965722394.jpg", 
       outcomes: ["Passenger Handling", "Ramp Safety", "Baggage Control"],
       careers: ["Ground Staff", "Passenger Service Agent"]
     },
@@ -79,7 +79,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Ship size={24} />, 
       desc: "Understand the logistics of air transport and Dangerous Goods (DGR).",
-      img: "/1767965799313.jpg", // Hoton Cargo
+      img: "/1767965799313.jpg", 
       outcomes: ["Air Waybill Documentation", "Dangerous Goods (DGR)", "Logistics"],
       careers: ["Air Cargo Agent", "Logistics Coordinator"]
     },
@@ -89,7 +89,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <FileText size={24} />, 
       desc: "Expert knowledge on international travel documents and visas.",
-      img: "/1767965884821.jpg", // Hoton Visa Processing
+      img: "/1767965884821.jpg", 
       outcomes: ["Global Visa Categories", "Embassy Standards", "Document Verification"],
       careers: ["Visa Consultant", "Global Mobility Specialist"]
     },
@@ -99,7 +99,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Building2 size={24} />, 
       desc: "Business-focused training on how to start a travel agency.",
-      img: "/1767965961676.jpg", // Hoton Travel Agency Mgmt
+      img: "/1767965961676.jpg", 
       outcomes: ["Business Plan Development", "Agency Finance", "Digital Marketing"],
       careers: ["Travel Agency Owner", "Business Manager"]
     },
@@ -109,7 +109,7 @@ export const Home = () => {
       fee: "₦80,000", 
       icon: <Hotel size={24} />, 
       desc: "Training in world-class hospitality and guest satisfaction.",
-      img: "/1767966074821.jpg", // Hoton Hotel Mgmt
+      img: "/1767966074821.jpg", 
       outcomes: ["Front Office Operations", "Food & Beverage Management", "Event Planning"],
       careers: ["Hotel Manager", "Hospitality Coordinator"]
     }
@@ -155,7 +155,12 @@ export const Home = () => {
               <X size={20} />
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2">
-              <img src={selectedCourse.img} alt={selectedCourse.title} className="h-48 md:h-full w-full object-cover" />
+              <img 
+                src={selectedCourse.img} 
+                alt={selectedCourse.title} 
+                className="h-48 md:h-full w-full object-cover"
+                onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1436491865332-7a61a109c0f3?q=80&w=800"; }}
+              />
               <div className="p-8 md:p-10">
                 <h3 className="text-[#002147] text-2xl font-black uppercase leading-tight mb-4">{selectedCourse.title}</h3>
                 <div className="space-y-4 mb-6">
@@ -206,8 +211,13 @@ export const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {featuredCourses.map((course, idx) => (
               <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group">
-                <div className="relative h-40 w-full overflow-hidden">
-                   <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div className="relative h-40 w-full overflow-hidden bg-slate-200">
+                   <img 
+                    src={course.img} 
+                    alt={course.title} 
+                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=400"; }}
+                   />
                    <div className="absolute inset-0 bg-[#002147]/10 group-hover:bg-transparent transition-colors"></div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow text-center items-center">
@@ -222,7 +232,7 @@ export const Home = () => {
           </div>
         </div>
       </div>
-
+      
       {/* 4. MISSION SECTION */}
       <div className="w-full bg-white py-24 px-6 text-center border-b">
         <div className="max-w-4xl mx-auto">
