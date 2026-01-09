@@ -123,12 +123,12 @@ export const Home = () => {
   }, [slides.length]);
 
   return (
-    <section className="w-full min-h-screen bg-white text-left relative">
+    <section className="w-full min-h-screen bg-white relative">
       
-      {/* 1. MAIN HEADER */}
-      <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
+      {/* 1. MAIN HEADER - Set to z-[100] to stay on top */}
+      <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 cursor-pointer">
              <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
              <div className="flex flex-col">
                 <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
@@ -137,45 +137,37 @@ export const Home = () => {
           </Link>
           
           <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center">
-             <Link to="/" className="text-red-600">Home</Link>
-             <Link to="/courses" className="hover:text-red-600 transition-colors">Courses</Link>
-             <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-full hover:bg-red-600 transition-all">Apply Now</Link>
+             <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80">Home</Link>
+             <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer">Courses</Link>
+             <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer">Apply Now</Link>
           </div>
-          <button className="md:hidden text-[#002147]">
+          <button className="md:hidden text-[#002147] cursor-pointer">
             <Menu size={24} />
           </button>
         </div>
       </header>
 
-      {/* --- MODAL DA BAYANAI --- */}
+      {/* --- MODAL DA BAYANAI - Added z-[200] --- */}
       {selectedCourse && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm pointer-events-auto">
           <div className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative">
-            <button onClick={() => setSelectedCourse(null)} className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all z-10">
+            <button onClick={() => setSelectedCourse(null)} className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all z-10 cursor-pointer">
               <X size={20} />
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2">
-              <img 
-                src={selectedCourse.img} 
-                alt={selectedCourse.title} 
-                className="h-48 md:h-full w-full object-cover"
-                onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1436491865332-7a61a109c0f3?q=80&w=800"; }}
-              />
+              <img src={selectedCourse.img} alt={selectedCourse.title} className="h-48 md:h-full w-full object-cover" />
               <div className="p-8 md:p-10">
                 <h3 className="text-[#002147] text-2xl font-black uppercase leading-tight mb-4">{selectedCourse.title}</h3>
                 <div className="space-y-4 mb-6">
-                  <div>
-                    <h4 className="text-[10px] font-black uppercase text-slate-400 mb-2">Outcomes:</h4>
-                    <ul className="space-y-1">
-                      {selectedCourse.outcomes.map((item, i) => (
-                        <li key={i} className="flex items-center gap-2 text-[11px] font-bold text-slate-600"><CheckCircle size={12} className="text-green-500" /> {item}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ul className="space-y-1">
+                    {selectedCourse.outcomes.map((item, i) => (
+                      <li key={i} className="flex items-center gap-2 text-[11px] font-bold text-slate-600"><CheckCircle size={12} className="text-green-500" /> {item}</li>
+                    ))}
+                  </ul>
                 </div>
                 <div className="flex items-center justify-between border-t pt-6">
                   <span className="text-2xl font-black text-red-600">{selectedCourse.fee}</span>
-                  <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase">Enroll Now</Link>
+                  <Link to="/admission/apply" className="bg-[#002147] text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase cursor-pointer">Enroll Now</Link>
                 </div>
               </div>
             </div>
@@ -183,26 +175,28 @@ export const Home = () => {
         </div>
       )}
 
-      {/* 2. HERO SECTION */}
-      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900">
+      {/* 2. HERO SECTION - z-10 */}
+      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
-          <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-          <h1 className="text-white text-3xl md:text-7xl font-black uppercase leading-[1.1] mb-8 tracking-tighter max-w-5xl">
-            Skyward College of Travels <span className="text-red-600">and Tourism</span>
-          </h1>
-          <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
-          <div className="flex gap-4">
-            <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl">Start Application</Link>
-            <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-full font-black uppercase text-xs border border-white/20">Portal Access</Link>
+        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70 pointer-events-none">
+          <div className="pointer-events-auto"> {/* Allow clicks inside this div only */}
+            <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
+            <h1 className="text-white text-3xl md:text-7xl font-black uppercase leading-[1.1] mb-8 tracking-tighter max-w-5xl">
+              Skyward College of Travels <span className="text-red-600">and Tourism</span>
+            </h1>
+            <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
+            <div className="flex gap-4 justify-center">
+              <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl cursor-pointer hover:bg-red-700">Start Application</Link>
+              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-full font-black uppercase text-xs border border-white/20 cursor-pointer hover:bg-white/20">Portal Access</Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. COURSES SECTION */}
-      <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-20">
+      {/* 3. COURSES SECTION - z-20 and pointer-events-auto */}
+      <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-20 pointer-events-auto">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
             <div className="h-8 w-2 bg-red-600 rounded-full"></div>
@@ -210,21 +204,24 @@ export const Home = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {featuredCourses.map((course, idx) => (
-              <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group">
+              <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group pointer-events-auto">
                 <div className="relative h-40 w-full overflow-hidden bg-slate-200">
-                   <img 
-                    src={course.img} 
-                    alt={course.title} 
-                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=400"; }}
-                   />
-                   <div className="absolute inset-0 bg-[#002147]/10 group-hover:bg-transparent transition-colors"></div>
+                   <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                   <div className="absolute inset-0 bg-[#002147]/10"></div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow text-center items-center">
                   <div className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl">{course.icon}</div>
                   <h4 className="text-[#002147] font-black uppercase text-[11px] mb-2 leading-tight h-8">{course.title}</h4>
                   <p className="text-slate-500 text-[10px] font-bold mb-4 flex-grow">{course.desc}</p>
-                  <button onClick={() => setSelectedCourse(course)} className="w-full mb-4 py-2 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase hover:bg-[#002147] hover:text-white transition-all">View Details</button>
+                  <button 
+                    onClick={() => {
+                      console.log("Course clicked:", course.title);
+                      setSelectedCourse(course);
+                    }} 
+                    className="w-full mb-4 py-2 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase hover:bg-[#002147] hover:text-white transition-all cursor-pointer relative z-30"
+                  >
+                    View Details
+                  </button>
                   <div className="text-red-600 font-black text-sm">{course.fee}</div>
                 </div>
               </div>
@@ -232,19 +229,11 @@ export const Home = () => {
           </div>
         </div>
       </div>
-      
-      {/* 4. MISSION SECTION */}
-      <div className="w-full bg-white py-24 px-6 text-center border-b">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-[#002147] text-3xl md:text-5xl font-black uppercase mb-8">Excellence in Training</h3>
-          <p className="text-slate-600 text-lg italic font-medium leading-loose">"To provide through teaching, research and other means, the development of knowledge and its practical application to the needs of community and professional integrity."</p>
-        </div>
-      </div>
 
       <Gallery />
 
-      {/* 5. FOOTER */}
-      <footer className="w-full bg-[#002147] text-white py-20 px-6">
+      {/* 5. FOOTER - z-20 */}
+      <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-20 pointer-events-auto">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
            <div className="space-y-6">
               <div className="flex items-center gap-2">
@@ -256,30 +245,24 @@ export const Home = () => {
            <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Quick Links</h5>
               <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
-                <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
-                <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
-                <li><Link to="/portal/login" className="hover:text-red-600">Student Portal</Link></li>
+                <li><Link to="/courses" className="hover:text-red-600 cursor-pointer">All Courses</Link></li>
+                <li><Link to="/admission/apply" className="hover:text-red-600 cursor-pointer">Application Form</Link></li>
+                <li><Link to="/portal/login" className="hover:text-red-600 cursor-pointer">Student Portal</Link></li>
               </ul>
            </div>
            <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Contact Us</h5>
               <ul className="space-y-4 text-slate-400 text-sm font-medium">
-                <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600" /> Kaduna-Airport Road, Kaduna State, Nigeria.</li>
-                <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 800 123 4567</li>
+                <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600" /> Jimeta, Yola, Adamawa State, Nigeria.</li>
+                <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
                 <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
               </ul>
            </div>
-           <div>
-              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2">Connect</h5>
-              <div className="flex gap-4 mb-4">
-                 <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-                 <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-                 <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-              </div>
+           <div className="flex gap-4">
+              <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+              <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+              <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
            </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-           &copy; 2026 Skyward College of Travels and Tourism. All Rights Reserved.
         </div>
       </footer>
     </section>
