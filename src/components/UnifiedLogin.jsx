@@ -63,31 +63,29 @@ const UnifiedLogin = () => {
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const user = userCredential.user;
 
-      // --- ROLE CHECKING ---
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      
-      if (userDoc.exists()) {
-        const role = userDoc.data().role?.toLowerCase().trim();
-        localStorage.setItem("isAuth", "true");
-        localStorage.setItem("userRole", role);
+     // --- ROLE CHECKING ---
+const userDoc = await getDoc(doc(db, "users", user.uid));
 
-        // Paths dangane da Role
-        const routes = {
-          admin: "/admin/dashboard",
-          proprietor: "/portal/proprietor",
-          rector: "/portal/rector",
-          accountant: "/admin/accountant",
-          exam: "/admin/exam-office",
-          admission: "/admin/admission-officer",
-          staff: "/staff/dashboard",
-          student: "/portal/dashboard"
-        };
+if (userDoc.exists()) {
+  const role = userDoc.data().role?.toLowerCase().trim();
+  localStorage.setItem("isAuth", "true");
+  localStorage.setItem("userRole", role);
 
-        navigate(routes[role] || "/", { replace: true });
-      } else {
-        throw new Error("User record missing in database.");
-      }
+  // WANNAN JERIN DOLE YA DACI DA APP.JSX
+  const routes = {
+    admin: "/admin/dashboard",
+    proprietor: "/proprietor/dashboard", // Gyara daga /portal/proprietor
+    rector: "/rector/dashboard",         // Gyara daga /portal/rector
+    accountant: "/accountant/dashboard",
+    exam: "/exam/dashboard",
+    admission: "/admission/dashboard",
+    staff: "/staff/portal",              // Wannan ya dace da App.jsx yanzu
+    student: "/student/dashboard"        // Gyara daga /portal/dashboard
+  };
 
+  const targetPath = routes[role] || "/";
+  navigate(targetPath, { replace: true });
+}
     } catch (err) {
       console.error("Error:", err.code);
       if (err.code === "auth/invalid-credential") {
