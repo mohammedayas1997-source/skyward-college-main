@@ -186,13 +186,13 @@ export const Home = () => {
         </div>
       )}
 
-      {/* 2. HERO SECTION - UPDATED TO RIGHT SIDE & SMALLER TEXT */}
+      {/* 2. HERO SECTION - UPDATED TO LEFT SIDE ALIGNMENT */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        {/* Wannan shine bangaren da na gyara (Right Side Alignment) */}
-        <div className="absolute inset-0 flex flex-col justify-center items-end text-right px-6 md:px-20 bg-gradient-to-l from-[#002147]/70 to-transparent pointer-events-none">
+        {/* Alignment Changed to items-start and text-left */}
+        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/70 to-transparent pointer-events-none">
           <div className="pointer-events-auto relative z-20 max-w-2xl"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
             <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">
@@ -200,7 +200,7 @@ export const Home = () => {
               <span className="text-red-600">and Tourism</span>
             </h1>
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
-            <div className="flex gap-4 justify-end">
+            <div className="flex gap-4 justify-start">
               <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl cursor-pointer hover:bg-red-700 transition-all">Start Application</Link>
               <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 cursor-pointer hover:bg-white/20 transition-all">Portal Access</Link>
             </div>
