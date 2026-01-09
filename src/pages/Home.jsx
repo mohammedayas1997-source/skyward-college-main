@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Plane, Globe, Hotel, Award, ChevronRight } from "lucide-react";
 
 export const Home = () => {
   const [current, setCurrent] = useState(0);
@@ -9,11 +8,18 @@ export const Home = () => {
     "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
   ];
 
-  const featuredCourses = [
-    { title: "Aviation Management", icon: <Plane size={24} />, desc: "Airport & Airline operations management." },
-    { title: "Travel & Tourism", icon: <Globe size={24} />, desc: "Global tourism and travel agency professional training." },
-    { title: "Hotel Management", icon: <Hotel size={24} />, desc: "Luxury hospitality and catering services." },
-    { title: "IATA Foundation", icon: <Award size={24} />, desc: "International air transport association standards." }
+  // Jerin dukkan Courses guda 10 kamar yadda ka nema
+  const allCourses = [
+    { title: "AIR TICKETING/RESERVATION (ATR)", image: "/atr.jpg" },
+    { title: "FLIGHT ATTENDANT/CABIN CREW", image: "/cabin.jpg" },
+    { title: "BASIC FLIGHT DISPATCHER", image: "/dispatch.jpg" },
+    { title: "HELICOPTER PILOT", image: "/heli.jpg" },
+    { title: "AVIATION SECURITY", image: "/security.jpg" },
+    { title: "CUSTOMER SERVICE", image: "/customer.jpg" },
+    { title: "TRAVEL & TOURISM MANAGEMENT", image: "/travel.jpg" },
+    { title: "HOTEL MANAGEMENT", image: "/hotel.jpg" },
+    { title: "CARGO HANDLING", image: "/cargo.jpg" },
+    { title: "DRONE PILOTING", image: "/drone.jpg" },
   ];
 
   useEffect(() => {
@@ -24,75 +30,94 @@ export const Home = () => {
   }, [slides.length]);
 
   return (
-    <section className="w-full min-h-screen bg-white">
+    <section className="w-full bg-white">
       
-      {/* 1. HERO SECTION */}
-      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900">
+      {/* 1. HERO SECTION (B.SC. DEGREE STYLE) */}
+      <div className="relative w-full h-[450px] md:h-[600px] overflow-hidden">
         {slides.map((img, index) => (
           <img
             key={index}
             src={img}
-            alt={`Skyward Slide ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-              index === current ? "opacity-60" : "opacity-0"
+            alt="Skyward Slide"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              index === current ? "opacity-100" : "opacity-0"
             }`}
           />
         ))}
-        
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70">
-          <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-          <h1 className="text-white text-4xl md:text-8xl font-black uppercase leading-[0.9] max-w-5xl mb-8">
-            Skyward College <br />
-            <span className="text-red-600">of Travels And Tourism</span>
-          </h1>
-          
-          <div className="flex flex-wrap justify-center gap-4">
+        {/* Content Overlay */}
+        <div className="absolute inset-0 bg-white/10 flex items-center px-6 md:px-24">
+          <div className="max-w-2xl text-left">
+            <h1 className="text-[#002147] text-4xl md:text-7xl font-black mb-4 tracking-tighter">B.SC. DEGREE</h1>
+            <p className="text-slate-800 text-lg md:text-xl mb-8 font-semibold max-w-lg">
+              Admission is now open for Science, Commercial and Art Students. Youth Service Guaranteed.
+            </p>
             <Link to="/admission/apply">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-2xl active:scale-95">
-                Start Application
-              </button>
-            </Link>
-            <Link to="/portal/login">
-              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 md:px-12 py-4 md:py-5 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all active:scale-95">
-                Portal Access
+              <button className="bg-[#1a1a54] hover:bg-red-600 text-white px-10 py-4 font-black rounded-sm transition-all uppercase text-sm shadow-xl">
+                Apply Now
               </button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 2. COURSES GRID (Karkashin Slider) */}
-      <div className="w-full py-16 px-6 bg-[#f8fafc] -mt-10 relative z-20">
+      {/* 2. ABOUT SECTION (EMPOWERING PROFESSIONALS) */}
+      <div className="max-w-7xl mx-auto py-20 px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="relative group">
+          <img src="/staff_group.jpg" alt="Aviation Staff" className="rounded-sm shadow-2xl w-full h-[400px] object-cover" />
+          <div className="absolute -bottom-4 -right-4 bg-red-600 w-24 h-24 -z-10"></div>
+        </div>
+        <div>
+          <h2 className="text-[#002147] text-3xl md:text-4xl font-black mb-6 leading-tight">
+            Empowering Aviation Professionals Across Africa
+          </h2>
+          <p className="text-slate-600 leading-loose mb-8 text-sm md:text-base font-medium">
+            Skyward College of Travels and Tourism is developed to meet the needs of the aviation industry by way of producing well-trained staff for both domestic and international aviation-related organisations. Since its inception, the institute has recorded tremendous achievements in manpower development.
+          </p>
+          <button className="bg-[#1a1a54] text-white px-8 py-4 font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-colors">
+            Learn More
+          </button>
+        </div>
+      </div>
+
+      {/* 3. OUR COURSES (10 COURSES GRID - KAMAR HOTON DA KA TURA) */}
+      <div className="bg-[#fcfcfc] py-20 px-6 border-t border-slate-100">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {featuredCourses.map((course, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 hover:-translate-y-2 transition-transform">
-                <div className="text-red-600 mb-4 bg-red-50 w-fit p-3 rounded-2xl">{course.icon}</div>
-                <h4 className="text-[#002147] font-black uppercase text-sm mb-2">{course.title}</h4>
-                <p className="text-slate-500 text-xs font-bold leading-relaxed">{course.desc}</p>
+          <h3 className="text-[#002147] text-2xl font-black mb-12 uppercase tracking-tight border-b-4 border-red-600 w-fit pb-2">
+            Our Courses
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+            {allCourses.map((course, idx) => (
+              <div key={idx} className="bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col group">
+                {/* Course Image Area */}
+                <div className="h-[280px] overflow-hidden relative">
+                  <img 
+                    src={course.image} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </div>
+                {/* Course Title Area */}
+                <div className="p-6 text-center bg-white border-t border-slate-50 flex-grow flex items-center justify-center">
+                  <h4 className="text-[#002147] font-black text-[13px] md:text-sm uppercase tracking-tight leading-tight">
+                    {course.title}
+                  </h4>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* 3. CORE PHILOSOPHY */}
-      <div className="w-full bg-white py-24 px-6 border-b border-slate-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="h-1.5 w-24 bg-red-600 mx-auto mb-8"></div>
-          <h3 className="text-[#002147] text-3xl md:text-5xl font-black uppercase mb-8 leading-tight">
-            A Premier Institute for <br /> Aviation & Tourism
-          </h3>
-          <p className="text-slate-600 text-lg md:text-xl leading-loose italic font-medium">
-            "To provide through teaching, research and other means, the development of knowledge and its practical application to the needs of community and professional integrity."
-          </p>
-          <Link to="/courses" className="inline-block mt-10 text-red-600 font-black uppercase text-xs tracking-widest border-b-2 border-red-600 pb-1 flex items-center gap-2 mx-auto w-fit hover:text-[#002147] hover:border-[#002147] transition-all">
-            View All Courses <ChevronRight size={14} />
-          </Link>
-        </div>
+      {/* 4. FOOTER SPACE/PHILOSOPHY */}
+      <div className="w-full py-20 bg-[#002147] text-white text-center px-6">
+        <p className="text-red-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4 text-center">Professional integrity</p>
+        <h3 className="text-2xl md:text-4xl font-black uppercase max-w-3xl mx-auto leading-snug">
+          Providing the development of knowledge and its practical application.
+        </h3>
       </div>
-      
-      {/* Cire Gallery anan tunda za mu mayar da shi Menu */}
+
     </section>
   );
 };
