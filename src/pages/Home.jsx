@@ -125,7 +125,7 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative">
       
-      {/* 1. MAIN HEADER - Restored with original icon/button functionality */}
+      {/* 1. HEADER SECTION */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -186,21 +186,23 @@ export const Home = () => {
         </div>
       )}
 
-      {/* 2. HERO SECTION */}
+      {/* 2. HERO SECTION - UPDATED TO RIGHT SIDE & SMALLER TEXT */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 bg-gradient-to-b from-transparent to-[#002147]/70 pointer-events-none">
-          <div className="pointer-events-auto relative z-20"> 
-            <h2 className="text-white text-sm md:text-xl font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-            <h1 className="text-white text-3xl md:text-7xl font-black uppercase leading-[1.1] mb-8 tracking-tighter max-w-5xl">
-              Skyward College of Travels <span className="text-red-600">and Tourism</span>
+        {/* Wannan shine bangaren da na gyara (Right Side Alignment) */}
+        <div className="absolute inset-0 flex flex-col justify-center items-end text-right px-6 md:px-20 bg-gradient-to-l from-[#002147]/70 to-transparent pointer-events-none">
+          <div className="pointer-events-auto relative z-20 max-w-2xl"> 
+            <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
+            <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">
+              Skyward College of Travels <br />
+              <span className="text-red-600">and Tourism</span>
             </h1>
-            <p className="text-slate-200 text-lg md:text-2xl max-w-3xl font-medium mb-10">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
-            <div className="flex gap-4 justify-center">
-              <Link to="/admission/apply" className="bg-red-600 text-white px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl cursor-pointer hover:bg-red-700 transition-all">Start Application</Link>
-              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-10 py-4 rounded-full font-black uppercase text-xs border border-white/20 cursor-pointer hover:bg-white/20 transition-all">Portal Access</Link>
+            <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
+            <div className="flex gap-4 justify-end">
+              <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl cursor-pointer hover:bg-red-700 transition-all">Start Application</Link>
+              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 cursor-pointer hover:bg-white/20 transition-all">Portal Access</Link>
             </div>
           </div>
         </div>
@@ -268,7 +270,7 @@ export const Home = () => {
                 <li className="flex items-center gap-3">
                   <Phone size={18} className="text-red-600 shrink-0" /> 
                   <span>+234 7071913131</span>
-                </li>s
+                </li>
                 <li className="flex items-center gap-3">
                   <Mail size={18} className="text-red-600 shrink-0" /> 
                   <span>info@skywardcollege.com</span>
