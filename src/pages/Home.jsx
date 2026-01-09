@@ -132,7 +132,7 @@ export const Home = () => {
              <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
              <div className="flex flex-col">
                 <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
-                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">College of Travels and Tourism</span>
+                <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">College of  Travels and Tourism</span>
              </div>
           </Link>
           
