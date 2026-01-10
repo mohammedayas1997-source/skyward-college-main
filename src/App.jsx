@@ -8,6 +8,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 
 // Shafukanmu (Pages)
 import { Home } from "./pages/Home";
+import { Apply } from "./pages/Apply";
 import { Navbar } from "./components/Navbar";
 import Login from "./components/UnifiedLogin"; // Mun mayar da Login daban don sauki
 
@@ -74,6 +75,7 @@ export default function App() {
         {/* PUBLIC ROUTES - KOWA NA IYA GANI */}
         <Route path="/" element={<Home />} />
         <Route path="/portal/login" element={<Login />} />
+        <Route path="/admission/apply" element={<Apply />} />
         
         {/* PROTECTED ROUTES - SAI AN YI LOGIN */}
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />

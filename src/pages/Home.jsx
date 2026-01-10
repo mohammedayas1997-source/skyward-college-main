@@ -151,7 +151,7 @@ export const Home = () => {
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
       {/* HEADER SECTION */}
-      <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
+      <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
               <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
@@ -270,25 +270,25 @@ export const Home = () => {
       )}
 
       {/* Hero Section */}
-      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
+      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-0">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        {/* Added z-20 to ensure text and buttons are on top of images */}
-        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/70 to-transparent z-20">
-          <div className="max-w-2xl"> 
+        
+        {/* Wannan shine babban gyaran: pointer-events-none a div na gaba, sannan pointer-events-auto a buttons */}
+        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-40 pointer-events-none">
+          <div className="max-w-2xl pointer-events-auto"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
             <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
             <div className="flex gap-4">
-              {/* FIXED LINK: Using Link component correctly with z-index */}
               <Link 
                 to="/admission/apply" 
-                className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all relative z-[30] cursor-pointer"
+                className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all relative z-[50] cursor-pointer"
               >
                 Start Application
               </Link>
-              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[30] cursor-pointer">Portal Access</Link>
+              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[50] cursor-pointer">Portal Access</Link>
             </div>
           </div>
         </div>
