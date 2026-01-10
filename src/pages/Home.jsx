@@ -7,6 +7,7 @@ export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Sabon state don menu na waya
   const navigate = useNavigate();
 
   const slides = [
@@ -150,9 +151,10 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147] isolate">
       
-      <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
+      {/* HEADER WITH IMPROVED MOBILE MENU */}
+      <header className="sticky top-0 w-full z-[150] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
+          <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[160]">
               <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
               <div className="flex flex-col">
                   <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
@@ -160,49 +162,43 @@ export const Home = () => {
               </div>
           </Link>
           
+          {/* DESKTOP MENU */}
           <div className="hidden lg:flex gap-6 text-[#002147] font-black text-[10px] uppercase tracking-widest items-center relative z-[110]">
-              <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all flex items-center gap-1">
-                <HomeIcon size={14} /> Home
-              </Link>
-              
-              <button onClick={() => setIsLibraryOpen(true)} className="hover:text-red-600 transition-colors cursor-pointer uppercase flex items-center gap-1">
-                <BookOpen size={14} /> E-Library
-              </button>
-
-              <Link to="/contact" className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1">
-                <Headphones size={14} /> Contact
-              </Link>
-              
+              <Link to="/" className="text-red-600 flex items-center gap-1"><HomeIcon size={14} /> Home</Link>
+              <button onClick={() => setIsLibraryOpen(true)} className="flex items-center gap-1 uppercase"><BookOpen size={14} /> E-Library</button>
+              <Link to="/contact" className="flex items-center gap-1"><Headphones size={14} /> Contact</Link>
               <div className="flex flex-col border-l border-slate-200 pl-6 gap-1">
                 <span className="flex items-center gap-2 text-[9px] lowercase font-bold"><Mail size={12} className="text-red-600"/> info@skywardcollege.com</span>
                 <span className="flex items-center gap-2 text-[9px] font-bold"><Phone size={12} className="text-red-600"/> +234 7071913131</span>
               </div>
-
-              <div className="flex items-center gap-2 ml-2">
-                <Link to="/portal/login" className="bg-slate-100 text-[#002147] px-4 py-3 rounded-full hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-2">
-                    <Users size={14} /> Portal
-                </Link>
-
-                <Link to="/portal/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
-                    <ShieldCheck size={14} /> Admin
-                </Link>
-              </div>
+              <Link to="/portal/login" className="bg-slate-100 px-4 py-3 rounded-full flex items-center gap-2"><Users size={14} /> Portal</Link>
+              <Link to="/portal/login" className="bg-[#002147] text-white px-4 py-3 rounded-full border border-[#002147] flex items-center gap-2"><ShieldCheck size={14} /> Admin</Link>
           </div>
 
-          <div className="lg:hidden flex items-center gap-4 relative z-[110]">
-             <Link to="/portal/login" className="text-[#002147] cursor-pointer">
-              <ShieldCheck size={24} />
-            </Link>
-            <button className="text-[#002147] cursor-pointer" onClick={() => setIsLibraryOpen(true)}>
-              <BookOpen size={24} />
+          {/* MOBILE TOGGLE BUTTON */}
+          <div className="lg:hidden flex items-center gap-4 relative z-[160]">
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#002147] p-2 bg-slate-50 rounded-lg">
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
+
+        {/* MOBILE MENU DROPDOWN */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 p-6 flex flex-col gap-6 shadow-xl animate-in slide-in-from-top duration-300 z-[150]">
+            <Link onClick={() => setIsMobileMenuOpen(false)} to="/" className="flex items-center gap-3 font-black text-xs uppercase text-red-600"><HomeIcon size={18} /> Home</Link>
+            <button onClick={() => {setIsLibraryOpen(true); setIsMobileMenuOpen(false)}} className="flex items-center gap-3 font-black text-xs uppercase text-[#002147] text-left"><BookOpen size={18} /> E-Library</button>
+            <Link onClick={() => setIsMobileMenuOpen(false)} to="/contact" className="flex items-center gap-3 font-black text-xs uppercase text-[#002147]"><Headphones size={18} /> Contact</Link>
+            <div className="h-px bg-slate-100"></div>
+            <Link onClick={() => setIsMobileMenuOpen(false)} to="/portal/login" className="bg-slate-100 p-4 rounded-xl flex items-center gap-3 font-black uppercase text-xs"><Users size={18} /> Student Portal</Link>
+            <Link onClick={() => setIsMobileMenuOpen(false)} to="/portal/login" className="bg-[#002147] text-white p-4 rounded-xl flex items-center gap-3 font-black uppercase text-xs"><ShieldCheck size={18} /> Admin Access</Link>
+          </div>
+        )}
       </header>
 
       {/* MODAL E-LIBRARY */}
       {isLibraryOpen && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
             <button onClick={() => setIsLibraryOpen(false)} className="absolute top-8 right-8 p-3 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all">
               <X size={24} />
@@ -255,7 +251,12 @@ export const Home = () => {
                     <span className="text-xs font-black uppercase text-slate-400">Tuition Fee</span>
                     <span className="text-3xl font-black text-red-600">{selectedCourse.fee}</span>
                   </div>
-                  <Link to="/admission/apply" className="w-full bg-[#002147] text-white py-4 rounded-2xl font-black text-center uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg block relative z-[220]">Start Your Journey Now</Link>
+                  <button 
+                    onClick={() => { setSelectedCourse(null); navigate("/admission/apply"); }} 
+                    className="w-full bg-[#002147] text-white py-4 rounded-2xl font-black text-center uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg block relative z-[220]"
+                  >
+                    Start Your Journey Now
+                  </button>
                 </div>
               </div>
             </div>
@@ -263,25 +264,31 @@ export const Home = () => {
         </div>
       )}
 
-      {/* HERO SECTION */}
+      {/* HERO SECTION - FIXED CLICKS */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-0">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
         
-        {/* FIX: added pointer-events-none to the overlay container and pointer-events-auto to the content box */}
+        {/* Overlay with pointer-events fix */}
         <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-[45] pointer-events-none">
           <div className="max-w-2xl relative z-50 pointer-events-auto"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
             <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
-            <div className="flex gap-4 relative z-[60]">
-              <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all cursor-pointer relative z-[70]">
+            <div className="flex gap-4 relative z-[90]">
+              <button 
+                onClick={() => navigate("/admission/apply")} 
+                className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-white hover:text-red-600 transition-all cursor-pointer relative z-[100]"
+              >
                 Start Application
-              </Link>
-              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all cursor-pointer relative z-[70]">
+              </button>
+              <button 
+                onClick={() => navigate("/portal/login")}
+                className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all cursor-pointer relative z-[100]"
+              >
                 Portal Access
-              </Link>
+              </button>
             </div>
           </div>
         </div>
