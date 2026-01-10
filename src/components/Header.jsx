@@ -4,17 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false); // Sabon state na E-Library
+  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false); // State na E-Library
   const navigate = useNavigate();
 
-  // Links na E-Library guda 10
+  // Links na E-Library guda 10 kamar yadda ka nema
   const libraryLinks = [
     { name: "National Library of Nigeria", url: "https://web.nln.gov.ng/", cat: "Nigeria" },
+    { name: "TETFund E-Library", url: "https://ntel.tetfund.gov.ng/", cat: "Nigeria" },
+    { name: "Nigeria Civil Aviation Authority", url: "https://ncaa.gov.ng/", cat: "Nigeria" },
     { name: "IATA Publications", url: "https://www.iata.org/en/publications/", cat: "Aviation" },
     { name: "UN Tourism Library", url: "https://www.e-unwto.org/", cat: "Tourism" },
     { name: "ICAO E-Library", url: "https://elibrary.icao.int/", cat: "Aviation" },
-    { name: "Nigeria Civil Aviation Authority", url: "https://ncaa.gov.ng/", cat: "Nigeria" },
-    { name: "TETFund E-Library", url: "https://ntel.tetfund.gov.ng/", cat: "Nigeria" },
     { name: "Hospitality Net", url: "https://www.hospitalitynet.org/", cat: "Hospitality" },
     { name: "Aviation PDF Books", url: "https://www.pdfdrive.com/aviation-books.html", cat: "General" },
     { name: "World Travel & Tourism Council", url: "https://wttc.org/research/economic-impact", cat: "Tourism" },
@@ -23,13 +23,13 @@ export const Header = () => {
 
   return (
     <header className="w-full sticky top-0 z-[100] bg-white shadow-md">
-      {/* Top Contact Bar - Icons are now active */}
+      {/* Top Contact Bar - Yanzu icons din suna aiki */}
       <div className="w-full bg-[#002147] py-2 px-4 md:px-20 text-white text-[9px] md:text-[10px] flex justify-between uppercase font-bold">
         <div className="flex gap-3 md:gap-4">
-          <a href="tel:+2347071913131" className="flex items-center gap-1 hover:text-red-400 transition-colors">
+          <a href="tel:+2347071913131" className="flex items-center gap-1 hover:text-red-400">
             <Phone size={10} className="text-red-500"/> +234 707 191 3131
           </a>
-          <a href="mailto:info@skyward.edu.ng" className="hidden sm:flex items-center gap-1 hover:text-red-400 transition-colors">
+          <a href="mailto:info@skyward.edu.ng" className="hidden sm:flex items-center gap-1 hover:text-red-400">
             <Mail size={10} className="text-red-500"/> info@skyward.edu.ng
           </a>
         </div>
@@ -82,7 +82,7 @@ export const Header = () => {
                 </ul>
               </li>
 
-              {/* E-Library Button - Now opens a modal */}
+              {/* E-Library Button - Yanzu yana bude modal din links 10 */}
               <li>
                 <button 
                   onClick={() => setIsLibraryModalOpen(true)} 
@@ -108,23 +108,23 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* E-Library Modal Section */}
+      {/* E-Library Modal Section - Wannan shine gurin links din guda 10 */}
       {isLibraryModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-4xl rounded-3xl p-6 md:p-10 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-4xl rounded-3xl p-6 md:p-10 relative max-h-[90vh] overflow-y-auto shadow-2xl">
             <button onClick={() => setIsLibraryModalOpen(false)} className="absolute top-6 right-6 p-2 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all">
               <X size={24} />
             </button>
             <div className="mb-8">
               <h2 className="text-[#002147] text-2xl font-black uppercase tracking-tighter">Skyward Digital Library</h2>
-              <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Access global research and academic materials</p>
+              <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest text-red-600">Access Nigeria & International Academic Resources</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
               {libraryLinks.map((lib, i) => (
                 <a key={i} href={lib.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-red-50 border border-slate-100 group transition-all">
                   <div>
                     <p className="text-[8px] font-black text-red-600 uppercase mb-1">{lib.cat}</p>
-                    <p className="text-[#002147] font-bold text-sm">{lib.name}</p>
+                    <p className="text-[#002147] font-bold text-sm uppercase">{lib.name}</p>
                   </div>
                   <ExternalLink size={18} className="text-slate-300 group-hover:text-red-600" />
                 </a>
@@ -136,17 +136,17 @@ export const Header = () => {
 
       {/* Mobile Sidebar */}
       <div className={`lg:hidden fixed inset-0 z-[110] bg-[#002147] transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "translate-x-full"}`}>
-        <div className="p-6 flex flex-col h-full text-white">
+        <div className="p-6 flex flex-col h-full text-white text-left">
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-xl font-black uppercase tracking-tighter">Skyward Menu</h2>
             <button onClick={() => setIsMenuOpen(false)} className="p-2 bg-red-600 rounded-full"><X size={24}/></button>
           </div>
           <nav className="flex-grow space-y-6 text-sm font-black uppercase tracking-widest">
             <Link onClick={() => setIsMenuOpen(false)} to="/" className="block py-2 border-b border-white/10">Home</Link>
-            <Link onClick={() => {setIsMenuOpen(false); setIsLibraryModalOpen(true);}} className="block py-2 border-b border-white/10 flex items-center gap-2 text-red-400"><BookOpen size={18} /> E-Library</Link>
-            <Link onClick={() => setIsMenuOpen(false)} to="/portal/login" className="block py-2 border-b border-white/10 flex items-center gap-2"><Lock size={16}/> Student Portal</Link>
-            <Link onClick={() => setIsMenuOpen(false)} to="/help-desk" className="block py-2 border-b border-white/10">Support Desk</Link>
-            <Link onClick={() => setIsMenuOpen(false)} to="/contact" className="block py-2 border-b border-white/10">Contact Us</Link>
+            <button onClick={() => {setIsMenuOpen(false); setIsLibraryModalOpen(true);}} className="w-full text-left py-2 border-b border-white/10 flex items-center gap-2 text-red-400 font-black uppercase"><BookOpen size={18} /> E-Library</button>
+            <Link onClick={() => setIsMenuOpen(false)} to="/portal/login" className="block py-2 border-b border-white/10 flex items-center gap-2 font-black uppercase"><Lock size={16}/> Student Portal</Link>
+            <Link onClick={() => setIsMenuOpen(false)} to="/help-desk" className="block py-2 border-b border-white/10 font-black uppercase tracking-widest">Support Desk</Link>
+            <Link onClick={() => setIsMenuOpen(false)} to="/contact" className="block py-2 border-b border-white/10 font-black uppercase tracking-widest">Contact Us</Link>
           </nav>
         </div>
       </div>
