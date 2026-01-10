@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, LogOut, Loader2, Hash, AlertCircle, ShieldCheck } from "lucide-react";
-import { auth, db } from "./firebase"; // Tabbatar path din firebase dinka daidai yake
+import { auth, db } from "./firebase"; 
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 
-// --- IMPORT HOME PAGE ---
-import { Home } from "./pages/Home"; // Tabbatar ka saka Home.jsx a wurin da ya dace
-import Apply from "./pages/Apply";
+// --- IMPORT PAGES ---
+import { Home } from "./pages/Home"; 
+import Apply from "./pages/Apply"; // Wannan shi ne Apply component din
 
 // --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
@@ -26,7 +26,6 @@ const Login = () => {
     try {
       let emailToAuth = identifier.trim();
 
-      // 1. Identity Resolver (Student ID vs Email)
       if (!identifier.includes("@")) {
         const studentId = identifier.toUpperCase().trim();
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
@@ -36,10 +35,7 @@ const Login = () => {
         emailToAuth = querySnapshot.docs[0].data().email;
       }
 
-      // 2. Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
-      
-      // 3. Fetch Role from Firestore
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
       if (userDoc.exists()) {
@@ -189,15 +185,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Shafin Gida (Lobby) */}
         <Route path="/" element={<Home />} />
-
-        {/* Login Page */}
         <Route path="/portal/login" element={<Login />} />
-        <Route path="/admission/apply" element={<AdmissionForm />} />
+        
+        {/* GYARA: Mun cire AdmissionForm tunda ba a yi import dinsa ba, mun bar Apply */}
         <Route path="/admission/apply" element={<Apply />} />
         
-        {/* Protected Dashboards */}
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
         <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
         <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant" />} />
