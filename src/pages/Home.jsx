@@ -7,7 +7,7 @@ export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false); 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Sabon state don menu na waya
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   const navigate = useNavigate();
 
   const slides = [
@@ -151,7 +151,7 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147] isolate">
       
-      {/* HEADER WITH IMPROVED MOBILE MENU */}
+      {/* HEADER */}
       <header className="sticky top-0 w-full z-[150] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[160]">
@@ -162,7 +162,6 @@ export const Home = () => {
               </div>
           </Link>
           
-          {/* DESKTOP MENU */}
           <div className="hidden lg:flex gap-6 text-[#002147] font-black text-[10px] uppercase tracking-widest items-center relative z-[110]">
               <Link to="/" className="text-red-600 flex items-center gap-1"><HomeIcon size={14} /> Home</Link>
               <button onClick={() => setIsLibraryOpen(true)} className="flex items-center gap-1 uppercase"><BookOpen size={14} /> E-Library</button>
@@ -175,7 +174,6 @@ export const Home = () => {
               <Link to="/portal/login" className="bg-[#002147] text-white px-4 py-3 rounded-full border border-[#002147] flex items-center gap-2"><ShieldCheck size={14} /> Admin</Link>
           </div>
 
-          {/* MOBILE TOGGLE BUTTON */}
           <div className="lg:hidden flex items-center gap-4 relative z-[160]">
             <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#002147] p-2 bg-slate-50 rounded-lg">
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -183,7 +181,6 @@ export const Home = () => {
           </div>
         </div>
 
-        {/* MOBILE MENU DROPDOWN */}
         {isMobileMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-slate-200 p-6 flex flex-col gap-6 shadow-xl animate-in slide-in-from-top duration-300 z-[150]">
             <Link onClick={() => setIsMobileMenuOpen(false)} to="/" className="flex items-center gap-3 font-black text-xs uppercase text-red-600"><HomeIcon size={18} /> Home</Link>
@@ -196,7 +193,76 @@ export const Home = () => {
         )}
       </header>
 
-      {/* MODAL E-LIBRARY */}
+      {/* HERO SECTION - GYARAN MATSALAR CLICKING */}
+      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-0">
+        {slides.map((img, index) => (
+          <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
+        ))}
+        
+        {/* Wannan bangaren shi ne overlay din da ke dauke da text da buttons */}
+        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-[40]">
+          <div className="max-w-2xl"> 
+            <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
+            <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
+            <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
+            
+            {/* Buttons tare da takamaiman z-index da pointer-events */}
+            <div className="flex gap-4 relative z-[50]">
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/admission/apply");
+                }} 
+                className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-white hover:text-red-600 transition-all cursor-pointer relative z-[60]"
+              >
+                Start Application
+              </button>
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/portal/login");
+                }}
+                className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all cursor-pointer relative z-[60]"
+              >
+                Portal Access
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SAURAN SECTIONS (COURSES, GALLERY, FOOTER) - SUNA NAN KAMAR YADDA KAKE SO */}
+      <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-4 mb-12">
+            <div className="h-8 w-2 bg-red-600 rounded-full"></div>
+            <h3 className="text-2xl font-black uppercase tracking-tight">Our Professional Courses</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
+            {featuredCourses.map((course, idx) => (
+              <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group">
+                <div className="relative h-40 w-full overflow-hidden bg-slate-200 cursor-pointer" onClick={() => setSelectedCourse(course)}>
+                    <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-[#002147]/10"></div>
+                </div>
+                <div className="p-6 flex flex-col flex-grow items-center">
+                  <div onClick={() => setSelectedCourse(course)} className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl cursor-pointer hover:bg-red-600 hover:text-white transition-all">{course.icon}</div>
+                  <h4 className="font-black uppercase text-[11px] mb-2 leading-tight h-8">{course.title}</h4>
+                  <p className="text-slate-500 text-[10px] font-bold mb-4 flex-grow">{course.desc}</p>
+                  <button onClick={() => setSelectedCourse(course)} className="w-full mb-4 py-2 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase hover:bg-[#002147] hover:text-white transition-all">Explore Career</button>
+                  <div className="text-red-600 font-black text-sm">{course.fee}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <Gallery />
+
+      {/* MODALS */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -222,7 +288,6 @@ export const Home = () => {
         </div>
       )}
 
-      {/* MODAL COURSE DETAILS */}
       {selectedCourse && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative max-h-[95vh] overflow-y-auto">
@@ -264,66 +329,6 @@ export const Home = () => {
         </div>
       )}
 
-      {/* HERO SECTION - FIXED CLICKS */}
-      <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-0">
-        {slides.map((img, index) => (
-          <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
-        ))}
-        
-        {/* Overlay with pointer-events fix */}
-        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-[45] pointer-events-none">
-          <div className="max-w-2xl relative z-50 pointer-events-auto"> 
-            <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-            <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
-            <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
-            <div className="flex gap-4 relative z-[90]">
-              <button 
-                onClick={() => navigate("/admission/apply")} 
-                className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-white hover:text-red-600 transition-all cursor-pointer relative z-[100]"
-              >
-                Start Application
-              </button>
-              <button 
-                onClick={() => navigate("/portal/login")}
-                className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all cursor-pointer relative z-[100]"
-              >
-                Portal Access
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* COURSES SECTION */}
-      <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-4 mb-12">
-            <div className="h-8 w-2 bg-red-600 rounded-full"></div>
-            <h3 className="text-2xl font-black uppercase tracking-tight">Our Professional Courses</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
-            {featuredCourses.map((course, idx) => (
-              <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group">
-                <div className="relative h-40 w-full overflow-hidden bg-slate-200 cursor-pointer" onClick={() => setSelectedCourse(course)}>
-                    <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-[#002147]/10"></div>
-                </div>
-                <div className="p-6 flex flex-col flex-grow items-center">
-                  <div onClick={() => setSelectedCourse(course)} className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl cursor-pointer hover:bg-red-600 hover:text-white transition-all">{course.icon}</div>
-                  <h4 className="font-black uppercase text-[11px] mb-2 leading-tight h-8">{course.title}</h4>
-                  <p className="text-slate-500 text-[10px] font-bold mb-4 flex-grow">{course.desc}</p>
-                  <button onClick={() => setSelectedCourse(course)} className="w-full mb-4 py-2 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase hover:bg-[#002147] hover:text-white transition-all">Explore Career</button>
-                  <div className="text-red-600 font-black text-sm">{course.fee}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <Gallery />
-
-      {/* FOOTER */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
             <div className="space-y-6">
