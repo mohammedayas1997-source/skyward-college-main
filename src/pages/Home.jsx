@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Gallery from "../components/Gallery";
-import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu, BookOpen, ExternalLink, Home as HomeIcon, Image as GalleryIcon } from "lucide-react";
+import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu, BookOpen, ExternalLink, Home as HomeIcon, Image as GalleryIcon, ShieldCheck } from "lucide-react";
 
 export const Home = () => {
   const [current, setCurrent] = useState(0);
@@ -192,7 +192,10 @@ export const Home = () => {
 
               <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
               
-              <Link to="/portal/login" className="hover:text-red-600 transition-colors cursor-pointer">Portal</Link>
+              {/* ADMIN/STAFF/STUDENT LOGIN REAL LIFE LINK */}
+              <Link to="/portal/login" className="flex items-center gap-2 bg-[#002147] text-white px-5 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer">
+                <ShieldCheck size={14} /> Portal
+              </Link>
           </div>
 
           <div className="lg:hidden flex items-center gap-4 relative z-[110]">
@@ -275,7 +278,6 @@ export const Home = () => {
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
         
-        {/* Wannan shine babban gyaran: pointer-events-none a div na gaba, sannan pointer-events-auto a buttons */}
         <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-40 pointer-events-none">
           <div className="max-w-2xl pointer-events-auto"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
@@ -288,6 +290,7 @@ export const Home = () => {
               >
                 Start Application
               </Link>
+              {/* REAL LIFE PORTAL LINK IN HERO SECTION */}
               <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[50] cursor-pointer">Portal Access</Link>
             </div>
           </div>
@@ -333,28 +336,30 @@ export const Home = () => {
               <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage.</p>
            </div>
            <div>
-              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
-              <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
-                <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
-                <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
-                <li onClick={() => setIsLibraryOpen(true)} className="cursor-pointer hover:text-red-600">E-Library</li>
-              </ul>
+             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
+             <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
+               <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
+               <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
+               <li onClick={() => setIsLibraryOpen(true)} className="cursor-pointer hover:text-red-600">E-Library</li>
+               {/* PORTAL LINK IN FOOTER */}
+               <li><Link to="/portal/login" className="hover:text-red-600">Portal Login</Link></li>
+             </ul>
            </div>
            <div>
-              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Contact Us</h5>
-              <ul className="space-y-4 text-slate-400 text-sm font-medium">
-                <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600 shrink-0" /> Along Dougiri Primary School Road, Jimeta, Yola, Nigeria.</li>
-                <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
-                <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
-              </ul>
+             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Contact Us</h5>
+             <ul className="space-y-4 text-slate-400 text-sm font-medium">
+               <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600 shrink-0" /> Along Dougiri Primary School Road, Jimeta, Yola, Nigeria.</li>
+               <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
+               <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
+             </ul>
            </div>
            <div>
-              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Connect</h5>
-              <div className="flex gap-4">
-                 <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
-                 <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
-                 <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
-              </div>
+             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Connect</h5>
+             <div className="flex gap-4">
+                <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+                <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+                <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+             </div>
            </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">

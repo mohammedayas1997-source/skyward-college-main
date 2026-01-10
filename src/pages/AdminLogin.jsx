@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, LogOut, Loader2, Hash, AlertCircle } from "lucide-react";
-// Firebase Imports
+import { Mail, Lock, Eye, EyeOff, LogOut, Loader2, Hash, AlertCircle, ShieldCheck } from "lucide-react";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
@@ -23,32 +22,27 @@ const Login = () => {
     try {
       let emailToAuth = identifier.trim();
 
-      // 1. Identity Resolver
+      // 1. Identity Resolver (Student ID vs Email)
       if (!identifier.includes("@")) {
         const studentId = identifier.toUpperCase().trim();
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
         const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-          throw new Error("Invalid Student ID Number.");
-        }
+        if (querySnapshot.empty) throw new Error("Invalid ID Number.");
         emailToAuth = querySnapshot.docs[0].data().email;
-      } else {
-        if (!identifier.toLowerCase().endsWith("@skyward.edu.ng")) {
-          throw new Error("Staff must use official @skyward.edu.ng email.");
-        }
       }
 
       // 2. Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       
-      // 3. Fetch Role & Save to LocalStorage
+      // 3. Fetch Role from Firestore
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
       if (userDoc.exists()) {
-        const role = userDoc.data().role?.toLowerCase();
-        localStorage.setItem("userRole", role); // Muna adana role anan
+        const role = userDoc.data().role?.toLowerCase(); // Rector, Admission, etc.
+        localStorage.setItem("userRole", role);
 
+        // Hanyoyin da kowa zai bi dangane da Role dinsa
         const routes = {
           student: "/student/dashboard",
           rector: "/rector/dashboard",
@@ -56,19 +50,20 @@ const Login = () => {
           accountant: "/accountant/dashboard",
           admission: "/admission/dashboard",
           staff: "/staff/portal",
-          exam: "/exam/dashboard"
+          exam: "/exam/dashboard",
+          news_admin: "/news/admin" // Sabon Role
         };
 
         if (routes[role]) {
           navigate(routes[role], { replace: true });
         } else {
-          setError("No dashboard assigned to this role.");
+          throw new Error("Unauthorized role or no dashboard assigned.");
         }
       } else {
-        setError("User profile missing.");
+        throw new Error("User record not found.");
       }
     } catch (err) {
-      setError(err.message.includes("auth/") ? "Invalid credentials." : err.message);
+      setError(err.message.includes("auth/") ? "Invalid Email or Password." : err.message);
     } finally {
       setLoading(false);
     }
@@ -81,10 +76,11 @@ const Login = () => {
           <h2 className="text-3xl font-black text-[#002147] uppercase tracking-tighter italic">
             Skyward <span className="text-red-600">Portal</span>
           </h2>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Unified Authentication</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Authorized Access Only</p>
         </div>
 
-        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
+        <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-red-600"></div>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase flex items-center gap-2 border border-red-100">
@@ -93,15 +89,13 @@ const Login = () => {
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">
-                {identifier.includes("@") ? "Staff Email" : "Student ID / Email"}
-              </label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Identify Yourself</label>
               <div className="relative">
                 <div className="absolute left-4 top-4 text-slate-400">
                    {identifier.includes("@") ? <Mail size={18} /> : <Hash size={18} />}
                 </div>
                 <input 
-                  type="text" required 
+                  type="text" required placeholder="Email or Student ID"
                   className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-red-600/20"
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
@@ -109,11 +103,11 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Password</label>
+              <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Security Key</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-4 text-slate-400" size={18} />
                 <input 
-                  type={showPassword ? "text" : "password"} required
+                  type={showPassword ? "text" : "password"} required placeholder="••••••••"
                   className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-red-600/20"
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -127,7 +121,7 @@ const Login = () => {
               type="submit" disabled={loading}
               className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="animate-spin" size={18} /> : "Authorize Access"}
+              {loading ? <Loader2 className="animate-spin" size={18} /> : "Verify & Log In"}
             </button>
           </form>
         </div>
@@ -139,42 +133,49 @@ const Login = () => {
 // --- PROTECTED DASHBOARD WRAPPER ---
 const DashboardWrapper = ({ title, color, allowedRole }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       const storedRole = localStorage.getItem("userRole");
-      if (!currentUser || storedRole !== allowedRole) {
+      if (!user || storedRole !== allowedRole) {
         navigate("/", { replace: true });
       } else {
-        setUser(currentUser);
+        setChecking(false);
       }
     });
     return () => unsubscribe();
   }, [navigate, allowedRole]);
 
-  const handleLogout = async () => { 
-    await signOut(auth); 
-    localStorage.removeItem("userRole");
-    navigate("/", { replace: true }); 
-  };
-
-  if (!user) return null; // Karka nuna komai har sai an tantance
+  if (checking) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <Loader2 className="animate-spin text-[#002147]" size={40} />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-12">
-      <div className="max-w-5xl mx-auto bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-slate-50 p-6 md:p-12">
+      <div className="max-w-6xl mx-auto bg-white p-8 md:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
+        <div className="flex justify-between items-center mb-8 border-b pb-8">
           <div>
-            <h1 className={`text-4xl font-black uppercase italic ${color}`}>{title} Dashboard</h1>
-            <p className="text-slate-400 font-bold text-[10px] tracking-[0.3em] uppercase mt-2 italic">Official Session</p>
+            <h1 className={`text-3xl font-black uppercase italic ${color}`}>{title} Portal</h1>
+            <p className="text-slate-400 font-bold text-[9px] tracking-[0.3em] uppercase mt-1 italic">Skyward Multi-Level Management</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all">
+          <button 
+            onClick={async () => { await signOut(auth); localStorage.clear(); navigate("/"); }} 
+            className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm"
+          >
             <LogOut size={16} /> Logout
           </button>
         </div>
-        <div className="h-64 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center">
-            <p className="text-slate-300 font-black uppercase tracking-widest italic">Welcome to Skyward CMS</p>
+        
+        {/* Wannan shine wurin da Dashboard dinka zai zauna */}
+        <div className="h-96 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center p-8">
+            <ShieldCheck size={48} className="text-slate-200 mb-4" />
+            <p className="text-slate-400 font-black uppercase tracking-widest italic text-xs">
+               Authenticated as {title} <br/> 
+               <span className="text-[10px] font-medium normal-case">Access granted to secure resources.</span>
+            </p>
         </div>
       </div>
     </div>
@@ -188,7 +189,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         
-        {/* PROTECTED ROUTES: Anan kowa yana da nasa izinin */}
+        {/* Duk roles din da ka lissafa yanzu suna da kariya (Protected) */}
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
         <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
         <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant" />} />
@@ -196,6 +197,7 @@ export default function App() {
         <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff" />} />
         <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam" />} />
         <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student" />} />
+        <Route path="/news/admin" element={<DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin" />} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

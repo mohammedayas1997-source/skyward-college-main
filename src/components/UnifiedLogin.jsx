@@ -6,14 +6,13 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { Lock, Mail, Loader2, AlertCircle, Eye, EyeOff, Hash } from "lucide-react";
 
 const UnifiedLogin = () => {
-  const [identifier, setIdentifier] = useState(""); // Email ko Student ID
+  const [identifier, setIdentifier] = useState(""); 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Share session don sabon shiga
   useEffect(() => {
     const clearSession = async () => {
       try {
@@ -35,61 +34,68 @@ const UnifiedLogin = () => {
       let emailToAuth = "";
       const input = identifier.trim();
 
-      // --- TSARIN LOGIN MAI BASIRA ---
-      
-      // 1. Idan Staff ne (Yana sa Email dake da @)
+      // 1. Staff Identifer (Ina amfani da @skyward.edu.ng)
       if (input.includes("@")) {
-        if (!input.toLowerCase().endsWith("@skyward.edu.ng")) {
-          throw new Error("Staff must use official @skyward.edu.ng email.");
+        // Zaka iya barin wannan in kana son amfani da kowane email, 
+        // amma in kana son takaita shi ga staff kadai:
+        if (!input.toLowerCase().endsWith("@skyward.edu.ng") && !input.includes("admin")) {
+           // allow general emails or restrict
         }
         emailToAuth = input;
       } 
-      // 2. Idan Dalibi ne (Ba ya sa @, sai dai Student ID)
+      // 2. Student Identifier (Nemo Email ta amfani da Student ID)
       else {
         const studentId = input.toUpperCase();
-        // Nemo wannan ID din a Firestore don gano Email din dalibin
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-          throw new Error("Student ID not found. Contact Admin.");
+          throw new Error("Invalid Student ID. Please check and try again.");
         }
-        
-        // Ciro email din dake boye a bayanan dalibin
         emailToAuth = querySnapshot.docs[0].data().email;
       }
 
-      // --- SIGN IN ---
+      // --- FIREBASE AUTHENTICATION ---
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const user = userCredential.user;
 
-     // --- ROLE CHECKING ---
-const userDoc = await getDoc(doc(db, "users", user.uid));
+      // --- ROLE-BASED ROUTING ---
+      const userDoc = await getDoc(doc(db, "users", user.uid));
 
-if (userDoc.exists()) {
-  const role = userDoc.data().role?.toLowerCase().trim();
-  localStorage.setItem("isAuth", "true");
-  localStorage.setItem("userRole", role);
+      if (userDoc.exists()) {
+        const role = userDoc.data().role?.toLowerCase().trim();
+        localStorage.setItem("userRole", role);
+        localStorage.setItem("isAuth", "true");
 
-  // WANNAN JERIN DOLE YA DACI DA APP.JSX
-  const routes = {
-    admin: "/admin/dashboard",
-    proprietor: "/proprietor/dashboard", // Gyara daga /portal/proprietor
-    rector: "/rector/dashboard",         // Gyara daga /portal/rector
-    accountant: "/accountant/dashboard",
-    exam: "/exam/dashboard",
-    admission: "/admission/dashboard",
-    staff: "/staff/portal",              // Wannan ya dace da App.jsx yanzu
-    student: "/student/dashboard"        // Gyara daga /portal/dashboard
-  };
+        // Wannan jerin dole ya dace da App.jsx Routes dinka 100%
+        const routes = {
+          rector: "/rector/dashboard",
+          proprietor: "/proprietor/dashboard",
+          accountant: "/accountant/dashboard",
+          admission: "/admission/dashboard",
+          exam: "/exam/dashboard",
+          news_admin: "/news/admin", // Kara wannan
+          staff: "/staff/portal",
+          student: "/student/dashboard",
+          admin: "/admin/dashboard"
+        };
 
-  const targetPath = routes[role] || "/";
-  navigate(targetPath, { replace: true });
-}
+        const targetPath = routes[role];
+        
+        if (targetPath) {
+          navigate(targetPath, { replace: true });
+        } else {
+          throw new Error("Access Denied: Your role does not have a dashboard.");
+        }
+      } else {
+        throw new Error("User profile not found in database.");
+      }
     } catch (err) {
-      console.error("Error:", err.code);
-      if (err.code === "auth/invalid-credential") {
-        setError("Invalid credentials. Check your Email/ID and Password.");
+      console.error("Login Error:", err.code);
+      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found") {
+        setError("Invalid login details. Please check your Email/ID and Password.");
+      } else if (err.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection.");
       } else {
         setError(err.message);
       }
@@ -114,17 +120,19 @@ if (userDoc.exists()) {
           </p>
         </div>
 
-        <div className="bg-white p-10 rounded-[3rem] shadow-[0_30px_70px_-10px_rgba(0,33,71,0.1)] border border-slate-100">
+        <div className="bg-white p-10 rounded-[3rem] shadow-[0_30px_70px_-10px_rgba(0,33,71,0.1)] border border-slate-100 relative">
+          <div className="absolute top-0 left-0 w-full h-2 bg-red-600 rounded-t-full"></div>
+          
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase flex items-center gap-3 border border-red-100 animate-pulse">
+              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase flex items-center gap-3 border border-red-100 animate-in fade-in duration-300">
                 <AlertCircle size={16} /> {error}
               </div>
             )}
 
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">
-                {identifier.includes("@") ? "Staff Email Address" : "Student ID Number"}
+                {identifier.includes("@") ? "Email Address" : "Student ID Number"}
               </label>
               <div className="relative group">
                 <div className="absolute left-5 top-5 text-slate-300 group-focus-within:text-red-600 transition-colors">
@@ -132,7 +140,7 @@ if (userDoc.exists()) {
                 </div>
                 <input 
                   type="text" required
-                  placeholder={identifier.includes("@") ? "name@skyward.edu.ng" : "SKW/2026/001"}
+                  placeholder={identifier.includes("@") ? "name@skyward.edu.ng" : "e.g. SKW/2026/001"}
                   className="w-full bg-slate-50 p-5 pl-14 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-red-600/10 focus:bg-white transition-all shadow-inner"
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
@@ -156,9 +164,9 @@ if (userDoc.exists()) {
 
             <button 
               type="submit" disabled={loading}
-              className="w-full bg-[#002147] text-white py-5 rounded-[2rem] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-red-600 transition-all shadow-xl active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#002147] text-white py-5 rounded-[2rem] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-red-600 transition-all shadow-xl active:scale-95 disabled:opacity-50 flex items-center justify-center"
             >
-              {loading ? <Loader2 className="animate-spin mx-auto" size={20} /> : "Authorize Sign-In"}
+              {loading ? <Loader2 className="animate-spin" size={20} /> : "Authorize Sign-In"}
             </button>
           </form>
         </div>
