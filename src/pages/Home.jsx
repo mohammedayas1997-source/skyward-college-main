@@ -150,6 +150,7 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
+      {/* HEADER SECTION - FIXED & FULLY RESTORED */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -189,21 +190,21 @@ export const Home = () => {
               <Link to="/admission/apply" className="bg-red-600 text-white px-5 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
               
               <div className="flex items-center gap-2 ml-2">
-                {/* PORTAL NA DALIBAL (STUDENT ACCESS) - AN MAIDO DA SHI */}
+                {/* PORTAL ACCESS (STUDENTS) */}
                 <Link to="/portal/login" className="bg-slate-100 text-[#002147] px-4 py-3 rounded-full hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-2">
                   <Users size={14} /> Portal
-              </Link>
+                </Link>
                 
-
-                {/* SABON ADMIN PORTAL ICON - AN KARA SHI A GEFE */}
+                {/* ADMIN ACCESS (RECOTR/STAFF) */}
                 <Link to="/admin/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
                   <ShieldCheck size={14} /> Admin
                 </Link>
               </div>
           </div>
 
+          {/* MOBILE NAV ICONS */}
           <div className="lg:hidden flex items-center gap-4 relative z-[110]">
-             <Link to="/portal/login" className="text-[#002147] cursor-pointer">
+             <Link to="/admin/login" className="text-[#002147] cursor-pointer">
               <ShieldCheck size={24} />
             </Link>
             <button className="text-[#002147] cursor-pointer" onClick={() => setIsLibraryOpen(true)}>
@@ -213,7 +214,7 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* MODAL E-LIBRARY */}
+      {/* E-LIBRARY MODAL */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -239,7 +240,7 @@ export const Home = () => {
         </div>
       )}
 
-      {/* MODAL COURSE DETAILS */}
+      {/* COURSE DETAILS MODAL */}
       {selectedCourse && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative max-h-[95vh] overflow-y-auto">
