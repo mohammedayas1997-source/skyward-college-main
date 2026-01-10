@@ -179,29 +179,22 @@ export const Home = () => {
           </Link>
           
           <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center relative z-[110]">
-             <Link to="/" className="flex items-center gap-1.5 text-red-600 cursor-pointer hover:opacity-80 transition-all">
-                <HomeIcon size={14} /> Home
-             </Link>
-             <Link to="/courses" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer text-nowrap">
-                <BookOpen size={14} /> Courses
-             </Link>
+             {/* Icons removed here */}
+             <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
+             <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap">Courses</Link>
              
              <button 
                 onClick={() => setIsLibraryOpen(true)}
-                className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer uppercase"
+                className="hover:text-red-600 transition-colors cursor-pointer uppercase"
              >
-                <FileText size={14} /> E-Library
+                E-Library
              </button>
 
-             <Link to="/gallery" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer">
-                <GalleryIcon size={14} /> Gallery
-             </Link>
+             <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer">Gallery</Link>
              
              <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
              
-             <Link to="/portal/login" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer">
-                <Users size={16} /> Portal
-             </Link>
+             <Link to="/portal/login" className="hover:text-red-600 transition-colors cursor-pointer">Portal</Link>
           </div>
 
           <div className="md:hidden flex items-center gap-4 relative z-[110]">
@@ -215,7 +208,8 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* MODALS & SECTIONS CONTINUE BELOW UNCHANGED... */}
+      {/* REST OF THE SECTIONS REMAIN EXACTLY THE SAME... */}
+      {/* ... (E-Library, Course Modal, Hero, Courses, Gallery, Footer) ... */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -362,5 +356,5 @@ export const Home = () => {
         </div>
       </footer>
     </section>
-  );
+  );s
 };
