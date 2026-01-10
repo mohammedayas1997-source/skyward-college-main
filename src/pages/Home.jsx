@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Gallery from "../components/Gallery";
 import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu, BookOpen, ExternalLink, Home as HomeIcon, Image as GalleryIcon } from "lucide-react";
 
@@ -7,22 +7,24 @@ export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false); 
+  const navigate = useNavigate();
 
   const slides = [
     "/hero1.jpg", "/hero2.jpg", "/hero3.jpg", "/hero4.jpg", 
     "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
   ];
 
+  // Links na E-Library guda 10 kamar yadda ka nema
   const eLibraryLinks = [
     { name: "National Library of Nigeria", url: "https://web.nln.gov.ng/", category: "Nigeria" },
+    { name: "TETFund E-Library", url: "https://ntel.tetfund.gov.ng/", category: "Nigeria" },
+    { name: "Nigeria Civil Aviation Authority", url: "https://ncaa.gov.ng/", category: "Nigeria" },
     { name: "IATA Publications", url: "https://www.iata.org/en/publications/", category: "Aviation" },
     { name: "UN Tourism Library", url: "https://www.e-unwto.org/", category: "Tourism" },
     { name: "ICAO E-Library", url: "https://elibrary.icao.int/", category: "Aviation" },
-    { name: "Nigeria Civil Aviation Authority", url: "https://ncaa.gov.ng/", category: "Nigeria" },
     { name: "Hospitality Net", url: "https://www.hospitalitynet.org/", category: "Hospitality" },
     { name: "Aviation PDF Books", url: "https://www.pdfdrive.com/aviation-books.html", category: "General" },
     { name: "World Travel & Tourism Council", url: "https://wttc.org/research/economic-impact", category: "Tourism" },
-    { name: "TETFund E-Library", url: "https://ntel.tetfund.gov.ng/", category: "Nigeria" },
     { name: "Open Textbook Library", url: "https://open.umn.edu/opentextbooks/", category: "General" }
   ];
 
@@ -149,9 +151,7 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
-      {/* 1. TOP BAR REMOVED COMPLETELY */}
-
-      {/* 2. MAIN HEADER SECTION - All info consolidated here */}
+      {/* 2. MAIN HEADER SECTION */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -163,20 +163,30 @@ export const Home = () => {
           </Link>
           
           <div className="hidden lg:flex gap-8 text-[#002147] font-black text-[10px] uppercase tracking-widest items-center relative z-[110]">
-              <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
-              <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap">Courses</Link>
+              <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all flex items-center gap-1">
+                <HomeIcon size={14} /> Home
+              </Link>
+              
+              <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap flex items-center gap-1">
+                <Plane size={14} /> Courses
+              </Link>
               
               <button 
                 onClick={() => setIsLibraryOpen(true)}
-                className="hover:text-red-600 transition-colors cursor-pointer uppercase"
+                className="hover:text-red-600 transition-colors cursor-pointer uppercase flex items-center gap-1"
               >
-                E-Library
+                <BookOpen size={14} /> E-Library
               </button>
 
-              <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer">Gallery</Link>
-              <Link to="/contact" className="hover:text-red-600 transition-colors cursor-pointer">Contact</Link>
+              <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1">
+                <GalleryIcon size={14} /> Gallery
+              </Link>
+
+              <Link to="/contact" className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1">
+                <Headphones size={14} /> Contact
+              </Link>
               
-              {/* Contact Info Integrated into Header */}
+              {/* Contact Info */}
               <div className="flex flex-col border-l border-slate-200 pl-8 gap-1">
                 <span className="flex items-center gap-2 text-[9px] lowercase"><Mail size={12} className="text-red-600"/> info@skywardcollege.com</span>
                 <span className="flex items-center gap-2 text-[9px]"><Phone size={12} className="text-red-600"/> +234 7071913131</span>
@@ -187,6 +197,7 @@ export const Home = () => {
               <Link to="/portal/login" className="hover:text-red-600 transition-colors cursor-pointer">Portal</Link>
           </div>
 
+          {/* Mobile Icons */}
           <div className="lg:hidden flex items-center gap-4 relative z-[110]">
             <Link to="/portal/login" className="text-[#002147] cursor-pointer">
               <Users size={20} />
@@ -198,23 +209,23 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* REMAINDER OF THE PAGE IS UNCHANGED */}
+      {/* E-Library Modal Section */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
             <button onClick={() => setIsLibraryOpen(false)} className="absolute top-8 right-8 p-3 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all">
               <X size={24} />
             </button>
-            <div className="mb-10">
-              <h2 className="text-[#002147] text-3xl font-black uppercase tracking-tighter mb-2">Skyward E-Library</h2>
-              <p className="text-slate-500 font-bold text-sm uppercase tracking-widest">Select a digital library to access research materials and textbooks</p>
+            <div className="mb-10 text-left">
+              <h2 className="text-[#002147] text-3xl font-black uppercase tracking-tighter mb-2">Skyward Digital E-Library</h2>
+              <p className="text-red-600 font-bold text-sm uppercase tracking-widest">Access Nigeria & International Academic Resources</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
               {eLibraryLinks.map((lib, i) => (
-                <a key={i} href={lib.url} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between p-6 bg-slate-50 rounded-2xl hover:bg-[#002147] transition-all border border-slate-100">
+                <a key={i} href={lib.url} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between p-6 bg-slate-50 rounded-2xl hover:bg-red-50 transition-all border border-slate-100">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black text-red-600 uppercase mb-1 tracking-widest">{lib.category}</span>
-                    <span className="text-[#002147] group-hover:text-white font-black text-lg transition-colors leading-tight">{lib.name}</span>
+                    <span className="text-[#002147] font-black text-lg leading-tight">{lib.name}</span>
                   </div>
                   <ExternalLink size={20} className="text-slate-300 group-hover:text-red-600 transition-colors" />
                 </a>
@@ -224,6 +235,7 @@ export const Home = () => {
         </div>
       )}
 
+      {/* Selected Course Modal */}
       {selectedCourse && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative max-h-[95vh] overflow-y-auto">
@@ -233,9 +245,8 @@ export const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2">
               <div className="h-64 md:h-auto w-full relative">
                 <img src={selectedCourse.img} alt={selectedCourse.title} className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#002147] to-transparent md:hidden"></div>
               </div>
-              <div className="p-8 md:p-12 text-[#002147]">
+              <div className="p-8 md:p-12 text-[#002147] text-left">
                 <h3 className="text-3xl font-black uppercase leading-tight mb-4 border-b pb-4 border-slate-100">{selectedCourse.title}</h3>
                 <p className="text-slate-600 font-medium text-sm leading-relaxed mb-6 italic">"{selectedCourse.fullDesc}"</p>
                 <div className="mb-6">
@@ -261,6 +272,7 @@ export const Home = () => {
         </div>
       )}
 
+      {/* Hero Section */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
@@ -278,6 +290,7 @@ export const Home = () => {
         </div>
       </div>
 
+      {/* Professional Courses Section */}
       <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
@@ -307,7 +320,7 @@ export const Home = () => {
       <Gallery />
 
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
            <div className="space-y-6">
               <div className="flex items-center gap-2">
                 <img src="/logo.png" alt="Logo" className="h-16 w-16 bg-white p-2 rounded-xl" />
