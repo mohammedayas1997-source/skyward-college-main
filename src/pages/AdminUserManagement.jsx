@@ -10,11 +10,10 @@ export const CreateUserAccount = () => {
     email: "",
     password: "",
     role: "staff", 
-    idNumber: "" // Ga dalibai ne kawai ko Staff ID idan kana bukata
+    idNumber: "" 
   });
   const [loading, setLoading] = useState(false);
 
-  // Jerin matsayi (Roles) har da Admin
   const roles = [
     { id: "admin", name: "Super Admin" },
     { id: "rector", name: "Rector" },
@@ -34,20 +33,19 @@ export const CreateUserAccount = () => {
       // 1. Create in Auth (Email/Password)
       const { user } = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       
-      // 2. Create the User Document
-      // Ga Staff, idNumber zai iya zama optional ko kuma mu sanya Email din a matsayin ID
+      // 2. Create the User Document with Active Status
       await setDoc(doc(db, "users", user.uid), {
         fullName: formData.fullName,
         email: formData.email,
         role: formData.role,
         idNumber: formData.role === "student" ? formData.idNumber.toUpperCase() : "STAFF-" + Math.floor(1000 + Math.random() * 9000),
-        status: "active",
+        status: "active", // Added status field
         createdAt: new Date().toISOString()
       });
 
-      alert(`Nasara! An kirkiri account na ${formData.role}: ${formData.fullName}`);
+      alert(`Success! Created ${formData.role} account for: ${formData.fullName}`);
     } catch (err) {
-      alert("Kuskure: " + err.message);
+      alert("Error: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -61,34 +59,34 @@ export const CreateUserAccount = () => {
         </div>
         <div>
           <h2 className="text-2xl font-black text-[#002147] uppercase tracking-tighter">User Management</h2>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Kirkirar sabon ma'aikaci ko dalibi</p>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Create new staff or student accounts</p>
         </div>
       </div>
 
       <form onSubmit={handleCreate} className="space-y-4">
         {/* Full Name */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Cikakken Suna</label>
+          <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Full Name</label>
           <input 
-            type="text" required placeholder="Misali: Ahmad Musa" 
+            type="text" required placeholder="Example: Ahmad Musa" 
             className="w-full p-4 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-red-600/20 font-bold"
             onChange={(e) => setFormData({...formData, fullName: e.target.value})}
           />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Email - Primary for Staff/Admin */}
+          {/* Email */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Email Address (Zai yi login da wannan)</label>
+            <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Email Address (Login Username)</label>
             <input 
               type="email" required placeholder="admin@skyward.com" 
               className="w-full p-4 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-red-600/20 font-bold"
               onChange={(e) => setFormData({...formData, email: e.target.value})}
             />
           </div>
-          {/* ID Number - Primary for Students */}
+          {/* ID Number */}
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-[#002147] uppercase ml-2">ID Number (Na dalibai kawai)</label>
+            <label className="text-[10px] font-black text-[#002147] uppercase ml-2">ID Number (Students Only)</label>
             <input 
               type="text" placeholder="SKY/2026/001" 
               className="w-full p-4 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-red-600/20 font-bold uppercase"
@@ -99,7 +97,7 @@ export const CreateUserAccount = () => {
 
         {/* Role Selection */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Zabi Matsayin User (Role)</label>
+          <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Select User Role</label>
           <select 
             className="w-full p-4 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-red-600/20 font-black uppercase text-xs"
             onChange={(e) => setFormData({...formData, role: e.target.value})}
@@ -113,7 +111,7 @@ export const CreateUserAccount = () => {
 
         {/* Password */}
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Password na Shiga</label>
+          <label className="text-[10px] font-black text-[#002147] uppercase ml-2">Login Password</label>
           <input 
             type="password" required placeholder="••••••••" 
             className="w-full p-4 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-red-600/20 font-bold"
@@ -126,7 +124,7 @@ export const CreateUserAccount = () => {
           className="w-full bg-[#002147] text-white py-5 rounded-xl font-black uppercase tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/10"
         >
           {loading ? <Loader2 className="animate-spin" /> : <ShieldCheck size={20} />}
-          Tabbatar da Kirkira
+          Confirm Account Creation
         </button>
       </form>
     </div>

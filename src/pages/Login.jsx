@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { Mail, Lock, Hash, Loader2, AlertCircle, ChevronRight, Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
-  const [identifier, setIdentifier] = useState(""); // Zai iya zama Email ko Student ID
+  const [identifier, setIdentifier] = useState(""); // Can be Email or Student ID
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // Na kara wannan don ganin password
+  const [showPassword, setShowPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const Login = () => {
 
       // 1. DYNAMIC IDENTITY RESOLVER (Strict Staff/Student Logic)
       if (!identifier.includes("@")) {
-        // STUDENT PATH: Dole ID Number ne idan babu @
+        // STUDENT PATH: Requires ID Number if no @ is present
         const studentId = identifier.toUpperCase().trim();
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
         const querySnapshot = await getDocs(q);
@@ -32,10 +32,10 @@ const Login = () => {
           throw new Error("Student ID number not found. Contact Admin.");
         }
         
-        // Nemo ainihin email din dalibin daga Firestore
+        // Fetch the linked email for the student from Firestore
         emailToAuth = querySnapshot.docs[0].data().email;
       } else {
-        // STAFF PATH: Idan akwai @, to Email ne na Staff
+        // STAFF PATH: If @ exists, it must be an official Staff Email
         if (!identifier.toLowerCase().endsWith("@skyward.edu.ng")) {
           throw new Error("Official @skyward.edu.ng email required for staff.");
         }
@@ -45,14 +45,21 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const user = userCredential.user;
 
-      // 3. ROLE-BASED ACCESS CONTROL (RBAC)
+      // 3. ROLE & STATUS BASED ACCESS CONTROL (RBAC)
       const userDoc = await getDoc(doc(db, "users", user.uid));
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
+
+        // CHECK IF ACCOUNT IS ACTIVE
+        if (userData.status !== "active") {
+          await signOut(auth); // Log them out immediately
+          throw new Error("Account is inactive. Please contact the Administrator.");
+        }
+
         const role = userData.role.toLowerCase().trim();
 
-        // Adana role a localStorage
+        // Store role in localStorage
         localStorage.setItem("userRole", role);
         localStorage.setItem("isAuth", "true");
 

@@ -1,15 +1,62 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { ShieldCheck, Mail, Lock, ArrowRight, Home } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { ShieldCheck, Mail, Lock, ArrowRight, Home, Loader2, AlertCircle } from "lucide-react";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Nan ne za a sa logic na shiga (Authentication)
-    console.log("Admin Login Attempt:", { email, password });
+    setLoading(true);
+    setError("");
+
+    try {
+      // 1. Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. Fetch User Profile & Status Check
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+
+        // Strict Status Check
+        if (userData.status !== "active") {
+          await signOut(auth);
+          throw new Error("This admin account is currently inactive. Contact System Admin.");
+        }
+
+        const role = userData.role.toLowerCase().trim();
+
+        // 3. Authorization Check (Ensures only Admins/Staff use this specific page)
+        const privilegedRoles = ["admin", "rector", "proprietor", "accountant", "admission", "exam"];
+        if (!privilegedRoles.includes(role)) {
+          await signOut(auth);
+          throw new Error("Unauthorized access. Please use the Student Portal.");
+        }
+
+        // 4. Save Session & Redirect
+        localStorage.setItem("userRole", role);
+        localStorage.setItem("isAuth", "true");
+        navigate("/admin/dashboard", { replace: true });
+
+      } else {
+        throw new Error("Admin profile not found in database.");
+      }
+    } catch (err) {
+      console.error("Admin Login Error:", err.message);
+      setError(err.message.includes("auth/") ? "Invalid administrative credentials." : err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,6 +82,12 @@ const AdminLogin = () => {
 
         {/* Form Section */}
         <form onSubmit={handleLogin} className="p-10 space-y-6">
+          {error && (
+            <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-[9px] font-black uppercase flex items-center gap-3 border border-red-100">
+              <AlertCircle size={16} /> {error}
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Official Email</label>
             <div className="relative">
@@ -67,9 +120,12 @@ const AdminLogin = () => {
 
           <button 
             type="submit" 
-            className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-red-600 transition-all shadow-xl shadow-blue-900/20 active:scale-95 group"
+            disabled={loading}
+            className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-red-600 transition-all shadow-xl shadow-blue-900/20 active:scale-95 group disabled:opacity-70"
           >
-            Verify & Enter <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            {loading ? <Loader2 className="animate-spin" size={16} /> : (
+              <>Verify & Enter <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+            )}
           </button>
 
           <div className="pt-4 flex flex-col items-center gap-4">

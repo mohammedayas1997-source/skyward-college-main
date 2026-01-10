@@ -34,16 +34,11 @@ const UnifiedLogin = () => {
       let emailToAuth = "";
       const input = identifier.trim();
 
-      // 1. Staff Identifer (Ina amfani da @skyward.edu.ng)
+      // 1. Staff Identifier Logic
       if (input.includes("@")) {
-        // Zaka iya barin wannan in kana son amfani da kowane email, 
-        // amma in kana son takaita shi ga staff kadai:
-        if (!input.toLowerCase().endsWith("@skyward.edu.ng") && !input.includes("admin")) {
-           // allow general emails or restrict
-        }
         emailToAuth = input;
       } 
-      // 2. Student Identifier (Nemo Email ta amfani da Student ID)
+      // 2. Student Identifier (Find Email using Student ID)
       else {
         const studentId = input.toUpperCase();
         const q = query(collection(db, "users"), where("idNumber", "==", studentId));
@@ -59,22 +54,30 @@ const UnifiedLogin = () => {
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const user = userCredential.user;
 
-      // --- ROLE-BASED ROUTING ---
+      // --- ROLE & STATUS BASED ROUTING ---
       const userDoc = await getDoc(doc(db, "users", user.uid));
 
       if (userDoc.exists()) {
-        const role = userDoc.data().role?.toLowerCase().trim();
+        const userData = userDoc.data();
+
+        // ACCOUNT STATUS CHECK
+        if (userData.status !== "active") {
+          await signOut(auth);
+          throw new Error("Access Denied: This account is currently inactive. Please contact the administrator.");
+        }
+
+        const role = userData.role?.toLowerCase().trim();
         localStorage.setItem("userRole", role);
         localStorage.setItem("isAuth", "true");
 
-        // Wannan jerin dole ya dace da App.jsx Routes dinka 100%
+        // Routing Configuration
         const routes = {
           rector: "/rector/dashboard",
           proprietor: "/proprietor/dashboard",
           accountant: "/accountant/dashboard",
           admission: "/admission/dashboard",
           exam: "/exam/dashboard",
-          news_admin: "/news/admin", // Kara wannan
+          news_admin: "/news/admin",
           staff: "/staff/portal",
           student: "/student/dashboard",
           admin: "/admin/dashboard"
@@ -85,7 +88,7 @@ const UnifiedLogin = () => {
         if (targetPath) {
           navigate(targetPath, { replace: true });
         } else {
-          throw new Error("Access Denied: Your role does not have a dashboard.");
+          throw new Error("Access Denied: Your role does not have an assigned dashboard.");
         }
       } else {
         throw new Error("User profile not found in database.");

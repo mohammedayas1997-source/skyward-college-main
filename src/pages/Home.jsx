@@ -151,7 +151,6 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
-      {/* HEADER - Increased Z-Index to stay on top */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer">
@@ -167,7 +166,7 @@ export const Home = () => {
               <button onClick={() => setIsLibraryOpen(true)} className="flex items-center gap-1 uppercase hover:text-red-600 transition-colors"><BookOpen size={14} /> E-Library</button>
               <Link to="/contact" className="flex items-center gap-1 hover:text-red-600 transition-colors"><Headphones size={14} /> Contact</Link>
               <div className="flex flex-col border-l border-slate-200 pl-6 gap-1">
-                <span className="flex items-center gap-2 text-[9px] lowercase font-bold"><Mail size={12} className="text-red-600"/> info@skywardcollege.com</span>
+                <a href="mailto:info.skywardcollege@gmail.com" className="flex items-center gap-2 text-[9px] lowercase font-bold hover:text-red-600 transition-colors"><Mail size={12} className="text-red-600"/> info.skywardcollege@gmail.com</a>
                 <span className="flex items-center gap-2 text-[9px] font-bold"><Phone size={12} className="text-red-600"/> +234 7071913131</span>
               </div>
               <Link to="/portal/login" className="bg-slate-100 px-4 py-3 rounded-full flex items-center gap-2 hover:bg-slate-200 transition-all"><Users size={14} /> Portal</Link>
@@ -193,7 +192,6 @@ export const Home = () => {
         )}
       </header>
 
-      {/* HERO SECTION - Fixed Click Issues */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900">
         {slides.map((img, index) => (
           <img 
@@ -204,7 +202,6 @@ export const Home = () => {
           />
         ))}
         
-        {/* Overlay - Uses flexbox and relative z-index */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#002147]/90 via-[#002147]/40 to-transparent flex flex-col justify-center px-6 md:px-20">
           <div className="max-w-2xl text-left"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
@@ -229,7 +226,6 @@ export const Home = () => {
         </div>
       </div>
 
-      {/* COURSES SECTION */}
       <div className="w-full py-20 px-6 bg-[#f8fafc] relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
@@ -258,7 +254,6 @@ export const Home = () => {
 
       <Gallery />
 
-      {/* MODALS - Higher Z-Index */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -348,13 +343,15 @@ export const Home = () => {
               <ul className="space-y-4 text-slate-400 text-sm font-medium">
                 <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600 shrink-0" /> Along Dougiri Primary School Road, Jimeta, Yola, Nigeria.</li>
                 <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
-                <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
+                <li className="flex items-center gap-3"><a href="mailto:info.skywardcollege@gmail.com" className="hover:text-red-600 transition-colors italic">info.skywardcollege@gmail.com</a></li>
               </ul>
             </div>
             <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Connect</h5>
               <div className="flex gap-4">
-                 <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+                 <a href="https://www.facebook.com/share/14W4bJkyK82/?mibextid=qi2Omg" target="_blank" rel="noopener noreferrer">
+                    <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+                 </a>
                  <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
                  <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
               </div>
