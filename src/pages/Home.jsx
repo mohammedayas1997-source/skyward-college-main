@@ -165,17 +165,9 @@ export const Home = () => {
                 <HomeIcon size={14} /> Home
               </Link>
               
-              <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap flex items-center gap-1">
-                <Plane size={14} /> Courses
-              </Link>
-              
               <button onClick={() => setIsLibraryOpen(true)} className="hover:text-red-600 transition-colors cursor-pointer uppercase flex items-center gap-1">
                 <BookOpen size={14} /> E-Library
               </button>
-
-              <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1">
-                <GalleryIcon size={14} /> Gallery
-              </Link>
 
               <Link to="/contact" className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1">
                 <Headphones size={14} /> Contact
@@ -186,15 +178,11 @@ export const Home = () => {
                 <span className="flex items-center gap-2 text-[9px] font-bold"><Phone size={12} className="text-red-600"/> +234 7071913131</span>
               </div>
 
-              <Link to="/admission/apply" className="bg-red-600 text-white px-5 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
-              
               <div className="flex items-center gap-2 ml-2">
-                {/* PORTAL NA DALIBAL (STUDENT ACCESS) - AN MAIDO DA SHI */}
                 <Link to="/portal/login" className="bg-slate-100 text-[#002147] px-4 py-3 rounded-full hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-2">
                     <Users size={14} /> Portal
                 </Link>
 
-                {/* SABON ADMIN PORTAL ICON - AN KARA SHI A GEFE */}
                 <Link to="/portal/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
                     <ShieldCheck size={14} /> Admin
                 </Link>
@@ -304,8 +292,8 @@ export const Home = () => {
             {featuredCourses.map((course, idx) => (
               <div key={idx} className="bg-white overflow-hidden rounded-[2rem] shadow-xl hover:-translate-y-2 transition-all border border-slate-100 flex flex-col h-full group">
                 <div className="relative h-40 w-full overflow-hidden bg-slate-200 cursor-pointer" onClick={() => setSelectedCourse(course)}>
-                   <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                   <div className="absolute inset-0 bg-[#002147]/10"></div>
+                    <img src={course.img} alt={course.title} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-[#002147]/10"></div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow items-center">
                   <div onClick={() => setSelectedCourse(course)} className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl cursor-pointer hover:bg-red-600 hover:text-white transition-all">{course.icon}</div>
