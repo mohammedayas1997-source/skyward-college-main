@@ -1,36 +1,76 @@
 import React, { useState } from "react";
-import { Upload, Save, School, BookOpen, User, GraduationCap, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, MapPin, Calendar, Home } from "lucide-react";
+// Muna bukatar wadannan daga firebase
+import { db } from "../firebase"; 
+import { collection, addDoc, serverTimestamp, updateDoc, doc } from "firebase/firestore";
+import { Upload, Save, School, BookOpen, User, GraduationCap, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, MapPin, Calendar, Home, Briefcase, Loader2 } from "lucide-react";
 
 export const Apply = () => {
-  // Matakan shafuka
   const [step, setStep] = useState("form");
+  const [loading, setLoading] = useState(false);
+  const [applicationId, setApplicationId] = useState(null); // Domin rike ID din dalibi
   
-  // Tsarin sittings na O-Level (Muna fara da sitting guda 1)
   const [sittings, setSittings] = useState([{ id: Date.now() }]);
+  
+  // Rike dukkan bayanan form
+  const [formData, setFormData] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const addSitting = () => {
-    if (sittings.length < 2) {
-      setSittings([...sittings, { id: Date.now() }]);
-    }
+    if (sittings.length < 2) setSittings([...sittings, { id: Date.now() }]);
   };
 
   const removeSitting = (id) => {
     setSittings(sittings.filter(s => s.id !== id));
   };
 
-  const handleFormSubmit = (e) => {
+  // --- AIKE DA BAYANAI ZUWA DASHBOARD (PENDING) ---
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setStep("payment");
+    setLoading(true);
+
+    try {
+      const docRef = await addDoc(collection(db, "applications"), {
+        ...formData,
+        sittings: sittings,
+        status: "Pending Payment",
+        appliedAt: serverTimestamp(),
+      });
+      setApplicationId(docRef.id); // Ajiye ID don update daga baya
+      setStep("payment");
+    } catch (error) {
+      console.error("Kuskure wajen ajiye bayanai:", error);
+      alert("Akwai matsala, a sake gwadawa.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePaymentSuccess = () => {
-    setStep("success");
+  // --- TABBATAR DA BIYAN KUDI ---
+  const handlePaymentSuccess = async () => {
+    setLoading(true);
+    try {
+      if (applicationId) {
+        const appRef = doc(db, "applications", applicationId);
+        await updateDoc(appRef, {
+          status: "Paid",
+          paymentDate: serverTimestamp(),
+        });
+      }
+      setStep("success");
+    } catch (error) {
+      console.error("Payment update error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // --- SHAFIN BIYAN KUDI ---
   if (step === "payment") {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6 text-left">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
           <div className="bg-[#002147] p-8 text-center text-white">
             <CreditCard size={48} className="mx-auto mb-4 text-red-500" />
@@ -42,8 +82,12 @@ export const Apply = () => {
               <span className="text-5xl font-black text-[#002147]">₦5,000</span>
               <p className="text-slate-500 text-sm font-bold mt-2 uppercase">Application Form Fee</p>
             </div>
-            <button onClick={handlePaymentSuccess} className="w-full bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-[#002147] transition-all shadow-lg">
-              Pay Now (N5,000)
+            <button 
+              disabled={loading}
+              onClick={handlePaymentSuccess} 
+              className="w-full bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-[#002147] transition-all shadow-lg flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : "Pay Now (N5,000)"}
             </button>
           </div>
         </div>
@@ -51,18 +95,17 @@ export const Apply = () => {
     );
   }
 
-  // --- SHAFIN RECEIPT ---
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center text-left">
         <div className="max-w-2xl w-full bg-white p-12 rounded-3xl shadow-2xl border-t-8 border-green-500">
           <CheckCircle size={80} className="text-green-500 mx-auto mb-6" />
           <h1 className="text-3xl font-black text-[#002147] uppercase">Success!</h1>
           <p className="text-slate-500 mb-8 font-bold uppercase">Official Payment Receipt Generated</p>
           <div className="bg-slate-50 p-6 rounded-2xl border mb-8 text-left space-y-2">
-             <p className="text-xs"><strong>Ref:</strong> SKY-ADM-2026-99012</p>
+             <p className="text-xs"><strong>Ref:</strong> {applicationId || "SKY-ADM-2026-99012"}</p>
              <p className="text-xs"><strong>Amount:</strong> ₦5,000.00</p>
-             <p className="text-xs text-green-600 font-bold">STATUS: PAID</p>
+             <p className="text-xs text-green-600 font-bold">STATUS: PAID & SENT TO ADMISSION OFFICE</p>
           </div>
           <button onClick={() => window.print()} className="bg-[#002147] text-white px-8 py-4 rounded-xl font-black uppercase text-xs flex items-center gap-2 mx-auto">
             <Printer size={18}/> Print Receipt
@@ -72,9 +115,8 @@ export const Apply = () => {
     );
   }
 
-  // --- SHAFIN FORM ---
   return (
-    <div className="min-h-screen bg-slate-50 py-16 px-4 md:px-20">
+    <div className="min-h-screen bg-slate-50 py-16 px-4 md:px-20 text-left">
       <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
         
         <div className="bg-[#002147] p-10 text-white">
@@ -84,7 +126,6 @@ export const Apply = () => {
 
         <form onSubmit={handleFormSubmit} className="p-8 md:p-12 space-y-12">
           
-          {/* 1. PERSONAL INFO (Updated with DOB, State, LGA, Residence) */}
           <section>
             <div className="flex items-center gap-3 mb-6 border-b pb-2">
               <User className="text-red-600" />
@@ -99,36 +140,30 @@ export const Apply = () => {
                 </div>
               </div>
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input required type="text" placeholder="Full Name (Surname First)" className="form-input-sky" />
+                <input required name="fullName" onChange={handleChange} type="text" placeholder="Full Name (Surname First)" className="form-input-sky" />
                 <div className="relative">
                   <Calendar className="absolute right-3 top-3.5 text-slate-400" size={16} />
-                  <input required type="text" onFocus={(e) => (e.target.type = "date")} onBlur={(e) => (e.target.type = "text")} placeholder="Date of Birth" className="form-input-sky w-full" />
+                  <input required name="dob" onChange={handleChange} type="text" onFocus={(e) => (e.target.type = "date")} onBlur={(e) => (e.target.type = "text")} placeholder="Date of Birth" className="form-input-sky w-full" />
                 </div>
-                <input required type="email" placeholder="Email Address" className="form-input-sky" />
-                <input required type="tel" placeholder="Phone Number" className="form-input-sky" />
-                <select required className="form-input-sky text-slate-500">
+                <input required name="email" onChange={handleChange} type="email" placeholder="Email Address" className="form-input-sky" />
+                <input required name="phone" onChange={handleChange} type="tel" placeholder="Phone Number" className="form-input-sky" />
+                <select required name="gender" onChange={handleChange} className="form-input-sky text-slate-500">
                   <option value="">Gender</option>
                   <option>Male</option>
                   <option>Female</option>
                 </select>
-                
-                {/* State & LGA of Origin */}
-                <input required type="text" placeholder="State of Origin" className="form-input-sky" />
-                <input required type="text" placeholder="LGA of Origin" className="form-input-sky" />
-
-                {/* Current Residence Details */}
-                <input required type="text" placeholder="Current State of Residence" className="form-input-sky" />
-                <input required type="text" placeholder="Current LGA of Residence" className="form-input-sky" />
-                
+                <input required name="stateOrigin" onChange={handleChange} type="text" placeholder="State of Origin" className="form-input-sky" />
+                <input required name="lgaOrigin" onChange={handleChange} type="text" placeholder="LGA of Origin" className="form-input-sky" />
+                <input required name="stateResidence" onChange={handleChange} type="text" placeholder="Current State of Residence" className="form-input-sky" />
+                <input required name="lgaResidence" onChange={handleChange} type="text" placeholder="Current LGA of Residence" className="form-input-sky" />
                 <div className="md:col-span-2 relative">
                   <Home className="absolute right-3 top-4 text-slate-400" size={16} />
-                  <textarea required placeholder="Full Residential Address" className="form-input-sky h-20 pt-3 resize-none w-full"></textarea>
+                  <textarea required name="address" onChange={handleChange} placeholder="Full Residential Address" className="form-input-sky h-20 pt-3 resize-none w-full"></textarea>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* 2. EDUCATION HISTORY */}
           <section>
             <div className="flex items-center gap-3 mb-6 border-b pb-2">
               <School className="text-red-600" />
@@ -137,18 +172,38 @@ export const Apply = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase">Primary School</h4>
-                <input required type="text" placeholder="School Name" className="form-input-sky" />
-                <input required type="text" placeholder="Year" className="form-input-sky" />
+                <input required name="primarySchool" onChange={handleChange} type="text" placeholder="School Name" className="form-input-sky" />
+                <input required name="primaryYear" onChange={handleChange} type="text" placeholder="Year" className="form-input-sky" />
               </div>
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase">Secondary School</h4>
-                <input required type="text" placeholder="School Name" className="form-input-sky" />
-                <input required type="text" placeholder="Year" className="form-input-sky" />
+                <input required name="secondarySchool" onChange={handleChange} type="text" placeholder="School Name" className="form-input-sky" />
+                <input required name="secondaryYear" onChange={handleChange} type="text" placeholder="Year" className="form-input-sky" />
               </div>
             </div>
           </section>
 
-          {/* 3. O-LEVEL RESULTS (SITTINGS) */}
+          <section>
+            <div className="flex items-center gap-3 mb-6 border-b pb-2">
+              <Briefcase className="text-red-600" />
+              <h2 className="text-[#002147] font-black uppercase">Higher / Additional Qualification <span className="text-[10px] text-slate-400 font-bold">(Optional)</span></h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <select name="higherQualification" onChange={handleChange} className="form-input-sky text-slate-500">
+                  <option value="">Select Qualification</option>
+                  <option>Diploma (ND)</option>
+                  <option>Higher National Diploma (HND)</option>
+                  <option>Degree (B.Sc/B.A)</option>
+                  <option>NCE</option>
+                  <option>Professional Certificate</option>
+                  <option>Others</option>
+               </select>
+               <input name="higherInst" onChange={handleChange} type="text" placeholder="Institution Name" className="form-input-sky md:col-span-2" />
+               <input name="higherCourse" onChange={handleChange} type="text" placeholder="Course of Study" className="form-input-sky md:col-span-2" />
+               <input name="higherYear" onChange={handleChange} type="text" placeholder="Year of Graduation" className="form-input-sky" />
+            </div>
+          </section>
+
           <section className="space-y-6">
             <div className="flex items-center justify-between border-b pb-2">
               <div className="flex items-center gap-3">
@@ -161,12 +216,11 @@ export const Apply = () => {
                 </button>
               )}
             </div>
-
             {sittings.map((sitting, index) => (
-              <div key={sitting.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 relative animate-in slide-in-from-top duration-300">
+              <div key={sitting.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 relative">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-[10px] font-black text-red-600 uppercase italic">Sitting #{index + 1}</h4>
-                  {index > 0 && <button onClick={() => removeSitting(sitting.id)} className="text-slate-400 hover:text-red-600 transition-all"><Trash2 size={16} /></button>}
+                  {index > 0 && <button type="button" onClick={() => removeSitting(sitting.id)} className="text-slate-400 hover:text-red-600 transition-all"><Trash2 size={16} /></button>}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <select required className="form-input-sky bg-white"><option value="">Exam Type</option><option>WAEC</option><option>NECO</option><option>NABTEB</option></select>
@@ -185,16 +239,15 @@ export const Apply = () => {
             ))}
           </section>
 
-          {/* 4. JAMB & COURSE */}
           <section className="bg-slate-50 p-6 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <h4 className="text-[10px] font-black text-[#002147] uppercase mb-4">JAMB (Optional)</h4>
-                <input type="text" placeholder="JAMB Reg No" className="form-input-sky bg-white mb-4" />
-                <input type="text" placeholder="JAMB Score" className="form-input-sky bg-white" />
+                <input name="jambReg" onChange={handleChange} type="text" placeholder="JAMB Reg No" className="form-input-sky bg-white mb-4" />
+                <input name="jambScore" onChange={handleChange} type="text" placeholder="JAMB Score" className="form-input-sky bg-white" />
               </div>
               <div>
                 <h4 className="text-[10px] font-black text-red-600 uppercase mb-4">Course Selection</h4>
-                <select required className="form-input-sky bg-white border-2 border-red-600 font-bold">
+                <select required name="selectedCourse" onChange={handleChange} className="form-input-sky bg-white border-2 border-red-600 font-bold">
                   <option value="">Choose a Course...</option>
                   <option>Air Cabin Crew Management</option>
                   <option>Flight Dispatcher </option>
@@ -210,8 +263,12 @@ export const Apply = () => {
               </div>
           </section>
 
-          <button type="submit" className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-5 rounded-xl uppercase tracking-[0.2em] transition-all shadow-xl">
-            Proceed to Payment (₦5,000)
+          <button 
+            disabled={loading}
+            type="submit" 
+            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-5 rounded-xl uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-2"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : "Proceed to Payment (₦5,000)"}
           </button>
         </form>
       </div>
