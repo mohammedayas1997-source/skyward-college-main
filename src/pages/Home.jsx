@@ -191,12 +191,13 @@ export const Home = () => {
               <div className="flex items-center gap-2 ml-2">
                 {/* PORTAL NA DALIBAL (STUDENT ACCESS) - AN MAIDO DA SHI */}
                 <Link to="/portal/login" className="bg-slate-100 text-[#002147] px-4 py-3 rounded-full hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-2">
-                    <Users size={14} /> Portal
-                </Link>
+                  <Users size={14} /> Portal
+              </Link>
+                
 
                 {/* SABON ADMIN PORTAL ICON - AN KARA SHI A GEFE */}
-                <Link to="/portal/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
-                    <ShieldCheck size={14} /> Admin
+                <Link to="/admin/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
+                  <ShieldCheck size={14} /> Admin
                 </Link>
               </div>
           </div>
