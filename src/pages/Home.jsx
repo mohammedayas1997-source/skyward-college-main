@@ -268,14 +268,19 @@ export const Home = () => {
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
         ))}
-        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-40 pointer-events-none">
-          <div className="max-w-2xl pointer-events-auto"> 
+        {/* GYARA: Na cire pointer-events-none a nan don buttons suyi aiki */}
+        <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/80 to-transparent z-40">
+          <div className="max-w-2xl"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
             <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
             <div className="flex gap-4">
-              <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all relative z-[50] cursor-pointer">Start Application</Link>
-              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[50] cursor-pointer">Portal Access</Link>
+              <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all relative z-[50] cursor-pointer">
+                Start Application
+              </Link>
+              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[50] cursor-pointer">
+                Portal Access
+              </Link>
             </div>
           </div>
         </div>
@@ -313,41 +318,41 @@ export const Home = () => {
       {/* FOOTER */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
-           <div className="space-y-6">
+            <div className="space-y-6">
               <div className="flex items-center gap-2">
                 <img src="/logo.png" alt="Logo" className="h-16 w-16 bg-white p-2 rounded-xl" />
                 <h4 className="font-black text-2xl tracking-tighter">SKYWARD</h4>
               </div>
               <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage.</p>
-           </div>
-           <div>
-             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
-             <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
-               <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
-               <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
-               <li onClick={() => setIsLibraryOpen(true)} className="cursor-pointer hover:text-red-600">E-Library</li>
-               <li><Link to="/portal/login" className="hover:text-red-600">Portal Login</Link></li>
-             </ul>
-           </div>
-           <div>
-             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Contact Us</h5>
-             <ul className="space-y-4 text-slate-400 text-sm font-medium">
-               <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600 shrink-0" /> Along Dougiri Primary School Road, Jimeta, Yola, Nigeria.</li>
-               <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
-               <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
-             </ul>
-           </div>
-           <div>
-             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Connect</h5>
-             <div className="flex gap-4">
-                <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
-                <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
-                <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
-             </div>
-           </div>
+            </div>
+            <div>
+              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
+              <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
+                <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
+                <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
+                <li onClick={() => setIsLibraryOpen(true)} className="cursor-pointer hover:text-red-600">E-Library</li>
+                <li><Link to="/portal/login" className="hover:text-red-600">Portal Login</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Contact Us</h5>
+              <ul className="space-y-4 text-slate-400 text-sm font-medium">
+                <li className="flex items-start gap-3"><MapPin size={18} className="text-red-600 shrink-0" /> Along Dougiri Primary School Road, Jimeta, Yola, Nigeria.</li>
+                <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
+                <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Connect</h5>
+              <div className="flex gap-4">
+                 <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+                 <Twitter size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+                 <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer transition-colors" />
+              </div>
+            </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-           &copy; 2026 Skyward College of Travels and Tourism. All Rights Reserved.
+            &copy; 2026 Skyward College of Travels and Tourism. All Rights Reserved.
         </div>
       </footer>
     </section>
