@@ -36,7 +36,7 @@ export const Home = () => {
       fullDesc: "Step into the command center of global travel. This course isn't just about booking flights; it's about mastering the sophisticated GDS tools (Amadeus & Sabre) that run the world's airlines. You will gain the elite technical skills required to navigate complex itineraries, handle international fare constructions, and provide expert advisory services. In a world that never stops moving, your skills will be the bridge that connects continents. Join us and turn your passion for travel into a high-demand professional craft.",
       img: "/1767965179277.jpg", 
       outcomes: ["Expert Proficiency in Amadeus & Sabre GDS", "IATA Standard Geography & Routing", "Advanced International Fare Construction"], 
-      careers: ["Airline Ticketing Officer", "Travel Consultant"] 
+      careers: ["Airline Ticketing Officer", "International Travel Consultant"] 
     },
     { 
       id: 2, 
@@ -47,7 +47,7 @@ export const Home = () => {
       fullDesc: "In the world of luxury travel and tourism, excellence is defined by the experience. This program transforms you into a master of human psychology and professional ethics. You will learn the secrets of high-level communication, crisis de-escalation, and the art of making every guest feel like royalty. Whether at a 5-star airport lounge or a corporate headquarters, your ability to manage relationships will make you the most valuable asset in any organization. Elevate your persona and become a leader in service excellence.",
       img: "/1767965255899.jpg", 
       outcomes: ["Advanced Emotional Intelligence", "Global Professional Etiquette", "Conflict Resolution & Crisis Management"], 
-      careers: ["Guest Relations Executive", "Customer Experience Officer"] 
+      careers: ["Guest Relations Executive", "VIP Customer Experience Officer"] 
     },
     { 
       id: 3, 
@@ -58,7 +58,7 @@ export const Home = () => {
       fullDesc: "Tourism is the world's largest industry, and it needs visionary managers. This course dives deep into the logistics of international tour packaging, destination marketing, and sustainable tourism operations. You will learn how to curate unforgettable experiences from the Maldives to the Alps. We provide you with the strategic mindset to build and manage tourism brands that stand out on the global stage. Don't just visit the world—learn how to run it.",
       img: "/1767965449892.jpg", 
       outcomes: ["International Tour Packaging", "Digital Destination Marketing", "Sustainable Tourism Logistics"], 
-      careers: ["Tour Operator", "Destination Manager"] 
+      careers: ["International Tour Operator", "Destination Brand Manager"] 
     },
     { 
       id: 4, 
@@ -68,8 +68,8 @@ export const Home = () => {
       desc: "The ultimate lifestyle career. Train for safety, elegance, and service at 35,000 feet.", 
       fullDesc: "Imagine having the world as your office. Our Cabin Crew program is a rigorous, world-class journey that prepares you for the prestigious role of a flight attendant. From aviation medicine and emergency safety procedures to fine dining service and grooming, we cover it all. You will develop the confidence and grace needed to represent top-tier global airlines. This is more than a job—it's an identity. If you are ready for a life of adventure, prestige, and professional excellence, your wings are waiting here.",
       img: "/1767965537113.jpg", 
-      outcomes: ["Aviation Safety & Emergency Procedures (SEP)", "Aviation Medicine & First Aid", "In-flight Catering & Service"], 
-      careers: ["Commercial Flight Attendant", "VIP Corporate Cabin Crew"] 
+      outcomes: ["Aviation Safety & Emergency Procedures (SEP)", "Aviation Medicine & First Aid", "Luxury In-flight Service Protocols"], 
+      careers: ["Commercial Flight Attendant", "Private Jet Corporate Hostess"] 
     },
     { 
       id: 5, 
@@ -79,8 +79,8 @@ export const Home = () => {
       desc: "The brain behind every flight. Master meteorology, navigation, and flight safety.", 
       fullDesc: "Flight Dispatchers are the 'captains on the ground.' This high-stakes, high-reward course teaches you the science of flight planning, weather analysis, and aircraft performance. You will be responsible for the safety of hundreds of lives by calculating fuel, monitoring routes, and making critical decisions alongside pilots. If you have a sharp mind and a passion for the technical side of aviation, this is your path to a powerful and respected career in the flight operations center.",
       img: "/1767965629751.jpg", 
-      outcomes: ["Advanced Flight Planning", "Meteorology", "Navigation"], 
-      careers: ["Flight Dispatcher", "Operations Control Officer"] 
+      outcomes: ["Advanced Flight Planning & Performance", "Aviation Meteorology & Analysis", "Radio Communication & Navigation"], 
+      careers: ["Licensed Flight Dispatcher", "Airline Operations Controller"] 
     },
     { 
       id: 6, 
@@ -90,8 +90,8 @@ export const Home = () => {
       desc: "Control the pulse of the airport. Master passenger handling and ramp safety.", 
       fullDesc: "An airport is a complex city that never sleeps. This course prepares you to manage the crucial ground operations that keep the aviation world moving. You will master passenger check-in procedures, baggage handling systems, and ramp safety protocols. Learn how to manage the flow of thousands of people and aircraft with precision and efficiency. Your career at the heart of the world's most modern airports starts here.",
       img: "/1767965722394.jpg", 
-      outcomes: ["Passenger Handling", "Ramp Safety", "Baggage Control"], 
-      careers: ["Ground Staff", "Passenger Service Agent"] 
+      outcomes: ["Standard Passenger Handling Procedures", "IATA Ramp & Airside Safety", "Baggage Control & Logistics"], 
+      careers: ["Ground Handling Officer", "Passenger Service Supervisor"] 
     },
     { 
       id: 7, 
@@ -101,8 +101,8 @@ export const Home = () => {
       desc: "Master the logistics of global trade. Learn to handle air cargo and dangerous goods.", 
       fullDesc: "Air cargo is the lifeline of the global economy. This program specializes in the high-demand field of air freight logistics. You will learn the intricate details of Air Waybill documentation, the handling of Dangerous Goods (DGR), and supply chain management. As global e-commerce continues to explode, experts who can move goods safely across borders are in higher demand than ever. Secure your future in the booming world of aviation logistics.",
       img: "/1767965799313.jpg", 
-      outcomes: ["Air Waybill Documentation", "Dangerous Goods (DGR)", "Logistics"], 
-      careers: ["Air Cargo Agent", "Logistics Coordinator"] 
+      outcomes: ["Air Waybill & Cargo Documentation", "Dangerous Goods Regulations (DGR)", "Supply Chain & Logistics Management"], 
+      careers: ["Air Cargo Specialist", "Logistics Operations Manager"] 
     },
     { 
       id: 8, 
@@ -112,8 +112,8 @@ export const Home = () => {
       desc: "Become a global mobility expert. Master the complex world of international visas.", 
       fullDesc: "Navigate the complex corridors of international travel laws. This unique course turns you into a professional Visa Consultant. You will gain deep knowledge of global visa categories, embassy requirements, and document verification processes for major countries like the US, UK, Canada, and the Schengen area. In an era of increased migration and travel, your expertise will be the key that opens doors for students, tourists, and professionals worldwide.",
       img: "/1767965884821.jpg", 
-      outcomes: ["Global Visa Categories", "Embassy Standards", "Document Verification"], 
-      careers: ["Visa Consultant", "Global Mobility Specialist"] 
+      outcomes: ["Global Visa Policy Knowledge", "Embassy Documentation Standards", "Travel Law & Document Verification"], 
+      careers: ["Visa & Immigration Consultant", "Mobility Specialist"] 
     },
     { 
       id: 9, 
@@ -123,8 +123,8 @@ export const Home = () => {
       desc: "Be your own boss. Learn how to launch and scale a profitable travel business.", 
       fullDesc: "Why work for the industry when you can own a piece of it? This entrepreneurship-focused course gives you the blueprint to start and manage your own travel agency. We cover everything from business registration and financial management to digital marketing and building supplier relationships. We don't just give you a certificate; we give you the tools to build a business empire in the most exciting industry on earth.",
       img: "/1767965961676.jpg", 
-      outcomes: ["Business Plan Development", "Agency Finance", "Digital Marketing"], 
-      careers: ["Travel Agency Owner", "Business Manager"] 
+      outcomes: ["Business Plan & Growth Strategy", "Travel Agency Finance & Accounting", "Digital Marketing for Travel Brands"], 
+      careers: ["Travel Agency CEO", "Independent Travel Entrepreneur"] 
     },
     { 
       id: 10, 
@@ -134,8 +134,8 @@ export const Home = () => {
       desc: "Master world-class hospitality. Train for leadership in luxury hotels and resorts.", 
       fullDesc: "Hospitality is the art of making people feel at home, even when they are miles away. This course prepares you for leadership roles in the world's most prestigious hotels and resorts. You will master front office operations, food and beverage management, and event planning. We focus on the high-end standards that luxury guests expect. Transform your passion for hospitality into a professional career that can take you to any 5-star destination in the world.",
       img: "/1767966074821.jpg", 
-      outcomes: ["Front Office Operations", "Food & Beverage Management", "Event Planning"], 
-      careers: ["Hotel Manager", "Hospitality Coordinator"] 
+      outcomes: ["Front Office & Rooms Division Management", "Global Food & Beverage Standards", "Corporate Event & Wedding Planning"], 
+      careers: ["Hotel Operations Manager", "Hospitality Service Lead"] 
     }
   ];
 
@@ -149,58 +149,73 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
-      {/* 1. HEADER SECTION - UPDATED COLORS AND ICONS */}
+      {/* 1. TOP BAR */}
+      <div className="w-full bg-red-600 text-white py-2 px-6 hidden md:block">
+        <div className="max-w-7xl mx-auto flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="flex gap-6">
+            <Link to="/" className="hover:text-black transition-colors">Home</Link>
+            <Link to="/admission/apply" className="hover:text-black transition-colors">Admission</Link>
+            <Link to="/courses" className="hover:text-black transition-colors">Courses</Link>
+            <Link to="/gallery" className="hover:text-black transition-colors">Gallery</Link>
+            <button onClick={() => setIsLibraryOpen(true)} className="hover:text-black transition-colors">E-Library</button>
+            <Link to="/contact" className="hover:text-black transition-colors border-b border-white">Contact</Link>
+          </div>
+          <div className="flex gap-4">
+            <span className="flex items-center gap-1"><Phone size={10} /> +234 7071913131</span>
+            <span className="flex items-center gap-1"><Mail size={10} /> info@skywardcollege.com</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. MAIN HEADER SECTION */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
              <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
              <div className="flex flex-col">
-                {/* Changed SKYWARD to Red as requested */}
-                <span className="text-red-600 font-black text-xl md:text-2xl leading-none tracking-tighter uppercase">SKYWARD</span>
+                <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
                 <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase text-nowrap">College of Travels and Tourism</span>
              </div>
           </Link>
           
-          {/* Icons moved to top nav as requested */}
-          <div className="hidden md:flex gap-6 text-[#002147] font-black text-[10px] uppercase tracking-widest items-center relative z-[110]">
+          <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center relative z-[110]">
              <Link to="/" className="flex items-center gap-1.5 text-red-600 cursor-pointer hover:opacity-80 transition-all">
-                <HomeIcon size={16} /> Home
+                <HomeIcon size={14} /> Home
              </Link>
              <Link to="/courses" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer text-nowrap">
-                <BookOpen size={16} /> Courses
+                <BookOpen size={14} /> Courses
              </Link>
              
              <button 
                 onClick={() => setIsLibraryOpen(true)}
                 className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer uppercase"
              >
-                <FileText size={16} /> E-Library
+                <FileText size={14} /> E-Library
              </button>
 
              <Link to="/gallery" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer">
-                <GalleryIcon size={16} /> Gallery
+                <GalleryIcon size={14} /> Gallery
              </Link>
-
-             <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
-
-             <Link to="/admission/apply" className="bg-red-600 text-white px-5 py-2.5 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
-             <Link to="/portal/login" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer border-l pl-6 border-slate-100">
+             
+             <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
+             
+             <Link to="/portal/login" className="flex items-center gap-1.5 hover:text-red-600 transition-colors cursor-pointer">
                 <Users size={16} /> Portal
              </Link>
           </div>
 
           <div className="md:hidden flex items-center gap-4 relative z-[110]">
-            <button onClick={() => setIsLibraryOpen(true)} className="text-[#002147]">
-              <FileText size={20} />
-            </button>
-            <Link to="/portal/login" className="text-[#002147]">
+            <Link to="/portal/login" className="text-[#002147] cursor-pointer">
               <Users size={20} />
             </Link>
+            <button className="text-[#002147] cursor-pointer" onClick={() => setIsLibraryOpen(true)}>
+              <BookOpen size={24} />
+            </button>
           </div>
         </div>
       </header>
 
-      {/* --- E-LIBRARY MODAL --- */}
+      {/* MODALS & SECTIONS CONTINUE BELOW UNCHANGED... */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -226,7 +241,6 @@ export const Home = () => {
         </div>
       )}
 
-      {/* --- COURSE DETAILS MODAL --- */}
       {selectedCourse && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative max-h-[95vh] overflow-y-auto">
@@ -264,7 +278,6 @@ export const Home = () => {
         </div>
       )}
 
-      {/* 2. HERO SECTION */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-10">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
@@ -272,10 +285,7 @@ export const Home = () => {
         <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-6 md:px-20 bg-gradient-to-r from-[#002147]/70 to-transparent">
           <div className="relative z-20 max-w-2xl"> 
             <h2 className="text-white text-xs md:text-sm font-bold uppercase tracking-[0.4em] mb-4">Welcome to</h2>
-            <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">
-              Skyward College of Travels <br />
-              <span className="text-red-600">and Tourism</span>
-            </h1>
+            <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
             <div className="flex gap-4">
               <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all">Start Application</Link>
@@ -285,7 +295,6 @@ export const Home = () => {
         </div>
       </div>
 
-      {/* 3. COURSES SECTION */}
       <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
@@ -300,12 +309,7 @@ export const Home = () => {
                    <div className="absolute inset-0 bg-[#002147]/10"></div>
                 </div>
                 <div className="p-6 flex flex-col flex-grow items-center">
-                  <div 
-                    onClick={() => setSelectedCourse(course)}
-                    className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl cursor-pointer hover:bg-red-600 hover:text-white transition-all"
-                  >
-                    {course.icon}
-                  </div>
+                  <div onClick={() => setSelectedCourse(course)} className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl cursor-pointer hover:bg-red-600 hover:text-white transition-all">{course.icon}</div>
                   <h4 className="font-black uppercase text-[11px] mb-2 leading-tight h-8">{course.title}</h4>
                   <p className="text-slate-500 text-[10px] font-bold mb-4 flex-grow">{course.desc}</p>
                   <button onClick={() => setSelectedCourse(course)} className="w-full mb-4 py-2 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase hover:bg-[#002147] hover:text-white transition-all">Explore Career</button>
@@ -319,17 +323,14 @@ export const Home = () => {
 
       <Gallery />
 
-      {/* 5. FOOTER */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
            <div className="space-y-6">
               <div className="flex items-center gap-2">
                 <img src="/logo.png" alt="Logo" className="h-16 w-16 bg-white p-2 rounded-xl" />
-                <h4 className="font-black text-2xl tracking-tighter uppercase text-white">SKYWARD</h4>
+                <h4 className="font-black text-2xl tracking-tighter">SKYWARD</h4>
               </div>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed italic">
-                Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage. Our industry-recognized programs provide you with the practical skills and confidence needed to secure high-paying roles in leading airlines, international airports, travel agencies, and luxury hotels worldwide. Your journey to professional excellence starts with a single click. Don't wait for the future—create it now. Apply today and let your dreams take flight!
-              </p>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage.</p>
            </div>
            <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
