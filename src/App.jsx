@@ -8,7 +8,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 // --- IMPORT PAGES ---
 import { Home } from "./pages/Home"; 
 import Apply from "./pages/Apply"; // Wannan shi ne Apply component din
-
+import { CreateUserAccount } from "./pages/AdminUserManagement";
 // --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -188,6 +188,16 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/portal/login" element={<Login />} />
         
+        <Route 
+          path="/admin/users" 
+          element={
+            <DashboardWrapper 
+              title="Admin" 
+              color="text-blue-900" 
+              allowedRole="admin" 
+            />
+          } 
+        />
         {/* GYARA: Mun cire AdmissionForm tunda ba a yi import dinsa ba, mun bar Apply */}
         <Route path="/admission/apply" element={<Apply />} />
         
