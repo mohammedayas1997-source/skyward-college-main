@@ -17,7 +17,7 @@ import AccountantDashboard from "./pages/AccountantDashboard";
 import AdmissionDashboard from "./pages/AdmissionDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import ExamDashboard from "./pages/ExamDashboard";
-import NewsAdminDashboard from "./pages/NewsAdminDashboard";
+import NewsAdminDashboard from "./pages/NewsAdmin";
 import StaffPortal from "./pages/StaffDashboard";
 import ProprietorDashboard from "./pages/ProprietorDashboard"; // Na kara wannan
 
@@ -238,7 +238,14 @@ export default function App() {
         <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student"><StudentDashboard /></DashboardWrapper>} />
 
         {/* NEWS ADMIN */}
-        <Route path="/news/admin" element={<DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin"><NewsAdminDashboard /></DashboardWrapper>} />
+       <Route 
+          path="/news/admin" 
+          element={
+            <DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin">
+              <NewsAdmin />
+            </DashboardWrapper>
+          } 
+        />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
