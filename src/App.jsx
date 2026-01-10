@@ -7,8 +7,16 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 
 // --- IMPORT PAGES ---
 import { Home } from "./pages/Home"; 
-import Apply from "./pages/Apply"; // Wannan shi ne Apply component din
+import Apply from "./pages/Apply"; 
 import { CreateUserAccount } from "./pages/AdminUserManagement";
+
+// NOTE: You should have these files created in your pages folder.
+// I am adding these as placeholders for you to connect your actual code.
+const RectorDashboard = () => <div className="p-4 font-bold">Rector Controls & Reports</div>;
+const AccountantDashboard = () => <div className="p-4 font-bold">Financial Records & Tuition</div>;
+const AdmissionDashboard = () => <div className="p-4 font-bold">Student Applications Management</div>;
+const StudentDashboard = () => <div className="p-4 font-bold">My Courses & Results</div>;
+
 // --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +47,14 @@ const Login = () => {
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
       if (userDoc.exists()) {
-        const role = userDoc.data().role?.toLowerCase(); 
+        const userData = userDoc.data();
+        
+        // SECURITY: Check if account is active
+        if (userData.status === "inactive") {
+            throw new Error("Your account has been deactivated. Contact Admin.");
+        }
+
+        const role = userData.role?.toLowerCase(); 
         localStorage.setItem("userRole", role);
 
         const routes = {
@@ -50,7 +65,8 @@ const Login = () => {
           admission: "/admission/dashboard",
           staff: "/staff/portal",
           exam: "/exam/dashboard",
-          news_admin: "/news/admin"
+          news_admin: "/news/admin",
+          admin: "/admin/users"
         };
 
         if (routes[role]) {
@@ -129,8 +145,9 @@ const Login = () => {
   );
 };
 
-// --- PROTECTED DASHBOARD WRAPPER ---
-const DashboardWrapper = ({ title, color, allowedRole }) => {
+// --- UPDATED PROTECTED DASHBOARD WRAPPER ---
+// Added 'children' so the specific dashboard content shows up
+const DashboardWrapper = ({ title, color, allowedRole, children }) => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
 
@@ -153,27 +170,30 @@ const DashboardWrapper = ({ title, color, allowedRole }) => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12">
-      <div className="max-w-6xl mx-auto bg-white p-8 md:p-12 rounded-[3.5rem] shadow-sm border border-slate-100">
-        <div className="flex justify-between items-center mb-8 border-b pb-8">
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto bg-white min-h-[90vh] rounded-[3rem] shadow-sm border border-slate-100 flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-8 border-b border-slate-50">
           <div>
-            <h1 className={`text-3xl font-black uppercase italic ${color}`}>{title} Portal</h1>
-            <p className="text-slate-400 font-bold text-[9px] tracking-[0.3em] uppercase mt-1 italic">Skyward Multi-Level Management</p>
+            <h1 className={`text-2xl font-black uppercase italic ${color}`}>{title} Portal</h1>
+            <p className="text-slate-400 font-bold text-[8px] tracking-[0.3em] uppercase mt-1">Skyward Management System</p>
           </div>
           <button 
             onClick={async () => { await signOut(auth); localStorage.clear(); navigate("/portal/login"); }} 
-            className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl font-black text-[9px] uppercase hover:bg-red-600 hover:text-white transition-all"
           >
-            <LogOut size={16} /> Logout
+            <LogOut size={14} /> Logout
           </button>
         </div>
         
-        <div className="h-96 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center p-8">
-            <ShieldCheck size={48} className="text-slate-200 mb-4" />
-            <p className="text-slate-400 font-black uppercase tracking-widest italic text-xs">
-                Authenticated as {title} <br/> 
-                <span className="text-[10px] font-medium normal-case">Access granted to secure resources.</span>
-            </p>
+        {/* Main Content Area - This is where your components will show up */}
+        <div className="flex-grow p-6 md:p-10">
+            {children ? children : (
+                <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
+                    <ShieldCheck size={60} />
+                    <p className="font-black uppercase tracking-widest mt-4">Module Content Loading...</p>
+                </div>
+            )}
         </div>
       </div>
     </div>
@@ -187,27 +207,62 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/portal/login" element={<Login />} />
+        <Route path="/admission/apply" element={<Apply />} />
         
+        {/* ADMIN: Now shows the CreateUserAccount component inside the wrapper */}
         <Route 
           path="/admin/users" 
           element={
-            <DashboardWrapper 
-              title="Admin" 
-              color="text-blue-900" 
-              allowedRole="admin" 
-            />
+            <DashboardWrapper title="Admin" color="text-blue-900" allowedRole="admin">
+                <CreateUserAccount />
+            </DashboardWrapper>
           } 
         />
-        {/* GYARA: Mun cire AdmissionForm tunda ba a yi import dinsa ba, mun bar Apply */}
-        <Route path="/admission/apply" element={<Apply />} />
         
-        <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
+        {/* RECTOR */}
+        <Route 
+          path="/rector/dashboard" 
+          element={
+            <DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector">
+                <RectorDashboard />
+            </DashboardWrapper>
+          } 
+        />
+
+        {/* ACCOUNTANT */}
+        <Route 
+          path="/accountant/dashboard" 
+          element={
+            <DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant">
+                <AccountantDashboard />
+            </DashboardWrapper>
+          } 
+        />
+
+        {/* ADMISSION */}
+        <Route 
+          path="/admission/dashboard" 
+          element={
+            <DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission">
+                <AdmissionDashboard />
+            </DashboardWrapper>
+          } 
+        />
+
+        {/* STUDENT */}
+        <Route 
+          path="/student/dashboard" 
+          element={
+            <DashboardWrapper title="Student" color="text-slate-700" allowedRole="student">
+                <StudentDashboard />
+            </DashboardWrapper>
+          } 
+        />
+
+        {/* Other Roles placeholders */}
         <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
-        <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant" />} />
-        <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission" />} />
         <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff" />} />
         <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam" />} />
-        <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student" />} />
         <Route path="/news/admin" element={<DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin" />} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
