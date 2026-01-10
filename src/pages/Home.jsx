@@ -149,17 +149,9 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
-      {/* 1. TOP BAR - Cleaned up to show ONLY contact info */}
-      <div className="w-full bg-red-600 text-white py-2 px-6 hidden md:block">
-        <div className="max-w-7xl mx-auto flex justify-end items-center text-[10px] font-black uppercase tracking-[0.2em]">
-          <div className="flex gap-4">
-            <span className="flex items-center gap-1"><Phone size={10} /> +234 7071913131</span>
-            <span className="flex items-center gap-1"><Mail size={10} /> info@skywardcollege.com</span>
-          </div>
-        </div>
-      </div>
+      {/* 1. TOP BAR REMOVED COMPLETELY */}
 
-      {/* 2. MAIN HEADER SECTION - This is the primary navigation now */}
+      {/* 2. MAIN HEADER SECTION - All info consolidated here */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -170,7 +162,7 @@ export const Home = () => {
               </div>
           </Link>
           
-          <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center relative z-[110]">
+          <div className="hidden lg:flex gap-8 text-[#002147] font-black text-[10px] uppercase tracking-widest items-center relative z-[110]">
               <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
               <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap">Courses</Link>
               
@@ -184,12 +176,18 @@ export const Home = () => {
               <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer">Gallery</Link>
               <Link to="/contact" className="hover:text-red-600 transition-colors cursor-pointer">Contact</Link>
               
+              {/* Contact Info Integrated into Header */}
+              <div className="flex flex-col border-l border-slate-200 pl-8 gap-1">
+                <span className="flex items-center gap-2 text-[9px] lowercase"><Mail size={12} className="text-red-600"/> info@skywardcollege.com</span>
+                <span className="flex items-center gap-2 text-[9px]"><Phone size={12} className="text-red-600"/> +234 7071913131</span>
+              </div>
+
               <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
               
               <Link to="/portal/login" className="hover:text-red-600 transition-colors cursor-pointer">Portal</Link>
           </div>
 
-          <div className="md:hidden flex items-center gap-4 relative z-[110]">
+          <div className="lg:hidden flex items-center gap-4 relative z-[110]">
             <Link to="/portal/login" className="text-[#002147] cursor-pointer">
               <Users size={20} />
             </Link>
@@ -200,7 +198,7 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* REST OF THE CODE REMAINS UNTOUCHED */}
+      {/* REMAINDER OF THE PAGE IS UNCHANGED */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
