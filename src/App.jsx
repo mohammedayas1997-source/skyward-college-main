@@ -11,6 +11,7 @@ import { Home } from "./pages/Home";
 import { Apply } from "./pages/Apply";
 import { Navbar } from "./components/Navbar";
 import Login from "./components/UnifiedLogin";
+import AdminLogin from "./pages/AdminLogin";
 
 // --- SECURITY WRAPPER ---
 const DashboardWrapper = ({ title, color, allowedRole }) => {
@@ -84,6 +85,7 @@ export default function App() {
           {/* PUBLIC ROUTES */}
           <Route path="/" element={<Home />} />
           <Route path="/portal/login" element={<Login />} />
+          <Route path="/portal/admin-login" element={<AdminLogin />} />
           <Route path="/admission/apply" element={<Apply />} />
           
           {/* PROTECTED ROUTES */}
