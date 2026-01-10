@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, Navigate, useLocation } from "react-router-dom";
 import { LogOut, Loader2 } from "lucide-react";
 
 // Firebase Imports
@@ -10,7 +10,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { Home } from "./pages/Home";
 import { Apply } from "./pages/Apply";
 import { Navbar } from "./components/Navbar";
-import Login from "./components/UnifiedLogin"; // Mun mayar da Login daban don sauki
+import Login from "./components/UnifiedLogin";
 
 // --- SECURITY WRAPPER ---
 const DashboardWrapper = ({ title, color, allowedRole }) => {
@@ -59,36 +59,46 @@ const DashboardWrapper = ({ title, color, allowedRole }) => {
   );
 };
 
+// --- NAVBAR CONTROLLER ---
+// Wannan bangaren zai tabbatar Navbar baya fitowa a shafin Login
+const Layout = ({ children, activeTab, setActiveTab }) => {
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/portal/login";
+
+  return (
+    <>
+      {!isLoginPage && <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />}
+      {children}
+    </>
+  );
+};
+
 // --- MAIN ROUTING ---
 export default function App() {
   const [activeTab, setActiveTab] = useState("HOME");
 
   return (
     <BrowserRouter>
-      {/* Navbar zai fito a kowane shafi amma ba a Login ba */}
-      <Routes>
-        <Route path="/portal/login" element={null} />
-        <Route path="*" element={<Navbar activeTab={activeTab} setActiveTab={setActiveTab} />} />
-      </Routes>
+      <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+        <Routes>
+          {/* PUBLIC ROUTES */}
+          <Route path="/" element={<Home />} />
+          <Route path="/portal/login" element={<Login />} />
+          <Route path="/admission/apply" element={<Apply />} />
+          
+          {/* PROTECTED ROUTES */}
+          <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
+          <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
+          <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant" />} />
+          <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission" />} />
+          <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff" />} />
+          <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam" />} />
+          <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student" />} />
 
-      <Routes>
-        {/* PUBLIC ROUTES - KOWA NA IYA GANI */}
-        <Route path="/" element={<Home />} />
-        <Route path="/portal/login" element={<Login />} />
-        <Route path="/admission/apply" element={<Apply />} />
-        
-        {/* PROTECTED ROUTES - SAI AN YI LOGIN */}
-        <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
-        <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
-        <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant" />} />
-        <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission" />} />
-        <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff" />} />
-        <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam" />} />
-        <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student" />} />
-
-        {/* Idan aka yi kuskuren rubuta link, a maida su Home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* FALLBACK */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }
