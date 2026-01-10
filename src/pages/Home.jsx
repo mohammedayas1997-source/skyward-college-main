@@ -155,8 +155,8 @@ export const Home = () => {
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
               <img src="/logo.png" alt="Skyward Logo" className="h-12 w-12 md:h-14 md:w-14 object-contain" />
               <div className="flex flex-col">
-                 <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
-                 <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase text-nowrap">College of Travels and Tourism</span>
+                  <span className="text-[#002147] font-black text-xl md:text-2xl leading-none tracking-tighter">SKYWARD</span>
+                  <span className="text-red-600 font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase text-nowrap">College of Travels and Tourism</span>
               </div>
           </Link>
           
@@ -189,18 +189,20 @@ export const Home = () => {
               <Link to="/admission/apply" className="bg-red-600 text-white px-5 py-3 rounded-full hover:bg-[#002147] transition-all cursor-pointer">Apply Now</Link>
               
               <div className="flex items-center gap-2 ml-2">
-                {/* DUK LINKS DIN SUNYI DAIDAI DA ROUTE DIN LOGIN DINKA */}
-                <Link to="/login" className="bg-slate-100 text-[#002147] px-4 py-3 rounded-full hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-2">
-                   <Users size={14} /> Portal
+                {/* PORTAL NA DALIBAL (STUDENT ACCESS) - AN MAIDO DA SHI */}
+                <Link to="/portal/login" className="bg-slate-100 text-[#002147] px-4 py-3 rounded-full hover:bg-slate-200 transition-all cursor-pointer flex items-center gap-2">
+                    <Users size={14} /> Portal
                 </Link>
-                <Link to="/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
-                   <ShieldCheck size={14} /> Admin
+
+                {/* SABON ADMIN PORTAL ICON - AN KARA SHI A GEFE */}
+                <Link to="/portal/login" className="bg-[#002147] text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all cursor-pointer flex items-center gap-2 border border-[#002147]">
+                    <ShieldCheck size={14} /> Admin
                 </Link>
               </div>
           </div>
 
           <div className="lg:hidden flex items-center gap-4 relative z-[110]">
-             <Link to="/login" className="text-[#002147] cursor-pointer">
+             <Link to="/portal/login" className="text-[#002147] cursor-pointer">
               <ShieldCheck size={24} />
             </Link>
             <button className="text-[#002147] cursor-pointer" onClick={() => setIsLibraryOpen(true)}>
@@ -210,7 +212,7 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* E-Library Modal */}
+      {/* MODAL E-LIBRARY */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -236,7 +238,7 @@ export const Home = () => {
         </div>
       )}
 
-      {/* Course Detail Modal */}
+      {/* MODAL COURSE DETAILS */}
       {selectedCourse && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative max-h-[95vh] overflow-y-auto">
@@ -273,7 +275,7 @@ export const Home = () => {
         </div>
       )}
 
-      {/* Hero Slider */}
+      {/* HERO SECTION */}
       <div className="relative w-full h-[500px] md:h-[650px] overflow-hidden bg-slate-900 z-0">
         {slides.map((img, index) => (
           <img key={index} src={img} alt="Hero" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === current ? "opacity-60" : "opacity-0"}`} />
@@ -285,13 +287,13 @@ export const Home = () => {
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
             <div className="flex gap-4">
               <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all relative z-[50] cursor-pointer">Start Application</Link>
-              <Link to="/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[50] cursor-pointer">Portal Access</Link>
+              <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all relative z-[50] cursor-pointer">Portal Access</Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Courses Section */}
+      {/* COURSES SECTION */}
       <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
@@ -320,6 +322,7 @@ export const Home = () => {
 
       <Gallery />
 
+      {/* FOOTER */}
       <footer className="w-full bg-[#002147] text-white py-20 px-6 relative z-30">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
            <div className="space-y-6">
@@ -335,7 +338,7 @@ export const Home = () => {
                <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
                <li><Link to="/admission/apply" className="hover:text-red-600">Application Form</Link></li>
                <li onClick={() => setIsLibraryOpen(true)} className="cursor-pointer hover:text-red-600">E-Library</li>
-               <li><Link to="/login" className="hover:text-red-600">Portal Login</Link></li>
+               <li><Link to="/portal/login" className="hover:text-red-600">Portal Login</Link></li>
              </ul>
            </div>
            <div>
