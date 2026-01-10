@@ -14,7 +14,6 @@ export const Home = () => {
     "/hero5.jpg", "/hero6.jpg", "/hero7.jpg", "/hero8.jpg","/hero9.jpg", "/hero10.jpg"
   ];
 
-  // Links na E-Library guda 10 kamar yadda ka nema
   const eLibraryLinks = [
     { name: "National Library of Nigeria", url: "https://web.nln.gov.ng/", category: "Nigeria" },
     { name: "TETFund E-Library", url: "https://ntel.tetfund.gov.ng/", category: "Nigeria" },
@@ -151,7 +150,7 @@ export const Home = () => {
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
       
-      {/* 2. MAIN HEADER SECTION */}
+      {/* HEADER SECTION */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm pointer-events-auto">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -186,7 +185,6 @@ export const Home = () => {
                 <Headphones size={14} /> Contact
               </Link>
               
-              {/* Contact Info */}
               <div className="flex flex-col border-l border-slate-200 pl-8 gap-1">
                 <span className="flex items-center gap-2 text-[9px] lowercase"><Mail size={12} className="text-red-600"/> info@skywardcollege.com</span>
                 <span className="flex items-center gap-2 text-[9px]"><Phone size={12} className="text-red-600"/> +234 7071913131</span>
@@ -209,7 +207,7 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* E-Library Modal Section */}
+      {/* E-Library Modal */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -235,7 +233,7 @@ export const Home = () => {
         </div>
       )}
 
-      {/* Selected Course Modal */}
+      {/* Course Details Modal */}
       {selectedCourse && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/90 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl relative max-h-[95vh] overflow-y-auto">
@@ -264,6 +262,7 @@ export const Home = () => {
                     <span className="text-xs font-black uppercase text-slate-400">Tuition Fee</span>
                     <span className="text-3xl font-black text-red-600">{selectedCourse.fee}</span>
                   </div>
+                  {/* Redirecting Course Modal Button to Admission Form */}
                   <Link to="/admission/apply" className="w-full bg-[#002147] text-white py-4 rounded-2xl font-black text-center uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg">Start Your Journey Now</Link>
                 </div>
               </div>
@@ -283,6 +282,7 @@ export const Home = () => {
             <h1 className="text-white text-2xl md:text-5xl font-black uppercase leading-[1.1] mb-6 tracking-tighter">Skyward College of Travels <br /><span className="text-red-600">and Tourism</span></h1>
             <p className="text-slate-200 text-sm md:text-lg font-medium mb-8">Start a career that enables you to work at the Airport, Airline, Travel Agencies and luxury Hotels.</p>
             <div className="flex gap-4">
+              {/* FIXED BUTTON: Now correctly links to /admission/apply */}
               <Link to="/admission/apply" className="bg-red-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest shadow-2xl hover:bg-red-700 transition-all">Start Application</Link>
               <Link to="/portal/login" className="bg-white/10 backdrop-blur-md text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs border border-white/20 hover:bg-white/20 transition-all">Portal Access</Link>
             </div>
@@ -290,7 +290,7 @@ export const Home = () => {
         </div>
       </div>
 
-      {/* Professional Courses Section */}
+      {/* Courses Section */}
       <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
