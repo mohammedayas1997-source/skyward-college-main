@@ -23,13 +23,13 @@ export const Header = () => {
 
   return (
     <header className="w-full sticky top-0 z-[100] bg-white shadow-md">
-      {/* Top Contact Bar - Yanzu icons din suna aiki */}
+      {/* Top Contact Bar */}
       <div className="w-full bg-[#002147] py-2 px-4 md:px-20 text-white text-[9px] md:text-[10px] flex justify-between uppercase font-bold">
         <div className="flex gap-3 md:gap-4">
-          <a href="tel:+2347071913131" className="flex items-center gap-1 hover:text-red-400">
+          <a href="tel:+2347071913131" className="flex items-center gap-1 hover:text-red-400 transition-colors">
             <Phone size={10} className="text-red-500"/> +234 707 191 3131
           </a>
-          <a href="mailto:info@skyward.edu.ng" className="hidden sm:flex items-center gap-1 hover:text-red-400">
+          <a href="mailto:info@skyward.edu.ng" className="hidden sm:flex items-center gap-1 hover:text-red-400 transition-colors">
             <Mail size={10} className="text-red-500"/> info@skyward.edu.ng
           </a>
         </div>
@@ -55,6 +55,7 @@ export const Header = () => {
               <li><Link to="/" className="hover:text-red-600">Home</Link></li>
               <li><Link to="/news" className="hover:text-red-600 flex items-center gap-1"><Newspaper size={15} /> Latest News</Link></li>
 
+              {/* About Us Dropdown */}
               <li className="relative group hover:text-red-600 cursor-pointer py-2">
                 <span className="flex items-center gap-1">About Us <ChevronDown size={15}/></span>
                 <ul className="absolute left-0 top-full hidden group-hover:block bg-white shadow-2xl border-t-4 border-red-600 w-72 z-[100] py-2">
@@ -82,7 +83,7 @@ export const Header = () => {
                 </ul>
               </li>
 
-              {/* E-Library Button - Yanzu yana bude modal din links 10 */}
+              {/* E-Library Button */}
               <li>
                 <button 
                   onClick={() => setIsLibraryModalOpen(true)} 
@@ -108,7 +109,7 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* E-Library Modal Section - Wannan shine gurin links din guda 10 */}
+      {/* E-Library Modal Section */}
       {isLibraryModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-sm">
           <div className="bg-white w-full max-w-4xl rounded-3xl p-6 md:p-10 relative max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -116,8 +117,8 @@ export const Header = () => {
               <X size={24} />
             </button>
             <div className="mb-8">
-              <h2 className="text-[#002147] text-2xl font-black uppercase tracking-tighter">Skyward Digital Library</h2>
-              <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest text-red-600">Access Nigeria & International Academic Resources</p>
+              <h2 className="text-[#002147] text-2xl font-black uppercase tracking-tighter text-left">Skyward Digital Library</h2>
+              <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest text-red-600 text-left">Access Nigeria & International Academic Resources</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
               {libraryLinks.map((lib, i) => (
