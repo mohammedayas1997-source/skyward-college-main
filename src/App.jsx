@@ -7,6 +7,7 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 
 // --- IMPORT HOME PAGE ---
 import { Home } from "./pages/Home"; // Tabbatar ka saka Home.jsx a wurin da ya dace
+import Apply from "./pages/Apply";
 
 // --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
@@ -193,6 +194,8 @@ export default function App() {
 
         {/* Login Page */}
         <Route path="/portal/login" element={<Login />} />
+        <Route path="/admission/apply" element={<AdmissionForm />} />
+        <Route path="/admission/apply" element={<Apply />} />
         
         {/* Protected Dashboards */}
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector" />} />
