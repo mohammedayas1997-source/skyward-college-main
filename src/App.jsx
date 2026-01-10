@@ -10,12 +10,16 @@ import { Home } from "./pages/Home";
 import Apply from "./pages/Apply"; 
 import { CreateUserAccount } from "./pages/AdminUserManagement";
 
-// NOTE: You should have these files created in your pages folder.
-// I am adding these as placeholders for you to connect your actual code.
-const RectorDashboard = () => <div className="p-4 font-bold">Rector Controls & Reports</div>;
-const AccountantDashboard = () => <div className="p-4 font-bold">Financial Records & Tuition</div>;
-const AdmissionDashboard = () => <div className="p-4 font-bold">Student Applications Management</div>;
-const StudentDashboard = () => <div className="p-4 font-bold">My Courses & Results</div>;
+// --- IMPORT ACTUAL DASHBOARD PAGES ---
+// Wadannan su ne ainihin files din da kake dasu
+import RectorDashboard from "./pages/RectorDashboard";
+import AccountantDashboard from "./pages/AccountantDashboard";
+import AdmissionDashboard from "./pages/AdmissionDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import ExamDashboard from "./pages/ExamDashboard";
+import NewsAdminDashboard from "./pages/NewsAdminDashboard";
+import StaffPortal from "./pages/StaffPortal";
+import ProprietorDashboard from "./pages/ProprietorDashboard"; // Na kara wannan
 
 // --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
@@ -49,7 +53,6 @@ const Login = () => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         
-        // SECURITY: Check if account is active
         if (userData.status === "inactive") {
             throw new Error("Your account has been deactivated. Contact Admin.");
         }
@@ -102,7 +105,6 @@ const Login = () => {
                 <AlertCircle size={14} /> {error}
               </div>
             )}
-
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Identify Yourself</label>
               <div className="relative">
@@ -116,7 +118,6 @@ const Login = () => {
                 />
               </div>
             </div>
-
             <div className="space-y-2">
               <label className="text-[10px] font-black text-[#002147] uppercase ml-4 tracking-widest">Security Key</label>
               <div className="relative">
@@ -131,7 +132,6 @@ const Login = () => {
                 </button>
               </div>
             </div>
-
             <button 
               type="submit" disabled={loading}
               className="w-full bg-[#002147] text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest hover:bg-red-600 transition-all flex items-center justify-center gap-2"
@@ -145,8 +145,7 @@ const Login = () => {
   );
 };
 
-// --- UPDATED PROTECTED DASHBOARD WRAPPER ---
-// Added 'children' so the specific dashboard content shows up
+// --- PROTECTED DASHBOARD WRAPPER ---
 const DashboardWrapper = ({ title, color, allowedRole, children }) => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
@@ -172,26 +171,24 @@ const DashboardWrapper = ({ title, color, allowedRole, children }) => {
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto bg-white min-h-[90vh] rounded-[3rem] shadow-sm border border-slate-100 flex flex-col">
-        {/* Header */}
         <div className="flex justify-between items-center p-8 border-b border-slate-50">
           <div>
             <h1 className={`text-2xl font-black uppercase italic ${color}`}>{title} Portal</h1>
-            <p className="text-slate-400 font-bold text-[8px] tracking-[0.3em] uppercase mt-1">Skyward Management System</p>
+            <p className="text-slate-400 font-bold text-[8px] tracking-[0.3em] uppercase mt-1 italic">Skyward Multi-Level Management</p>
           </div>
           <button 
             onClick={async () => { await signOut(auth); localStorage.clear(); navigate("/portal/login"); }} 
-            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl font-black text-[9px] uppercase hover:bg-red-600 hover:text-white transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl font-black text-[9px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-sm"
           >
             <LogOut size={14} /> Logout
           </button>
         </div>
         
-        {/* Main Content Area - This is where your components will show up */}
         <div className="flex-grow p-6 md:p-10">
             {children ? children : (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
                     <ShieldCheck size={60} />
-                    <p className="font-black uppercase tracking-widest mt-4">Module Content Loading...</p>
+                    <p className="font-black uppercase tracking-widest mt-4 italic text-xs">Module Content Loading...</p>
                 </div>
             )}
         </div>
@@ -209,61 +206,32 @@ export default function App() {
         <Route path="/portal/login" element={<Login />} />
         <Route path="/admission/apply" element={<Apply />} />
         
-        {/* ADMIN: Now shows the CreateUserAccount component inside the wrapper */}
-        <Route 
-          path="/admin/users" 
-          element={
-            <DashboardWrapper title="Admin" color="text-blue-900" allowedRole="admin">
-                <CreateUserAccount />
-            </DashboardWrapper>
-          } 
-        />
+        {/* ADMIN */}
+        <Route path="/admin/users" element={<DashboardWrapper title="Admin" color="text-blue-900" allowedRole="admin"><CreateUserAccount /></DashboardWrapper>} />
         
         {/* RECTOR */}
-        <Route 
-          path="/rector/dashboard" 
-          element={
-            <DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector">
-                <RectorDashboard />
-            </DashboardWrapper>
-          } 
-        />
+        <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector"><RectorDashboard /></DashboardWrapper>} />
+
+        {/* PROPRIETOR */}
+        <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor"><ProprietorDashboard /></DashboardWrapper>} />
 
         {/* ACCOUNTANT */}
-        <Route 
-          path="/accountant/dashboard" 
-          element={
-            <DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant">
-                <AccountantDashboard />
-            </DashboardWrapper>
-          } 
-        />
+        <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant"><AccountantDashboard /></DashboardWrapper>} />
 
         {/* ADMISSION */}
-        <Route 
-          path="/admission/dashboard" 
-          element={
-            <DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission">
-                <AdmissionDashboard />
-            </DashboardWrapper>
-          } 
-        />
+        <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission"><AdmissionDashboard /></DashboardWrapper>} />
+
+        {/* STAFF */}
+        <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff"><StaffPortal /></DashboardWrapper>} />
+
+        {/* EXAM */}
+        <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam"><ExamDashboard /></DashboardWrapper>} />
 
         {/* STUDENT */}
-        <Route 
-          path="/student/dashboard" 
-          element={
-            <DashboardWrapper title="Student" color="text-slate-700" allowedRole="student">
-                <StudentDashboard />
-            </DashboardWrapper>
-          } 
-        />
+        <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student"><StudentDashboard /></DashboardWrapper>} />
 
-        {/* Other Roles placeholders */}
-        <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor" />} />
-        <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff" />} />
-        <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam" />} />
-        <Route path="/news/admin" element={<DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin" />} />
+        {/* NEWS ADMIN */}
+        <Route path="/news/admin" element={<DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin"><NewsAdminDashboard /></DashboardWrapper>} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
