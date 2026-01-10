@@ -18,7 +18,7 @@ import AdmissionDashboard from "./pages/AdmissionDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import ExamDashboard from "./pages/ExamDashboard";
 import NewsAdminDashboard from "./pages/NewsAdminDashboard";
-import StaffPortal from "./pages/StaffPortal";
+import StaffPortal from "./pages/StaffDashboard";
 import ProprietorDashboard from "./pages/ProprietorDashboard"; // Na kara wannan
 
 // --- DUAL-PATH LOGIN COMPONENT ---
@@ -222,7 +222,14 @@ export default function App() {
         <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission"><AdmissionDashboard /></DashboardWrapper>} />
 
         {/* STAFF */}
-        <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff"><StaffPortal /></DashboardWrapper>} />
+       <Route 
+          path="/staff/portal" 
+          element={
+            <DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff">
+                <StaffPortal /> 
+            </DashboardWrapper>
+          } 
+        />
 
         {/* EXAM */}
         <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam"><ExamDashboard /></DashboardWrapper>} />
