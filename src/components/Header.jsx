@@ -7,7 +7,7 @@ export const Header = () => {
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false); // State na E-Library
   const navigate = useNavigate();
 
-  // Links na E-Library guda 10 kamar yadda ka nema
+  // Links na E-Library guda 10
   const libraryLinks = [
     { name: "National Library of Nigeria", url: "https://web.nln.gov.ng/", cat: "Nigeria" },
     { name: "TETFund E-Library", url: "https://ntel.tetfund.gov.ng/", cat: "Nigeria" },
@@ -33,7 +33,10 @@ export const Header = () => {
             <Mail size={10} className="text-red-500"/> info@skyward.edu.ng
           </a>
         </div>
-        <span className="hidden xs:block flex items-center gap-1"><Globe size={10} className="text-red-500"/> Yola, Adamawa State</span>
+        {/* An goge Home, Admission, Courses, da sauransu daga nan sama */}
+        <div className="flex items-center gap-4">
+           <span className="hidden xs:block flex items-center gap-1"><Globe size={10} className="text-red-500"/> Yola, Adamawa State</span>
+        </div>
       </div>
 
       {/* Main Navigation Bar */}
