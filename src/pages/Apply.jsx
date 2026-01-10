@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Upload, Save, School, BookOpen, User, GraduationCap, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, MapPin, Calendar, Home } from "lucide-react";
 
-const Apply = () => {
+export const Apply = () => {
   // Matakan shafuka
   const [step, setStep] = useState("form");
   
