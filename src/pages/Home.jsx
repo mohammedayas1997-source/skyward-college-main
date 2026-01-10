@@ -179,7 +179,7 @@ export const Home = () => {
           </Link>
           
           <div className="hidden md:flex gap-8 text-[#002147] font-black text-[11px] uppercase tracking-widest items-center relative z-[110]">
-             {/* Icons removed here */}
+             {/* Icons removed as requested */}
              <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all">Home</Link>
              <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap">Courses</Link>
              
@@ -208,8 +208,7 @@ export const Home = () => {
         </div>
       </header>
 
-      {/* REST OF THE SECTIONS REMAIN EXACTLY THE SAME... */}
-      {/* ... (E-Library, Course Modal, Hero, Courses, Gallery, Footer) ... */}
+      {/* REMAINDER OF THE PAGE */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
           <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -356,5 +355,5 @@ export const Home = () => {
         </div>
       </footer>
     </section>
-  );s
+  );
 };
