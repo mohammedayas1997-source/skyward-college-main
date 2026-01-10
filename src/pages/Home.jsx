@@ -89,7 +89,7 @@ export const Home = () => {
         fee: "₦80,000",
         icon: <Hotel size={24} />,
         desc: "Learn to manage luxury hotels, resorts, and world-class hospitality establishments.",
-        fullDesc: "Master the intricacies of luxury hotel operations. This program covers front office management, housekeeping standards, food and beverage operations, and strategic hospitality marketing.",
+        fullDesc: "Master the intricacies of luxury hotel operations. This program covers front office management, housekeeping standards, food and beverage operations, and strategic hospitality marketing to prepare you for leadership roles in the global hospitality sector.",
         img: "/1767965709569.jpg",
         outcomes: ["World-class Front Office Operations", "Luxury Housekeeping Standards", "Food & Beverage Management", "Hospitality Revenue Management"],
         careers: ["Hotel Manager", "Front Office Manager", "F&B Director", "Resort Operations Lead"]
@@ -100,7 +100,7 @@ export const Home = () => {
         fee: "₦80,000",
         icon: <Layout size={24} />,
         desc: "The nerve center of aviation. Master ground handling, security, and airport logistics.",
-        fullDesc: "Airports are complex cities that never sleep. This course prepares you to manage the ground side and air side operations, ensuring safety, efficiency, and superior passenger flow.",
+        fullDesc: "Airports are complex cities that never sleep. This course prepares you to manage the ground side and air side operations, ensuring safety, efficiency, and superior passenger flow in line with international aviation standards.",
         img: "/1767965764024.jpg",
         outcomes: ["Ground Handling Procedures", "Airport Security Protocols", "Airside Safety Management", "Passenger Flow Optimization"],
         careers: ["Airport Operations Officer", "Ground Handling Manager", "Aviation Security Supervisor", "Terminal Manager"]
@@ -111,7 +111,7 @@ export const Home = () => {
         fee: "₦80,000",
         icon: <Ship size={24} />,
         desc: "The backbone of global trade. Master air cargo handling and dangerous goods regulations.",
-        fullDesc: "Understand the logistics of moving goods across the globe. This course covers everything from air waybill documentation to IATA regulations for shipping dangerous goods.",
+        fullDesc: "Understand the logistics of moving goods across the globe. This course covers everything from air waybill documentation to IATA regulations for shipping dangerous goods, preparing you for the fast-paced world of global logistics.",
         img: "/1767965825313.jpg",
         outcomes: ["Cargo Documentation & Air Waybills", "IATA Dangerous Goods Regulations", "Cold Chain Logistics Management", "Global Supply Chain Strategy"],
         careers: ["Cargo Operations Manager", "Freight Forwarder", "Logistics Coordinator", "Dangerous Goods Specialist"]
@@ -122,7 +122,7 @@ export const Home = () => {
         fee: "₦80,000",
         icon: <Building2 size={24} />,
         desc: "Promote world-class destinations using cutting-edge digital marketing tools.",
-        fullDesc: "In the digital age, tourism thrives online. Learn to build destination brands, manage social media for travel, and use data analytics to drive tourism growth.",
+        fullDesc: "In the digital age, tourism thrives online. Learn to build destination brands, manage social media for travel, and use data analytics to drive tourism growth and destination awareness on a global scale.",
         img: "/1767965879321.jpg",
         outcomes: ["Digital Destination Branding", "Tourism SEO & Content Strategy", "Travel Analytics & Data Insight", "Social Media for Hospitality"],
         careers: ["Destination Marketer", "Tourism Digital Strategist", "Travel Content Creator", "Tourism PR Specialist"]
@@ -133,7 +133,7 @@ export const Home = () => {
         fee: "₦150,000",
         icon: <FileText size={24} />,
         desc: "Get globally certified. The gold standard for entry into the international aviation world.",
-        fullDesc: "This is the global passport to an aviation career. Following the IATA international curriculum, this course provides a rock-solid foundation in all aspects of the travel industry.",
+        fullDesc: "This is the global passport to an aviation career. Following the IATA international curriculum, this course provides a rock-solid foundation in all aspects of the travel industry, recognized by airlines worldwide.",
         img: "/1767965935901.jpg",
         outcomes: ["IATA International Certification Prep", "Global Travel Industry Standards", "World Geography & Currency Exchange", "Standardized Airline Procedures"],
         careers: ["Certified Travel Consultant", "International Airline Agent", "Global Distribution Analyst", "Aviation Consultant"]
@@ -149,8 +149,6 @@ export const Home = () => {
 
   return (
     <section className="w-full min-h-screen bg-white relative text-[#002147]">
-      
-      {/* HEADER SECTION */}
       <header className="sticky top-0 w-full z-[100] bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3 cursor-pointer relative z-[110]">
@@ -165,15 +163,12 @@ export const Home = () => {
               <Link to="/" className="text-red-600 cursor-pointer hover:opacity-80 transition-all flex items-center gap-1">
                 <HomeIcon size={14} /> Home
               </Link>
-              
               <Link to="/courses" className="hover:text-red-600 transition-colors cursor-pointer text-nowrap flex items-center gap-1">
                 <Plane size={14} /> Courses
               </Link>
-              
               <button onClick={() => setIsLibraryOpen(true)} className="hover:text-red-600 transition-colors cursor-pointer uppercase flex items-center gap-1">
                 <BookOpen size={14} /> E-Library
               </button>
-
               <Link to="/gallery" className="hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1">
                 <GalleryIcon size={14} /> Gallery
               </Link>
@@ -196,7 +191,7 @@ export const Home = () => {
           </div>
 
           <div className="lg:hidden flex items-center gap-4 relative z-[110]">
-             <Link to="/portal/login" className="text-[#002147] cursor-pointer">
+            <Link to="/portal/login" className="text-[#002147] cursor-pointer">
               <ShieldCheck size={24} />
             </Link>
             <button className="text-[#002147] cursor-pointer" onClick={() => setIsLibraryOpen(true)}>
@@ -205,6 +200,32 @@ export const Home = () => {
           </div>
         </div>
       </header>
+
+      {/* E-Library Modal */}
+      {isLibraryOpen && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-[#002147]/95 backdrop-blur-md">
+          <div className="bg-white w-full max-w-4xl rounded-[3rem] p-8 md:p-12 relative shadow-2xl overflow-y-auto max-h-[90vh]">
+            <button onClick={() => setIsLibraryOpen(false)} className="absolute top-8 right-8 p-3 bg-slate-100 rounded-full hover:bg-red-600 hover:text-white transition-all">
+              <X size={24} />
+            </button>
+            <div className="mb-10 text-left">
+              <h2 className="text-[#002147] text-3xl font-black uppercase tracking-tighter mb-2">Skyward Digital E-Library</h2>
+              <p className="text-red-600 font-bold text-sm uppercase tracking-widest">Access Nigeria & International Academic Resources</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+              {eLibraryLinks.map((lib, i) => (
+                <a key={i} href={lib.url} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between p-6 bg-slate-50 rounded-2xl hover:bg-red-50 transition-all border border-slate-100">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-red-600 uppercase mb-1 tracking-widest">{lib.category}</span>
+                    <span className="text-[#002147] font-black text-lg leading-tight">{lib.name}</span>
+                  </div>
+                  <ExternalLink size={20} className="text-slate-300 group-hover:text-red-600 transition-colors" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Course Details Modal */}
       {selectedCourse && (
@@ -278,7 +299,7 @@ export const Home = () => {
         </div>
       </div>
 
-      {/* Course Cards Section */}
+      {/* Courses Grid */}
       <div className="w-full py-20 px-6 bg-[#f8fafc] -mt-12 relative z-30">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-12">
@@ -314,22 +335,29 @@ export const Home = () => {
                 <img src="/logo.png" alt="Logo" className="h-16 w-16 bg-white p-2 rounded-xl" />
                 <h4 className="font-black text-2xl tracking-tighter">SKYWARD</h4>
               </div>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed italic">At Skyward College, we prepare you for the global stage.</p>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Empowering the next generation of aviation and tourism professionals.</p>
            </div>
            <div>
              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
              <ul className="space-y-4 text-slate-400 text-sm font-bold uppercase tracking-widest">
                <li><Link to="/courses" className="hover:text-red-600">All Courses</Link></li>
                <li><Link to="/portal/login" className="hover:text-red-600">Staff Portal</Link></li>
+               <li onClick={() => setIsLibraryOpen(true)} className="cursor-pointer hover:text-red-600">E-Library</li>
              </ul>
            </div>
            <div>
              <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Contact</h5>
-             <p className="text-slate-400 text-sm font-medium leading-loose">info@skywardcollege.com<br />+234 7071913131</p>
+             <ul className="space-y-4 text-slate-400 text-sm font-medium">
+               <li className="flex items-center gap-3"><Phone size={18} className="text-red-600" /> +234 7071913131</li>
+               <li className="flex items-center gap-3"><Mail size={18} className="text-red-600" /> info@skywardcollege.com</li>
+             </ul>
            </div>
-           <div className="flex gap-4">
-              <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
-              <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+           <div>
+             <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Follow Us</h5>
+             <div className="flex gap-4">
+                <Facebook size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+                <Instagram size={20} className="text-slate-400 hover:text-red-600 cursor-pointer" />
+             </div>
            </div>
         </div>
       </footer>
