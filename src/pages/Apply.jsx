@@ -17,7 +17,6 @@ export const Apply = () => {
   
   const [portalSettings, setPortalSettings] = useState({ isOpen: true });
 
-  // SAKA LINK DIN LOGONKA A NAN (Dole ya zama real link ko file a public folder)
   const schoolLogo = "/logo.png"; 
 
   const secondarySubjects = [
@@ -43,7 +42,9 @@ export const Apply = () => {
     institutionName: "",
     courseStudied: "", 
     studentIdNo: "", 
-    yearOfGraduation: ""
+    yearOfGraduation: "",
+    examNumber: "", // New
+    centerNumber: "" // New
   });
 
   useEffect(() => {
@@ -114,7 +115,6 @@ export const Apply = () => {
 
   const downloadReceipt = async () => {
     const element = receiptRef.current;
-    // useCORS is important to allow images in PDF
     const canvas = await html2canvas(element, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
@@ -156,11 +156,9 @@ export const Apply = () => {
   if (step === "success") {
     return (
       <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-6 text-left">
-        {/* RECEIPT DESIGN */}
         <div ref={receiptRef} className="w-[180mm] bg-white p-10 shadow-2xl border-[12px] border-[#002147] mb-6 relative">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
-               {/* REAL LOGO ON RECEIPT */}
                <div className="w-20 h-20 bg-white flex items-center justify-center border-2 border-slate-100 p-1">
                  <img src={schoolLogo} alt="School Logo" className="w-full h-full object-contain" />
                </div>
@@ -173,18 +171,25 @@ export const Apply = () => {
           </div>
           <div className="flex gap-8 border-y-2 py-6 text-left">
              <img src={passportPreview} className="w-32 h-40 object-cover rounded-lg border-2 border-slate-200" alt="Passport" />
-             <div className="space-y-2">
+             <div className="space-y-2 w-full">
                 <p className="text-xs font-black uppercase text-slate-400">Student Full Name</p>
                 <p className="text-xl font-black text-[#002147] uppercase">{formData.fullName}</p>
-                <p className="text-xs font-black uppercase text-slate-400 mt-4">Program Applied</p>
-                <p className="text-sm font-bold text-slate-700">{formData.selectedCourse}</p>
+                
                 <div className="grid grid-cols-2 gap-4 mt-4">
-                   <div><p className="text-[8px] font-black uppercase text-slate-400">ID</p><p className="text-[10px] font-bold">{applicationId.substr(0,10)}</p></div>
-                   <div><p className="text-[8px] font-black uppercase text-slate-400">Date</p><p className="text-[10px] font-bold">{new Date().toLocaleDateString()}</p></div>
+                   <div><p className="text-[8px] font-black uppercase text-slate-400">Program Applied</p><p className="text-xs font-bold text-slate-700">{formData.selectedCourse}</p></div>
+                   <div><p className="text-[8px] font-black uppercase text-slate-400">Amount Paid</p><p className="text-xs font-black text-emerald-600">₦5,000.00</p></div>
+                   <div><p className="text-[8px] font-black uppercase text-slate-400">Application ID</p><p className="text-[10px] font-bold">{applicationId.substr(0,10)}</p></div>
+                   <div><p className="text-[8px] font-black uppercase text-slate-400">Payment Status</p><p className="text-[10px] font-bold text-emerald-600 uppercase">Successful</p></div>
                 </div>
              </div>
           </div>
-          <p className="text-[10px] text-center mt-6 text-slate-400 font-bold uppercase">Official Digital Receipt - Scan QR to Verify</p>
+          <div className="mt-4 flex justify-between items-end">
+             <p className="text-[10px] text-slate-400 font-bold uppercase">Official Digital Receipt - {new Date().toLocaleString()}</p>
+             <div className="text-right">
+                <p className="text-[8px] font-black uppercase text-slate-400 underline">Authorized Signature</p>
+                <p className="text-[10px] font-serif italic text-[#002147]">Skyward Registrar</p>
+             </div>
+          </div>
         </div>
         
         <div className="flex gap-4">
@@ -201,7 +206,6 @@ export const Apply = () => {
     <div className="min-h-screen bg-[#F0F4F8] py-16 px-4 md:px-20 font-sans text-left">
       <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-[40px] overflow-hidden border border-slate-100">
         
-        {/* HEADER WITH REAL LOGO */}
         <div className="bg-[#002147] p-12 text-white flex justify-between items-center relative">
           <div className="z-10 flex items-center gap-6">
             <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl p-2 border border-white/20 flex items-center justify-center">
@@ -217,7 +221,6 @@ export const Apply = () => {
 
         <form onSubmit={handleFormSubmit} className="p-10 md:p-16 space-y-12">
           
-          {/* PERSONAL & PASSPORT */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-b pb-4">
               <User className="text-red-600" />
@@ -252,7 +255,6 @@ export const Apply = () => {
             </div>
           </section>
 
-          {/* RESIDENCE */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-b pb-4">
               <MapPin className="text-blue-600" />
@@ -265,7 +267,6 @@ export const Apply = () => {
             </div>
           </section>
 
-          {/* HIGHER EDUCATION */}
           <section className="space-y-8 bg-slate-50 p-8 rounded-[2rem]">
             <div className="flex items-center gap-4 border-b pb-4">
               <GraduationCap className="text-emerald-600" />
@@ -287,12 +288,19 @@ export const Apply = () => {
             </div>
           </section>
 
-          {/* O-LEVEL RESULTS */}
+          {/* O-LEVEL RESULTS - ADDED EXAM & CENTER NO */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-b pb-4">
               <BookOpen className="text-red-600" />
-              <h2 className="text-[#002147] text-xl font-black uppercase">O-Level Results (Select 9 Subjects)</h2>
+              <h2 className="text-[#002147] text-xl font-black uppercase">O-Level Results</h2>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border-2 border-slate-100">
+               <input required name="examNumber" onChange={handleChange} placeholder="WAEC/NECO Exam Number" className="sky-input shadow-sm" />
+               <input required name="centerNumber" onChange={handleChange} placeholder="Center Number" className="sky-input shadow-sm" />
+            </div>
+
+            <label className="text-xs font-black text-slate-500 uppercase block mb-2">Select 9 Subjects & Grades</label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {oLevelResults.map((res) => (
                 <div key={res.id} className="bg-white p-5 rounded-[1.5rem] border-2 border-slate-100 shadow-sm flex flex-col gap-3">
@@ -310,7 +318,6 @@ export const Apply = () => {
             </div>
           </section>
 
-          {/* COURSE CHOICE */}
           <section className="bg-[#002147] p-8 rounded-[2rem] text-white">
               <label className="text-xs font-black uppercase mb-4 block">Finalize Your Program Selection</label>
               <select required name="selectedCourse" onChange={handleChange} className="w-full p-5 rounded-2xl bg-white text-[#002147] font-black outline-none">
