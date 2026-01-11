@@ -11,15 +11,15 @@ import Apply from "./pages/Apply";
 import { CreateUserAccount } from "./pages/AdminUserManagement";
 
 // --- IMPORT ACTUAL DASHBOARD PAGES ---
-// Wadannan su ne ainihin files din da kake dasu
+// Na daidaita wadannan sunayen da ainihin files din da ka fada min
 import RectorDashboard from "./pages/RectorDashboard";
 import AccountantDashboard from "./pages/AccountantDashboard";
-import AdmissionDashboard from "./pages/AdmissionDashboard";
+import AdmissionDashboard from "./pages/AdmissionofficerDashboard"; // Gyara: Sunan file dinka
 import StudentDashboard from "./pages/StudentDashboard";
-import ExamDashboard from "./pages/ExamDashboard";
-import NewsAdminDashboard from "./pages/NewsAdmin";
+import ExamDashboard from "./pages/ExamOfficerDashboard"; // Gyara: Sunan file dinka
+import NewsAdmin from "./pages/NewsAdmin"; // Gyara: Sunan file dinka
 import StaffPortal from "./pages/StaffDashboard";
-import ProprietorDashboard from "./pages/ProprietorDashboard"; // Na kara wannan
+import ProprietorDashboard from "./pages/ProprietorDashboard";
 
 // --- DUAL-PATH LOGIN COMPONENT ---
 const Login = () => {
@@ -222,7 +222,7 @@ export default function App() {
         <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission"><AdmissionDashboard /></DashboardWrapper>} />
 
         {/* STAFF */}
-       <Route 
+        <Route 
           path="/staff/portal" 
           element={
             <DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff">
@@ -238,7 +238,7 @@ export default function App() {
         <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student"><StudentDashboard /></DashboardWrapper>} />
 
         {/* NEWS ADMIN */}
-       <Route 
+        <Route 
           path="/news/admin" 
           element={
             <DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin">
