@@ -1,169 +1,322 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../firebase"; 
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, limit } from "firebase/firestore";
+import { db, auth } from "../firebase"; 
 import { 
-  TrendingUp, TrendingDown, Users, Search, Download, 
-  Wallet, Check, X, Eye, AlertCircle, CreditCard, 
-  UserCheck, Package, ShoppingCart, Activity,
-  PieChart, BarChart3, Plus, ArrowUpRight, ArrowDownRight, Bell, Printer, Send, History, Clock
+  collection, addDoc, serverTimestamp, onSnapshot, 
+  query, orderBy, where, doc, updateDoc, getDoc, setDoc, getDocs 
+} from "firebase/firestore";
+import { 
+  TrendingUp, Users, Wallet, Check, X, CreditCard, 
+  Activity, PieChart, BarChart3, Send, History, Clock, 
+  Bell, Printer, DollarSign, Briefcase, ChevronRight,
+  ArrowUpRight, ArrowDownRight, ShieldCheck, Download, Settings, Save, Loader2, UserPlus
 } from "lucide-react";
 
 const AccountantDashboard = () => {
-  const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [request, setRequest] = useState({ title: "", amount: "", purpose: "" });
-  const [requestHistory, setRequestHistory] = useState([]); // Tarihin bukatun kudi
+  const [stats, setStats] = useState({ totalIncome: 0, applicationFees: 0, registrationFees: 0 });
+  const [request, setRequest] = useState({ title: "", amount: "", purpose: "", type: "Expense" });
+  const [newStaff, setNewStaff] = useState({ fullName: "", role: "staff", email: "" });
+  const [requestHistory, setRequestHistory] = useState([]);
+  const [staffList, setStaffList] = useState([]);
+  const [recentPayments, setRecentPayments] = useState([]);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [salaryRates, setSalaryRates] = useState({});
 
-  // --- 1. FETCH HISTORY (Real-time daga Firebase) ---
+  const rolesList = [
+    { id: "rector", name: "Rector" },
+    { id: "proprietor", name: "Proprietor" },
+    { id: "accountant", name: "Accountant" },
+    { id: "admission", name: "Admission Officer" },
+    { id: "exam", name: "Exam Officer" },
+    { id: "staff", name: "Academic Staff" }
+  ];
+
   useEffect(() => {
-    const q = query(collection(db, "paymentRequests"), orderBy("createdAt", "desc"), limit(10));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const historyData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setRequestHistory(historyData);
+    const unsubRates = onSnapshot(doc(db, "settings", "salary_rates"), (d) => {
+      if (d.exists()) setSalaryRates(d.data());
     });
-    return () => unsubscribe();
+
+    const qReq = query(collection(db, "financialRequests"), orderBy("createdAt", "desc"));
+    const unsubReq = onSnapshot(qReq, (snap) => {
+      setRequestHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    const qStaff = query(collection(db, "users"), where("role", "!=", "student"));
+    const unsubStaff = onSnapshot(qStaff, (snap) => {
+      setStaffList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    const qIncome = query(collection(db, "transactions"), orderBy("createdAt", "desc"));
+    const unsubIncome = onSnapshot(qIncome, (snap) => {
+      const txs = snap.docs.map(d => d.data());
+      setRecentPayments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const analysis = txs.reduce((acc, curr) => {
+        const amt = Number(curr.amount || 0);
+        acc.totalIncome += amt;
+        if (curr.type === "Application") acc.applicationFees += amt;
+        if (curr.type === "Registration") acc.registrationFees += amt;
+        return acc;
+      }, { totalIncome: 0, applicationFees: 0, registrationFees: 0 });
+      setStats(analysis);
+    });
+
+    return () => { unsubRates(); unsubReq(); unsubStaff(); unsubIncome(); };
   }, []);
 
-  const showNotification = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 4000);
-  };
-
-  // --- 2. TURA BUKATA ZUWA RECTOR ---
-  const handleRequestFunds = async (e) => {
+  // --- 1. ADD NEW STAFF WITH AUTO SALARY ---
+  const handleAddStaff = async (e) => {
     e.preventDefault();
-    if (!request.title || !request.amount) return alert("Don Allah cika duka wuraren!");
-    
     setLoading(true);
     try {
-      await addDoc(collection(db, "paymentRequests"), {
-        title: request.title,
-        amount: request.amount,
-        purpose: request.purpose || "General Expenditure",
-        status: "pending",
-        requester: "Chief Accountant",
-        date: new Date().toLocaleDateString(),
+      const staffSalary = salaryRates[newStaff.role] || 0;
+      const staffID = "STF-" + Math.floor(1000 + Math.random() * 9000);
+      
+      await addDoc(collection(db, "users"), {
+        ...newStaff,
+        idNumber: staffID,
+        salary: staffSalary,
+        status: "active",
         createdAt: serverTimestamp()
       });
-      showNotification("An tura bukatar kudi zuwa ga Rector!");
-      setRequest({ title: "", amount: "", purpose: "" });
-    } catch (err) {
-      alert("Error: " + err.message);
-    } finally {
-      setLoading(false);
-    }
+
+      alert(`An yi nasarar sa ${newStaff.fullName} a matsayin ${newStaff.role}`);
+      setNewStaff({ fullName: "", role: "staff", email: "" });
+    } catch (err) { alert(err.message); }
+    setLoading(false);
   };
 
-  // --- PLACEHOLDER DATA (Wanda kake da su a baya) ---
-  const [pendingReceipts, setPendingReceipts] = useState([
-    { id: 1, name: "ABUBAKAR IBRAHIM", amount: "₦125,000", type: "Tuition" },
-    { id: 2, name: "FATIMA SANI", amount: "₦45,000", type: "Exam Fees" },
-  ]);
+  const handleSaveSalaryRates = async () => {
+    setLoading(true);
+    try {
+      await setDoc(doc(db, "settings", "salary_rates"), salaryRates);
+      for (const roleId of Object.keys(salaryRates)) {
+        const q = query(collection(db, "users"), where("role", "==", roleId));
+        const snap = await getDocs(q);
+        snap.forEach(async (d) => {
+          await updateDoc(doc(db, "users", d.id), { salary: salaryRates[roleId] });
+        });
+      }
+      alert("Albashin kowa ya canza!");
+    } catch (err) { alert(err.message); }
+    setLoading(false);
+  };
 
-  const [budgets] = useState([
-    { id: 1, category: "Infrastructure", planned: 5000000, actual: 1200000, color: "bg-blue-600" },
-    { id: 2, category: "Academic Materials", planned: 2500000, actual: 2100000, color: "bg-orange-500" },
-  ]);
+  // --- 2. AUTOMATIC RECEIPT GENERATOR ---
+  const generateReceipt = (payment) => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head><title>SKYWARD - OFFICIAL RECEIPT</title></head>
+        <body style="font-family: sans-serif; padding: 40px; border: 10px solid #002147;">
+          <h1 style="color: #002147; text-align: center;">SKYWARD ACADEMY</h1>
+          <p style="text-align: center; font-weight: bold;">OFFICIAL PAYMENT RECEIPT</p>
+          <hr/>
+          <div style="margin: 40px 0;">
+            <p><strong>STUDENT NAME:</strong> ${payment.studentName.toUpperCase()}</p>
+            <p><strong>PAYMENT TYPE:</strong> ${payment.type}</p>
+            <p><strong>AMOUNT PAID:</strong> ₦${Number(payment.amount).toLocaleString()}</p>
+            <p><strong>DATE:</strong> ${payment.date}</p>
+            <p><strong>TRANSACTION ID:</strong> ${payment.id}</p>
+          </div>
+          <hr/>
+          <p style="text-align: center; color: #666; font-size: 12px;">This is an electronically generated receipt.</p>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const handleFinancialSubmission = async (e, customData = null) => {
+    if (e) e.preventDefault();
+    const dataToSubmit = customData || { ...request, status: "pending_rector", requester: "Chief Accountant", createdAt: serverTimestamp(), date: new Date().toLocaleDateString() };
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "financialRequests"), dataToSubmit);
+      alert("An tura bukatar!");
+      setRequest({ title: "", amount: "", purpose: "", type: "Expense" });
+    } catch (err) { alert(err.message); }
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-[#fcfdfe] p-4 md:p-10 font-sans pb-20 relative text-left">
-      
-      {/* TOAST NOTIFICATION */}
-      {toast && (
-        <div className="fixed top-10 right-4 md:right-10 z-[100] bg-white border-l-4 border-emerald-500 shadow-2xl p-6 rounded-2xl flex items-center gap-5 animate-in slide-in-from-right duration-500 min-w-[300px]">
-          <div className="bg-emerald-50 p-3 rounded-xl text-emerald-600"><Bell size={20} className="animate-bounce" /></div>
-          <div><p className="text-sm font-bold text-[#002147]">{toast}</p></div>
+    <div className="min-h-screen bg-[#F8FAFC] flex text-left font-sans">
+      <aside className="w-72 bg-[#002147] text-white p-8 flex flex-col sticky top-0 h-screen shadow-2xl">
+        <div className="mb-12">
+          <h2 className="text-2xl font-black tracking-tighter italic text-emerald-400">SKYWARD</h2>
+          <p className="text-[9px] font-bold opacity-50 uppercase tracking-[0.3em]">Treasury & Analytics</p>
         </div>
-      )}
+        <nav className="flex-1 space-y-2">
+          <NavBtn active={activeTab === 'overview'} icon={<Activity size={18}/>} label="Overview" onClick={() => setActiveTab('overview')} />
+          <NavBtn active={activeTab === 'payroll'} icon={<Users size={18}/>} label="Staff & Payroll" onClick={() => setActiveTab('payroll')} />
+          <NavBtn active={activeTab === 'settings'} icon={<Settings size={18}/>} label="Salary Config" onClick={() => setActiveTab('settings')} />
+          <NavBtn active={activeTab === 'requests'} icon={<Send size={18}/>} label="Fund Requests" onClick={() => setActiveTab('requests')} />
+        </nav>
+      </aside>
 
-      {/* HEADER */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-8">
-        <div>
-          <h1 className="text-4xl font-black text-[#002147] uppercase tracking-tighter italic">Bursary Central</h1>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 mt-2">
-            <Activity size={14} className="text-emerald-500 animate-pulse"/> Treasury Control • 2026
-          </p>
-        </div>
-        <button onClick={() => window.print()} className="bg-white h-14 w-14 rounded-2xl border border-slate-200 flex items-center justify-center shadow-sm"><Printer size={22}/></button>
-      </header>
+      <main className="flex-1 p-10 overflow-y-auto">
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <h1 className="text-3xl font-black text-[#002147] uppercase tracking-tighter">Bursary Central</h1>
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Real-time Financial Control</p>
+          </div>
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[9px] font-black text-slate-400 uppercase">Total Revenue</p>
+              <p className="text-lg font-black text-emerald-600">₦{stats.totalIncome.toLocaleString()}</p>
+            </div>
+            <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center"><Wallet size={20}/></div>
+          </div>
+        </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        
-        {/* LEFT COLUMN: REQUEST & HISTORY */}
-        <div className="lg:col-span-2 space-y-10">
-            
-            {/* REQUEST FORM */}
-            <div className="bg-white p-8 lg:p-10 rounded-[50px] shadow-sm border border-emerald-100 bg-gradient-to-tr from-white to-emerald-50/30">
-                <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] flex items-center gap-3 mb-8">
-                    <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-600"><Send size={20}/></div>
-                    Request Fund Approval
-                </h2>
-                <form onSubmit={handleRequestFunds} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black text-slate-400 ml-2 uppercase">Title</label>
-                        <input type="text" placeholder="e.g. Lab Chemicals" className="p-4 bg-white rounded-2xl border border-slate-100 outline-none focus:ring-2 ring-emerald-500 font-bold text-xs" value={request.title} onChange={(e) => setRequest({...request, title: e.target.value})} />
+        {activeTab === 'overview' && (
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatCard title="Total Balance" val={`₦${stats.totalIncome.toLocaleString()}`} icon={<DollarSign/>} color="emerald" />
+              <StatCard title="App. Fees" val={`₦${stats.applicationFees.toLocaleString()}`} icon={<CreditCard/>} color="blue" />
+              <StatCard title="Reg. Fees" val={`₦${stats.registrationFees.toLocaleString()}`} icon={<ShieldCheck/>} color="purple" />
+            </div>
+
+            <div className="bg-white p-8 rounded-[40px] shadow-sm border">
+              <h3 className="text-sm font-black text-[#002147] uppercase mb-6 flex justify-between items-center">
+                Recent Student Payments
+                <span className="text-[10px] text-slate-400">Click Print Icon for Receipt</span>
+              </h3>
+              <div className="space-y-4">
+                {recentPayments.slice(0, 8).map(pay => (
+                  <div key={pay.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-emerald-200 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center"><ArrowUpRight size={18}/></div>
+                      <div>
+                        <p className="text-[11px] font-black text-[#002147] uppercase">{pay.studentName}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase">{pay.type} • {pay.date}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black text-slate-400 ml-2 uppercase">Amount (₦)</label>
-                        <input type="number" placeholder="500000" className="p-4 bg-white rounded-2xl border border-slate-100 outline-none focus:ring-2 ring-emerald-500 font-bold text-xs" value={request.amount} onChange={(e) => setRequest({...request, amount: e.target.value})} />
+                    <div className="flex items-center gap-6">
+                      <p className="text-sm font-black text-emerald-600">₦{Number(pay.amount).toLocaleString()}</p>
+                      <button onClick={() => generateReceipt(pay)} className="p-2 bg-white rounded-lg text-slate-400 hover:text-blue-600 shadow-sm transition-all"><Printer size={16}/></button>
                     </div>
-                    <button type="submit" disabled={loading} className="md:col-span-2 py-5 bg-emerald-600 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.2em] hover:bg-[#002147] transition-all flex items-center justify-center gap-3">
-                        {loading ? "Sending..." : <><Send size={18}/> Send to Rector</>}
-                    </button>
-                </form>
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
+        )}
 
-            {/* REQUEST HISTORY SECTION */}
-            <div className="bg-white p-8 lg:p-10 rounded-[50px] shadow-sm border border-slate-100">
-                <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] flex items-center gap-3 mb-8">
-                    <div className="p-3 bg-slate-100 rounded-2xl text-slate-600"><History size={20}/></div>
-                    Approval Audit Trail
-                </h2>
-                <div className="space-y-4">
-                    {requestHistory.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-6 bg-[#fcfdfe] rounded-3xl border border-slate-50">
-                            <div className="flex items-center gap-4">
-                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${item.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : item.status === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-                                    {item.status === 'approved' ? <Check size={20}/> : item.status === 'rejected' ? <X size={20}/> : <Clock size={20}/>}
-                                </div>
-                                <div>
-                                    <h4 className="text-[12px] font-black text-[#002147] uppercase">{item.title}</h4>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase italic">{item.date}</p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm font-black text-[#002147]">₦{Number(item.amount).toLocaleString()}</p>
-                                <p className={`text-[8px] font-black uppercase tracking-widest ${item.status === 'approved' ? 'text-emerald-500' : item.status === 'rejected' ? 'text-red-500' : 'text-amber-500'}`}>
-                                    {item.status}
-                                </p>
-                            </div>
-                        </div>
+        {activeTab === 'payroll' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-1 bg-white p-8 rounded-[40px] border shadow-sm h-fit">
+              <h3 className="text-sm font-black text-[#002147] uppercase mb-6 flex items-center gap-2"><UserPlus size={18} className="text-emerald-500"/> Register New Staff</h3>
+              <form onSubmit={handleAddStaff} className="space-y-4">
+                <input type="text" placeholder="Full Name" className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold text-xs" required value={newStaff.fullName} onChange={e => setNewStaff({...newStaff, fullName: e.target.value})} />
+                <input type="email" placeholder="Email Address" className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold text-xs" required value={newStaff.email} onChange={e => setNewStaff({...newStaff, email: e.target.value})} />
+                <select className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold text-xs" value={newStaff.role} onChange={e => setNewStaff({...newStaff, role: e.target.value})}>
+                  {rolesList.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                </select>
+                <button className="w-full py-5 bg-[#002147] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg">Save Staff & Set Salary</button>
+              </form>
+            </div>
+            <div className="lg:col-span-2 bg-white p-8 rounded-[40px] border shadow-sm">
+              <h3 className="text-sm font-black text-[#002147] uppercase mb-6">Staff List & Monthly Earnings</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[10px] text-slate-400 uppercase tracking-widest">
+                      <th className="pb-4">Name</th>
+                      <th className="pb-4">Role</th>
+                      <th className="pb-4">Salary</th>
+                      <th className="pb-4">ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {staffList.map(staff => (
+                      <tr key={staff.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
+                        <td className="py-4 text-xs font-black text-[#002147] uppercase">{staff.fullName}</td>
+                        <td className="py-4 text-[9px] font-black"><span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md">{staff.role}</span></td>
+                        <td className="py-4 text-xs font-black text-emerald-600">₦{Number(staff.salary || 0).toLocaleString()}</td>
+                        <td className="py-4 text-[10px] text-slate-400 font-bold">{staff.idNumber}</td>
+                      </tr>
                     ))}
-                </div>
+                  </tbody>
+                </table>
+              </div>
             </div>
-        </div>
+          </div>
+        )}
 
-        {/* RIGHT COLUMN: BUDGET & VERIFICATION */}
-        <div className="space-y-10">
-            <div className="bg-white p-8 lg:p-10 rounded-[50px] shadow-sm border border-slate-100">
-                <h2 className="text-xs font-black text-[#002147] uppercase tracking-[0.2em] mb-10 flex items-center gap-3 border-b pb-6">
-                    <PieChart size={20} className="text-emerald-600"/> Student Payments
-                </h2>
-                <div className="space-y-6">
-                    {pendingReceipts.map(r => (
-                        <div key={r.id} className="flex justify-between items-center p-5 bg-[#fcfdfe] rounded-[30px] border border-slate-50 hover:border-emerald-200 transition-all">
-                            <div>
-                                <p className="text-[11px] font-black text-[#002147] uppercase">{r.name}</p>
-                                <p className="text-[10px] font-bold text-emerald-600">{r.amount}</p>
-                            </div>
-                            <button className="h-10 w-10 bg-white text-emerald-600 rounded-xl border border-emerald-100 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all"><Check size={18}/></button>
-                        </div>
-                    ))}
+        {activeTab === 'settings' && (
+          <div className="bg-white p-8 rounded-[40px] border shadow-sm max-w-4xl">
+            <h3 className="text-sm font-black text-[#002147] uppercase mb-8">System Salary Configuration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {rolesList.map(role => (
+                <div key={role.id} className="p-6 bg-slate-50 rounded-3xl border flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase mb-1">{role.name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-emerald-600">₦</span>
+                      <input type="number" value={salaryRates[role.id] || ""} onChange={(e) => setSalaryRates({...salaryRates, [role.id]: e.target.value})} placeholder="0.00" className="bg-transparent border-b-2 border-slate-200 outline-none font-black text-[#002147] w-32 focus:border-emerald-500 transition-all" />
+                    </div>
+                  </div>
+                  <DollarSign className="opacity-10" size={32}/>
                 </div>
+              ))}
             </div>
-        </div>
+            <button onClick={handleSaveSalaryRates} className="w-full mt-10 py-5 bg-[#002147] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg flex items-center justify-center gap-3">
+              <Save size={18}/> Update System Salaries
+            </button>
+          </div>
+        )}
 
-      </div>
+        {activeTab === 'requests' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-1 bg-white p-8 rounded-[40px] border shadow-sm h-fit">
+              <h3 className="text-sm font-black text-[#002147] uppercase mb-6 flex items-center gap-2"><Send size={18} className="text-blue-600"/> Request Funds</h3>
+              <form onSubmit={handleFinancialSubmission} className="space-y-4">
+                <input type="text" placeholder="Reason" className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold text-xs" value={request.title} onChange={(e) => setRequest({...request, title: e.target.value})} />
+                <input type="number" placeholder="Amount (₦)" className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold text-xs" value={request.amount} onChange={(e) => setRequest({...request, amount: e.target.value})} />
+                <textarea placeholder="Details..." className="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold text-xs h-32" value={request.purpose} onChange={(e) => setRequest({...request, purpose: e.target.value})} />
+                <button className="w-full py-5 bg-[#002147] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl">Submit to Rector</button>
+              </form>
+            </div>
+            <div className="lg:col-span-2 bg-white p-8 rounded-[40px] border shadow-sm">
+              <h3 className="text-sm font-black text-[#002147] uppercase mb-8">Request Tracker</h3>
+              <div className="space-y-4">
+                {requestHistory.map(item => (
+                  <div key={item.id} className="p-6 bg-slate-50 rounded-[30px] flex justify-between items-center border">
+                    <div className="flex items-center gap-5">
+                      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${item.status === 'approved_rector' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                        {item.status === 'approved_rector' ? <Check size={20}/> : <Clock size={20}/>}
+                      </div>
+                      <div><p className="text-[12px] font-black text-[#002147] uppercase">{item.title}</p><p className="text-[9px] font-bold text-slate-400 uppercase">{item.date}</p></div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-[#002147]">₦{Number(item.amount).toLocaleString()}</p>
+                      <span className="text-[8px] font-black uppercase text-blue-600 tracking-tighter">{item.status.replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+const NavBtn = ({ icon, label, active, onClick }) => (
+  <button onClick={onClick} className={`w-full flex items-center gap-4 p-4 rounded-2xl font-black text-[10px] uppercase transition-all ${active ? 'bg-emerald-500 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5'}`}>
+    {icon} {label}
+  </button>
+);
+
+const StatCard = ({ title, val, icon, color }) => {
+  const colors = { emerald: 'bg-emerald-50 text-emerald-600', blue: 'bg-blue-50 text-blue-600', purple: 'bg-purple-50 text-purple-600' };
+  return (
+    <div className="bg-white p-6 rounded-[35px] border border-slate-100 shadow-sm">
+      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-4 ${colors[color]}`}>{icon}</div>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
+      <p className="text-xl font-black text-[#002147] mt-1">{val}</p>
     </div>
   );
 };

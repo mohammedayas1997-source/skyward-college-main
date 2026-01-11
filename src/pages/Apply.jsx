@@ -1,93 +1,121 @@
-import React, { useState } from "react";
-// Muna bukatar wadannan daga firebase
+import React, { useState, useRef } from "react";
 import { db } from "../firebase"; 
 import { collection, addDoc, serverTimestamp, updateDoc, doc } from "firebase/firestore";
-import { Upload, Save, School, BookOpen, User, GraduationCap, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, MapPin, Calendar, Home, Briefcase, Loader2 } from "lucide-react";
+import { 
+  Upload, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, 
+  MapPin, Calendar, Home, Briefcase, Loader2, User, School, BookOpen, Download 
+} from "lucide-react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import { QRCodeSVG } from "qrcode.react";
 
 export const Apply = () => {
   const [step, setStep] = useState("form");
   const [loading, setLoading] = useState(false);
-  const [applicationId, setApplicationId] = useState(null); // Domin rike ID din dalibi
+  const [applicationId, setApplicationId] = useState(null);
+  const [passportPreview, setPassportPreview] = useState(null);
+  const receiptRef = useRef(null);
   
-  const [sittings, setSittings] = useState([{ id: Date.now() }]);
-  
-  // Rike dukkan bayanan form
-  const [formData, setFormData] = useState({});
+  const [sittings, setSittings] = useState([{ id: Date.now(), examType: "", examNo: "", centerNo: "", results: {} }]);
+  const [formData, setFormData] = useState({
+    fullName: "", dob: "", email: "", phone: "", gender: "", 
+    stateOrigin: "", lgaOrigin: "", address: "", selectedCourse: ""
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePassportUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPassportPreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const addSitting = () => {
-    if (sittings.length < 2) setSittings([...sittings, { id: Date.now() }]);
+    if (sittings.length < 2) setSittings([...sittings, { id: Date.now(), results: {} }]);
   };
 
   const removeSitting = (id) => {
     setSittings(sittings.filter(s => s.id !== id));
   };
 
-  // --- AIKE DA BAYANAI ZUWA DASHBOARD (PENDING) ---
+  // --- SUBMIT FORM TO ADMISSION DASHBOARD ---
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const docRef = await addDoc(collection(db, "applications"), {
         ...formData,
         sittings: sittings,
+        passport: passportPreview,
         status: "Pending Payment",
+        viewedByAdmission: false, // Wannan zai nuna a dashboard na Admission Officer
         appliedAt: serverTimestamp(),
       });
-      setApplicationId(docRef.id); // Ajiye ID don update daga baya
+      setApplicationId(docRef.id);
       setStep("payment");
     } catch (error) {
-      console.error("Kuskure wajen ajiye bayanai:", error);
-      alert("Akwai matsala, a sake gwadawa.");
+      alert("Kuskure: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // --- TABBATAR DA BIYAN KUDI ---
+  // --- PAYMENT SUCCESS & UPDATE ---
   const handlePaymentSuccess = async () => {
     setLoading(true);
     try {
-      if (applicationId) {
-        const appRef = doc(db, "applications", applicationId);
-        await updateDoc(appRef, {
-          status: "Paid",
-          paymentDate: serverTimestamp(),
-        });
-      }
+      const appRef = doc(db, "applications", applicationId);
+      await updateDoc(appRef, {
+        status: "Paid",
+        paymentRef: "PAY-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        paymentDate: new Date().toLocaleString(),
+      });
       setStep("success");
     } catch (error) {
-      console.error("Payment update error:", error);
+      alert("Payment Error: " + error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // --- DOWNLOAD PDF RECEIPT ---
+  const downloadReceipt = async () => {
+    const element = receiptRef.current;
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`SKYWARD-RECEIPT-${applicationId.substr(0, 5)}.pdf`);
   };
 
   if (step === "payment") {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6 text-left">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
           <div className="bg-[#002147] p-8 text-center text-white">
-            <CreditCard size={48} className="mx-auto mb-4 text-red-500" />
-            <h2 className="text-xl font-black uppercase">Application Fee</h2>
-            <p className="text-slate-300 text-[10px] mt-2 uppercase tracking-widest">Skyward College Admission 2026</p>
+            <CreditCard size={48} className="mx-auto mb-4 text-emerald-400" />
+            <h2 className="text-xl font-black uppercase tracking-tighter">Application Fee</h2>
+            <p className="text-slate-400 text-[10px] mt-2 uppercase tracking-widest">Secure Payment Gateway</p>
           </div>
-          <div className="p-8 text-center">
+          <div className="p-10 text-center">
             <div className="mb-8">
               <span className="text-5xl font-black text-[#002147]">₦5,000</span>
-              <p className="text-slate-500 text-sm font-bold mt-2 uppercase">Application Form Fee</p>
+              <p className="text-slate-500 text-xs font-bold mt-2 uppercase">Official Form Fee</p>
             </div>
             <button 
-              disabled={loading}
               onClick={handlePaymentSuccess} 
-              className="w-full bg-red-600 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-[#002147] transition-all shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-emerald-600 hover:bg-[#002147] text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="animate-spin" /> : "Pay Now (N5,000)"}
+              {loading ? <Loader2 className="animate-spin" /> : "Authorize Payment"}
             </button>
           </div>
         </div>
@@ -97,18 +125,73 @@ export const Apply = () => {
 
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center text-left">
-        <div className="max-w-2xl w-full bg-white p-12 rounded-3xl shadow-2xl border-t-8 border-green-500">
-          <CheckCircle size={80} className="text-green-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-black text-[#002147] uppercase">Success!</h1>
-          <p className="text-slate-500 mb-8 font-bold uppercase">Official Payment Receipt Generated</p>
-          <div className="bg-slate-50 p-6 rounded-2xl border mb-8 text-left space-y-2">
-             <p className="text-xs"><strong>Ref:</strong> {applicationId || "SKY-ADM-2026-99012"}</p>
-             <p className="text-xs"><strong>Amount:</strong> ₦5,000.00</p>
-             <p className="text-xs text-green-600 font-bold">STATUS: PAID & SENT TO ADMISSION OFFICE</p>
+      <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-6 font-sans">
+        {/* PHYSICAL RECEIPT DESIGN */}
+        <div ref={receiptRef} className="w-[180mm] bg-white p-10 shadow-2xl border-[12px] border-[#002147] relative overflow-hidden mb-6">
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 bg-[#002147] rounded-full flex items-center justify-center text-white font-black text-2xl italic border-4 border-red-500">S</div>
+              <div>
+                <h1 className="text-2xl font-black text-[#002147] leading-none">SKYWARD COLLEGE</h1>
+                <p className="text-[10px] font-bold text-red-600 uppercase tracking-[0.2em]">Travels & Tourism Academy</p>
+                <p className="text-[9px] text-slate-500 font-bold">Approved by Federal Ministry of Education</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-[10px] font-black uppercase mb-2">Payment Verified</div>
+              <p className="text-[9px] font-bold text-slate-400 italic">Receipt No: {applicationId?.toUpperCase()}</p>
+            </div>
           </div>
-          <button onClick={() => window.print()} className="bg-[#002147] text-white px-8 py-4 rounded-xl font-black uppercase text-xs flex items-center gap-2 mx-auto">
-            <Printer size={18}/> Print Receipt
+
+          <div className="grid grid-cols-3 gap-8 mb-8 border-y-2 border-slate-100 py-6">
+            <div className="col-span-1">
+              {passportPreview ? (
+                <img src={passportPreview} className="w-32 h-40 object-cover rounded-lg border-2 border-slate-200" alt="Student" />
+              ) : (
+                <div className="w-32 h-40 bg-slate-100 rounded-lg border-2 border-dashed flex items-center justify-center">No Photo</div>
+              )}
+            </div>
+            <div className="col-span-2 space-y-3">
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-slate-400 uppercase">Candidate Name</span>
+                <span className="text-lg font-black text-[#002147] uppercase">{formData.fullName}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-slate-400 uppercase">Selected Course</span>
+                <span className="text-sm font-bold text-slate-700">{formData.selectedCourse}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-[8px] font-black text-slate-400 uppercase">Application ID</span>
+                  <p className="text-[10px] font-bold">{applicationId?.substr(0,10)}</p>
+                </div>
+                <div>
+                  <span className="text-[8px] font-black text-slate-400 uppercase">Payment Date</span>
+                  <p className="text-[10px] font-bold">{new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-end">
+            <div>
+               <h3 className="text-[12px] font-black text-[#002147] mb-2 uppercase">Official Stamp Required</h3>
+               <div className="w-32 h-32 border-2 border-dashed border-slate-200 flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase rotate-12">Registry Dept</div>
+            </div>
+            <div className="text-center">
+              <QRCodeSVG value={`https://skyward.edu/verify/${applicationId}`} size={100} level="H" />
+              <p className="text-[8px] font-bold mt-2 text-slate-400 uppercase">Scan to Verify</p>
+            </div>
+          </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16"></div>
+        </div>
+
+        <div className="flex gap-4">
+          <button onClick={downloadReceipt} className="bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs flex items-center gap-3 shadow-xl hover:scale-105 transition-all">
+            <Download size={20}/> Download Receipt PDF
+          </button>
+          <button onClick={() => window.location.reload()} className="bg-[#002147] text-white px-10 py-4 rounded-2xl font-black uppercase text-xs shadow-xl">
+            Finish
           </button>
         </div>
       </div>
@@ -116,162 +199,107 @@ export const Apply = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-16 px-4 md:px-20 text-left">
-      <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
+    <div className="min-h-screen bg-[#F0F4F8] py-16 px-4 md:px-20 font-sans text-left">
+      <div className="max-w-5xl mx-auto bg-white shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] rounded-[40px] overflow-hidden border border-slate-100">
         
-        <div className="bg-[#002147] p-10 text-white">
-          <h1 className="text-3xl font-black uppercase">Admission Application Form</h1>
-          <p className="text-red-500 font-bold mt-2 uppercase text-xs tracking-widest">Skyward College of Travels & Tourism</p>
+        <div className="bg-[#002147] p-12 text-white relative">
+          <div className="relative z-10">
+            <h1 className="text-4xl font-black uppercase tracking-tighter">Admission Form</h1>
+            <p className="text-red-500 font-black mt-2 uppercase text-[10px] tracking-[0.4em]">Skyward College of Travels & Tourism</p>
+          </div>
+          <School className="absolute right-12 top-12 text-white/5" size={120} />
         </div>
 
-        <form onSubmit={handleFormSubmit} className="p-8 md:p-12 space-y-12">
-          
+        <form onSubmit={handleFormSubmit} className="p-10 md:p-16 space-y-16">
           <section>
-            <div className="flex items-center gap-3 mb-6 border-b pb-2">
-              <User className="text-red-600" />
-              <h2 className="text-[#002147] font-black uppercase">Personal Information</h2>
+            <div className="flex items-center gap-4 mb-10 border-b border-slate-100 pb-4">
+              <div className="p-3 bg-red-50 text-red-600 rounded-2xl"><User size={24}/></div>
+              <h2 className="text-[#002147] text-xl font-black uppercase">Candidate Profile</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-1 flex flex-col items-center">
-                <div className="w-40 h-48 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center relative group">
-                  <Upload className="text-slate-400" />
-                  <span className="text-[10px] uppercase font-bold text-slate-400 mt-2">Passport</span>
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="flex flex-col items-center">
+                <div className="w-44 h-52 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center relative group hover:border-red-500 transition-all overflow-hidden">
+                  {passportPreview ? (
+                    <img src={passportPreview} className="w-full h-full object-cover" alt="Preview" />
+                  ) : (
+                    <>
+                      <Upload className="text-slate-300 mb-2" />
+                      <span className="text-[9px] uppercase font-black text-slate-400">Upload Passport</span>
+                    </>
+                  )}
+                  <input required type="file" accept="image/*" onChange={handlePassportUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                 </div>
               </div>
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input required name="fullName" onChange={handleChange} type="text" placeholder="Full Name (Surname First)" className="form-input-sky" />
-                <div className="relative">
-                  <Calendar className="absolute right-3 top-3.5 text-slate-400" size={16} />
-                  <input required name="dob" onChange={handleChange} type="text" onFocus={(e) => (e.target.type = "date")} onBlur={(e) => (e.target.type = "text")} placeholder="Date of Birth" className="form-input-sky w-full" />
-                </div>
-                <input required name="email" onChange={handleChange} type="email" placeholder="Email Address" className="form-input-sky" />
-                <input required name="phone" onChange={handleChange} type="tel" placeholder="Phone Number" className="form-input-sky" />
-                <select required name="gender" onChange={handleChange} className="form-input-sky text-slate-500">
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input required name="fullName" onChange={handleChange} placeholder="Full Name (Surname First)" className="sky-input" />
+                <input required name="email" type="email" onChange={handleChange} placeholder="Email Address" className="sky-input" />
+                <input required name="phone" type="tel" onChange={handleChange} placeholder="Phone Number" className="sky-input" />
+                <select required name="gender" onChange={handleChange} className="sky-input">
                   <option value="">Gender</option>
                   <option>Male</option>
                   <option>Female</option>
                 </select>
-                <input required name="stateOrigin" onChange={handleChange} type="text" placeholder="State of Origin" className="form-input-sky" />
-                <input required name="lgaOrigin" onChange={handleChange} type="text" placeholder="LGA of Origin" className="form-input-sky" />
-                <input required name="stateResidence" onChange={handleChange} type="text" placeholder="Current State of Residence" className="form-input-sky" />
-                <input required name="lgaResidence" onChange={handleChange} type="text" placeholder="Current LGA of Residence" className="form-input-sky" />
-                <div className="md:col-span-2 relative">
-                  <Home className="absolute right-3 top-4 text-slate-400" size={16} />
-                  <textarea required name="address" onChange={handleChange} placeholder="Full Residential Address" className="form-input-sky h-20 pt-3 resize-none w-full"></textarea>
-                </div>
+                <input required name="stateOrigin" onChange={handleChange} placeholder="State of Origin" className="sky-input" />
+                <input required name="lgaOrigin" onChange={handleChange} placeholder="LGA of Origin" className="sky-input" />
               </div>
             </div>
           </section>
 
-          <section>
-            <div className="flex items-center gap-3 mb-6 border-b pb-2">
-              <School className="text-red-600" />
-              <h2 className="text-[#002147] font-black uppercase">Previous Education</h2>
+          <section className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-[#002147] text-white rounded-2xl"><BookOpen size={24}/></div>
+              <h2 className="text-[#002147] text-xl font-black uppercase">Academic Selection</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase">Primary School</h4>
-                <input required name="primarySchool" onChange={handleChange} type="text" placeholder="School Name" className="form-input-sky" />
-                <input required name="primaryYear" onChange={handleChange} type="text" placeholder="Year" className="form-input-sky" />
+                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Preferred Program</label>
+                 <select required name="selectedCourse" onChange={handleChange} className="sky-input bg-white !border-red-600 !text-[#002147] font-black">
+                   <option value="">Choose Course...</option>
+                   <option>Air Cabin Crew Management</option>
+                   <option>Flight Dispatcher</option>
+                   <option>Travel and Tourism Management</option>
+                   <option>Visa Processing</option>
+                 </select>
               </div>
               <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase">Secondary School</h4>
-                <input required name="secondarySchool" onChange={handleChange} type="text" placeholder="School Name" className="form-input-sky" />
-                <input required name="secondaryYear" onChange={handleChange} type="text" placeholder="Year" className="form-input-sky" />
+                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">O-Level Sitting Count</label>
+                 <div className="flex gap-4">
+                    <button type="button" onClick={addSitting} className="flex-1 bg-white border-2 border-slate-200 py-3 rounded-xl font-black text-[10px] uppercase hover:border-red-500 transition-all flex items-center justify-center gap-2">
+                       <PlusCircle size={16}/> Add Sitting
+                    </button>
+                 </div>
               </div>
             </div>
-          </section>
-
-          <section>
-            <div className="flex items-center gap-3 mb-6 border-b pb-2">
-              <Briefcase className="text-red-600" />
-              <h2 className="text-[#002147] font-black uppercase">Higher / Additional Qualification <span className="text-[10px] text-slate-400 font-bold">(Optional)</span></h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <select name="higherQualification" onChange={handleChange} className="form-input-sky text-slate-500">
-                  <option value="">Select Qualification</option>
-                  <option>Diploma (ND)</option>
-                  <option>Higher National Diploma (HND)</option>
-                  <option>Degree (B.Sc/B.A)</option>
-                  <option>NCE</option>
-                  <option>Professional Certificate</option>
-                  <option>Others</option>
-               </select>
-               <input name="higherInst" onChange={handleChange} type="text" placeholder="Institution Name" className="form-input-sky md:col-span-2" />
-               <input name="higherCourse" onChange={handleChange} type="text" placeholder="Course of Study" className="form-input-sky md:col-span-2" />
-               <input name="higherYear" onChange={handleChange} type="text" placeholder="Year of Graduation" className="form-input-sky" />
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex items-center justify-between border-b pb-2">
-              <div className="flex items-center gap-3">
-                <BookOpen className="text-red-600" />
-                <h2 className="text-[#002147] font-black uppercase">O-Level Results</h2>
-              </div>
-              {sittings.length < 2 && (
-                <button type="button" onClick={addSitting} className="flex items-center gap-2 bg-red-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase shadow-md">
-                  <PlusCircle size={14} /> Add Sitting
-                </button>
-              )}
-            </div>
-            {sittings.map((sitting, index) => (
-              <div key={sitting.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-200 relative">
-                <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-[10px] font-black text-red-600 uppercase italic">Sitting #{index + 1}</h4>
-                  {index > 0 && <button type="button" onClick={() => removeSitting(sitting.id)} className="text-slate-400 hover:text-red-600 transition-all"><Trash2 size={16} /></button>}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <select required className="form-input-sky bg-white"><option value="">Exam Type</option><option>WAEC</option><option>NECO</option><option>NABTEB</option></select>
-                  <input required type="text" placeholder="Exam Number" className="form-input-sky bg-white" />
-                  <input required type="text" placeholder="Center Number" className="form-input-sky bg-white" />
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} className="flex gap-1">
-                      <input type="text" placeholder={`Subject ${i+1}`} className="w-2/3 form-input-sky bg-white text-[10px]" />
-                      <input type="text" placeholder="G" className="w-1/3 form-input-sky bg-white text-[10px] text-center" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <section className="bg-slate-50 p-6 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-[10px] font-black text-[#002147] uppercase mb-4">JAMB (Optional)</h4>
-                <input name="jambReg" onChange={handleChange} type="text" placeholder="JAMB Reg No" className="form-input-sky bg-white mb-4" />
-                <input name="jambScore" onChange={handleChange} type="text" placeholder="JAMB Score" className="form-input-sky bg-white" />
-              </div>
-              <div>
-                <h4 className="text-[10px] font-black text-red-600 uppercase mb-4">Course Selection</h4>
-                <select required name="selectedCourse" onChange={handleChange} className="form-input-sky bg-white border-2 border-red-600 font-bold">
-                  <option value="">Choose a Course...</option>
-                  <option>Air Cabin Crew Management</option>
-                  <option>Flight Dispatcher </option>
-                  <option>Travel and Tourism Management</option>
-                  <option>Hotel and Hospitality Management</option>
-                  <option>Cargo & Freight Handling</option>
-                  <option>Catering and Craft Practice</option>
-                  <option>Airport Operations and Safety</option>
-                  <option>Visa Processing</option>
-                  <option>Travel Agency Management</option>
-                  <option>Customer Service Management</option>
-                </select>
-              </div>
           </section>
 
           <button 
             disabled={loading}
             type="submit" 
-            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-5 rounded-xl uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-2"
+            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-6 rounded-2xl uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-4 text-sm"
           >
-            {loading ? <Loader2 className="animate-spin" /> : "Proceed to Payment (₦5,000)"}
+            {loading ? <Loader2 className="animate-spin" /> : "Verify & Process Application"}
           </button>
         </form>
       </div>
+
+      <style jsx>{`
+        .sky-input {
+          width: 100%;
+          padding: 1rem 1.5rem;
+          background: #f8fafc;
+          border: 2px solid #e2e8f0;
+          border-radius: 1rem;
+          font-weight: 700;
+          font-size: 0.875rem;
+          outline: none;
+          transition: all 0.3s ease;
+        }
+        .sky-input:focus {
+          border-color: #002147;
+          background: white;
+          box-shadow: 0 10px 15px -3px rgba(0, 33, 71, 0.1);
+        }
+      `}</style>
     </div>
   );
 };
