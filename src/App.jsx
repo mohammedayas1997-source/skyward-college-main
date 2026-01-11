@@ -11,13 +11,12 @@ import Apply from "./pages/Apply";
 import { CreateUserAccount } from "./pages/AdminUserManagement";
 
 // --- IMPORT ACTUAL DASHBOARD PAGES ---
-// Na daidaita wadannan sunayen da ainihin files din da ka fada min
 import RectorDashboard from "./pages/RectorDashboard";
 import AccountantDashboard from "./pages/AccountantDashboard";
-import AdmissionDashboard from "./pages/AdmissionOfficerDashboard"; // Gyara: Sunan file dinka
+import AdmissionDashboard from "./pages/AdmissionOfficerDashboard"; 
 import StudentDashboard from "./pages/StudentDashboard";
-import ExamDashboard from "./pages/ExamOfficerDashboard"; // Gyara: Sunan file dinka
-import NewsAdmin from "./pages/NewsAdmin"; // Gyara: Sunan file dinka
+import ExamDashboard from "./pages/ExamOfficerDashboard"; 
+import NewsAdmin from "./pages/NewsAdmin"; 
 import StaffPortal from "./pages/StaffDashboard";
 import ProprietorDashboard from "./pages/ProprietorDashboard";
 
@@ -145,26 +144,51 @@ const Login = () => {
   );
 };
 
-// --- PROTECTED DASHBOARD WRAPPER ---
+// --- STRENGTHENED PROTECTED DASHBOARD WRAPPER ---
 const DashboardWrapper = ({ title, color, allowedRole, children }) => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      const storedRole = localStorage.getItem("userRole");
-      if (!user || storedRole !== allowedRole) {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        localStorage.clear();
         navigate("/portal/login", { replace: true });
-      } else {
-        setChecking(false);
+        return;
+      }
+
+      // Deep Security Check: Fetch actual role from Firestore to prevent localStorage tampering
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const actualRole = userDoc.data().role?.toLowerCase();
+          const storedRole = localStorage.getItem("userRole");
+
+          if (actualRole !== allowedRole) {
+            console.error("Access Denied: Role Mismatch");
+            navigate("/portal/login", { replace: true });
+          } else {
+            setUserRole(actualRole);
+            setChecking(false);
+          }
+        } else {
+          navigate("/portal/login", { replace: true });
+        }
+      } catch (error) {
+        navigate("/portal/login", { replace: true });
       }
     });
+
     return () => unsubscribe();
   }, [navigate, allowedRole]);
 
   if (checking) return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <Loader2 className="animate-spin text-[#002147]" size={40} />
+      <div className="text-center">
+        <Loader2 className="animate-spin text-[#002147] mx-auto mb-4" size={40} />
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Verifying Permissions...</p>
+      </div>
     </div>
   );
 
@@ -206,46 +230,24 @@ export default function App() {
         <Route path="/portal/login" element={<Login />} />
         <Route path="/admission/apply" element={<Apply />} />
         
-        {/* ADMIN */}
+        {/* ROLE-PROTECTED ROUTES */}
         <Route path="/admin/users" element={<DashboardWrapper title="Admin" color="text-blue-900" allowedRole="admin"><CreateUserAccount /></DashboardWrapper>} />
         
-        {/* RECTOR */}
         <Route path="/rector/dashboard" element={<DashboardWrapper title="Rector" color="text-blue-900" allowedRole="rector"><RectorDashboard /></DashboardWrapper>} />
 
-        {/* PROPRIETOR */}
         <Route path="/proprietor/dashboard" element={<DashboardWrapper title="Proprietor" color="text-purple-900" allowedRole="proprietor"><ProprietorDashboard /></DashboardWrapper>} />
 
-        {/* ACCOUNTANT */}
         <Route path="/accountant/dashboard" element={<DashboardWrapper title="Accountant" color="text-green-600" allowedRole="accountant"><AccountantDashboard /></DashboardWrapper>} />
 
-        {/* ADMISSION */}
         <Route path="/admission/dashboard" element={<DashboardWrapper title="Admission" color="text-orange-600" allowedRole="admission"><AdmissionDashboard /></DashboardWrapper>} />
 
-        {/* STAFF */}
-        <Route 
-          path="/staff/portal" 
-          element={
-            <DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff">
-                <StaffPortal /> 
-            </DashboardWrapper>
-          } 
-        />
+        <Route path="/staff/portal" element={<DashboardWrapper title="Staff" color="text-red-600" allowedRole="staff"><StaffPortal /></DashboardWrapper>} />
 
-        {/* EXAM */}
         <Route path="/exam/dashboard" element={<DashboardWrapper title="Exams" color="text-indigo-600" allowedRole="exam"><ExamDashboard /></DashboardWrapper>} />
 
-        {/* STUDENT */}
         <Route path="/student/dashboard" element={<DashboardWrapper title="Student" color="text-slate-700" allowedRole="student"><StudentDashboard /></DashboardWrapper>} />
 
-        {/* NEWS ADMIN */}
-        <Route 
-          path="/news/admin" 
-          element={
-            <DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin">
-              <NewsAdmin />
-            </DashboardWrapper>
-          } 
-        />
+        <Route path="/news/admin" element={<DashboardWrapper title="News Admin" color="text-pink-600" allowedRole="news_admin"><NewsAdmin /></DashboardWrapper>} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

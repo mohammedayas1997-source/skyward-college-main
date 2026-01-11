@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db, auth } from "../firebase";
 import { doc, getDoc, updateDoc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { updatePassword, onAuthStateChanged } from "firebase/auth";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { 
   User, FileCheck, Download, LogOut, Bell, Clock, 
   BookOpen, CreditCard, Menu, X, Award, MapPin,
@@ -13,6 +15,7 @@ import {
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const letterRef = useRef();
   const [admissionStatus, setAdmissionStatus] = useState("Pending");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -33,7 +36,6 @@ const StudentDashboard = () => {
         return;
       }
 
-      // Real-time listener don bayanan dalibi (User Profile)
       const unsubUser = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
@@ -48,7 +50,6 @@ const StudentDashboard = () => {
         setLoading(false);
       });
 
-      // Real-time listener don Notifications (Daga Staff ko Admission Office)
       const qNotify = query(collection(db, "notifications"), where("toUid", "==", user.uid));
       const unsubNotify = onSnapshot(qNotify, (snap) => {
         setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -95,11 +96,17 @@ const StudentDashboard = () => {
     navigate("/portal/login");
   };
 
-  // REAL-LIFE: Download Letter Function
-  const downloadAdmissionLetter = () => {
-    alert("Generating your Official Admission Letter... Please wait.");
-    // A nan za'a iya amfani da libraries kamar jsPDF
-    window.print(); 
+  // REAL-LIFE: Download Letter Function with jsPDF
+  const downloadAdmissionLetter = async () => {
+    const element = letterRef.current;
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`Skyward_Admission_${studentData?.fullName?.replace(" ", "_")}.pdf`);
   };
 
   if (loading) {
@@ -206,6 +213,18 @@ const StudentDashboard = () => {
           </div>
         </header>
 
+        {/* 1. Live Status Progress Bar Implementation */}
+        <div className="bg-white p-8 rounded-[40px] shadow-sm mb-10 border border-slate-200">
+           <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-6">Application Live Tracking</h4>
+           <div className="flex justify-between items-center relative">
+              <div className="absolute top-5 left-0 w-full h-1 bg-slate-100 -z-0"></div>
+              <StatusIcon label="Payment" done />
+              <StatusIcon label="Verification" done={["Awaiting Rector Approval", "Rector Approved", "Approved"].includes(admissionStatus)} />
+              <StatusIcon label="Rector Consent" done={["Rector Approved", "Approved"].includes(admissionStatus)} />
+              <StatusIcon label="Final Admission" done={admissionStatus === "Approved"} />
+           </div>
+        </div>
+
         {/* Real-time Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <DashboardCard title="Admission Status" val={admissionStatus === "Approved" ? "ADMITTED" : admissionStatus} color={admissionStatus === "Approved" ? "green" : "blue"} icon={<FileCheck size={24}/>} />
@@ -252,11 +271,75 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* HIDDEN PROFESSIONAL ADMISSION LETTER TEMPLATE */}
+      <div className="absolute -left-[9999px] top-0">
+        <div ref={letterRef} className="w-[210mm] min-h-[297mm] bg-white p-20 text-slate-900 relative border-[15px] border-double border-slate-100">
+          <div className="text-center border-b-4 border-[#002147] pb-8 mb-10">
+            <h1 className="text-4xl font-black uppercase tracking-tighter text-[#002147]">Skyward College of Travels and Tourism</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.4em] text-red-600 mt-2">Aviation • Hospitality • Tourism Management</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-2 italic flex items-center justify-center gap-2">
+              <MapPin size={10}/> Plot 45, Academic Area, Kano State, Nigeria.
+            </p>
+          </div>
+
+          <div className="flex justify-between items-start mb-12">
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase text-slate-400">Reference Number</p>
+              <p className="font-bold text-sm">SCTT/ADM/2026/00{studentData?.uid?.slice(0,4)}</p>
+            </div>
+            <div className="text-right space-y-1">
+              <p className="text-[10px] font-black uppercase text-slate-400">Date Issued</p>
+              <p className="font-bold text-sm">{new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          <h2 className="text-2xl font-black uppercase border-b-2 border-slate-900 inline-block mb-10 italic">Offer of Provisional Admission</h2>
+
+          <div className="space-y-6 text-sm leading-relaxed text-justify font-medium">
+            <p>Dear <strong>{studentData?.fullName?.toUpperCase()}</strong>,</p>
+            <p>
+              We are pleased to inform you that your application for admission into Skyward College of Travels and Tourism 
+              has been considered and approved for the 2026 Academic Session.
+            </p>
+            <p>
+              You have been offered provisional admission to study: <span className="font-black text-red-600 uppercase italic underline">{studentData?.course}</span>.
+            </p>
+            <p>
+              This offer is subject to the verification of your original credentials and full payment of the required 
+              registration fees. Please log in to your student portal to complete your course registration within two weeks 
+              of receiving this letter.
+            </p>
+            <p className="pt-10">We look forward to welcoming you to our academic community.</p>
+          </div>
+
+          <div className="mt-20 flex justify-between items-end">
+            <div className="text-center">
+              <div className="w-32 h-1 bg-slate-900 mb-2"></div>
+              <p className="text-[10px] font-black uppercase">Registrar</p>
+            </div>
+            {/* Stamp Image Placeholder */}
+            <div className="w-32 h-32 border-4 border-red-600/20 rounded-full flex items-center justify-center rotate-12 relative">
+               <span className="text-red-600/30 text-[10px] font-black uppercase text-center tracking-tighter">Skyward College<br/>Official Stamp<br/>2026</span>
+               <CheckCircle className="absolute text-emerald-500/20" size={60}/>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-// Reusable Components
+// Sub-components
+const StatusIcon = ({ label, done }) => (
+  <div className="flex flex-col items-center gap-2 z-10">
+    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-700 ${done ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "bg-white text-slate-200 border border-slate-100"}`}>
+       {done ? <CheckCircle size={20} /> : <Clock size={20} />}
+    </div>
+    <p className={`text-[8px] font-black uppercase tracking-widest ${done ? "text-emerald-600" : "text-slate-300"}`}>{label}</p>
+  </div>
+);
+
 const SidebarBtn = ({ icon, label, onClick, active }) => (
   <button 
     onClick={onClick}
