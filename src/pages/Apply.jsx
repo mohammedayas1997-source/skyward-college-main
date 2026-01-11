@@ -17,7 +17,9 @@ export const Apply = () => {
   
   const [portalSettings, setPortalSettings] = useState({ isOpen: true });
 
-  // Full Secondary School Subjects List
+  // SAKA LINK DIN LOGONKA A NAN (Dole ya zama real link ko file a public folder)
+  const schoolLogo = "/logo.png"; 
+
   const secondarySubjects = [
     "English Language", "Mathematics", "Physics", "Chemistry", "Biology", 
     "Economics", "Geography", "Agricultural Science", "Civic Education",
@@ -28,7 +30,6 @@ export const Apply = () => {
     "Animal Husbandry", "Marketing", "Insurance", "Office Practice"
   ];
 
-  // Initialize 9 empty subject slots for selection
   const [oLevelResults, setOLevelResults] = useState(
     Array(9).fill(null).map((_, i) => ({ id: i, subject: "", grade: "" }))
   );
@@ -40,8 +41,8 @@ export const Apply = () => {
     selectedCourse: "",
     highestQualification: "", 
     institutionName: "",
-    courseStudied: "", // New
-    studentIdNo: "", // New
+    courseStudied: "", 
+    studentIdNo: "", 
     yearOfGraduation: ""
   });
 
@@ -113,7 +114,8 @@ export const Apply = () => {
 
   const downloadReceipt = async () => {
     const element = receiptRef.current;
-    const canvas = await html2canvas(element, { scale: 2 });
+    // useCORS is important to allow images in PDF
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
     pdf.addImage(imgData, "PNG", 0, 0, 210, (canvas.height * 210) / canvas.width);
@@ -135,7 +137,7 @@ export const Apply = () => {
   if (step === "payment") {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6 text-left">
-        <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl border border-slate-200">
+        <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl border border-slate-200 overflow-hidden">
           <div className="bg-[#002147] p-10 text-center text-white">
             <CreditCard size={60} className="mx-auto mb-4 text-emerald-400" />
             <h2 className="text-2xl font-black uppercase tracking-tighter">Application Fee</h2>
@@ -154,10 +156,14 @@ export const Apply = () => {
   if (step === "success") {
     return (
       <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-6 text-left">
+        {/* RECEIPT DESIGN */}
         <div ref={receiptRef} className="w-[180mm] bg-white p-10 shadow-2xl border-[12px] border-[#002147] mb-6 relative">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
-               <div className="w-16 h-16 bg-[#002147] rounded-full flex items-center justify-center text-white font-black text-2xl border-2 border-red-500">S</div>
+               {/* REAL LOGO ON RECEIPT */}
+               <div className="w-20 h-20 bg-white flex items-center justify-center border-2 border-slate-100 p-1">
+                 <img src={schoolLogo} alt="School Logo" className="w-full h-full object-contain" />
+               </div>
                <div className="text-left">
                  <h1 className="text-xl font-black text-[#002147]">SKYWARD COLLEGE</h1>
                  <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest">Travels & Tourism Academy</p>
@@ -180,6 +186,7 @@ export const Apply = () => {
           </div>
           <p className="text-[10px] text-center mt-6 text-slate-400 font-bold uppercase">Official Digital Receipt - Scan QR to Verify</p>
         </div>
+        
         <div className="flex gap-4">
           <button onClick={downloadReceipt} className="bg-emerald-600 text-white px-10 py-4 rounded-xl font-black flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
             <Download size={20}/> DOWNLOAD RECEIPT
@@ -194,10 +201,16 @@ export const Apply = () => {
     <div className="min-h-screen bg-[#F0F4F8] py-16 px-4 md:px-20 font-sans text-left">
       <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-[40px] overflow-hidden border border-slate-100">
         
+        {/* HEADER WITH REAL LOGO */}
         <div className="bg-[#002147] p-12 text-white flex justify-between items-center relative">
-          <div className="z-10">
-            <h1 className="text-4xl font-black uppercase tracking-tighter">Admission Form</h1>
-            <p className="text-red-500 font-black mt-2 uppercase text-[10px] tracking-[0.3em]">Skyward College of Travels & Tourism</p>
+          <div className="z-10 flex items-center gap-6">
+            <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl p-2 border border-white/20 flex items-center justify-center">
+              <img src={schoolLogo} alt="Logo" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black uppercase tracking-tighter">Admission Form</h1>
+              <p className="text-red-500 font-black mt-2 uppercase text-[10px] tracking-[0.3em]">Skyward College of Travels & Tourism</p>
+            </div>
           </div>
           <School size={100} className="opacity-10 absolute right-10" />
         </div>
@@ -252,7 +265,7 @@ export const Apply = () => {
             </div>
           </section>
 
-          {/* HIGHER EDUCATION - UPDATED */}
+          {/* HIGHER EDUCATION */}
           <section className="space-y-8 bg-slate-50 p-8 rounded-[2rem]">
             <div className="flex items-center gap-4 border-b pb-4">
               <GraduationCap className="text-emerald-600" />
@@ -274,7 +287,7 @@ export const Apply = () => {
             </div>
           </section>
 
-          {/* O-LEVEL RESULTS - 9 DROPDOWNS */}
+          {/* O-LEVEL RESULTS */}
           <section className="space-y-8">
             <div className="flex items-center gap-4 border-b pb-4">
               <BookOpen className="text-red-600" />
