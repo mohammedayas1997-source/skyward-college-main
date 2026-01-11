@@ -49,7 +49,7 @@ const AdmissionOfficerDashboard = () => {
     return () => { unsubAdmission(); unsubStaff(); };
   }, []);
 
-  // --- AUTOMATIC ID GENERATOR ---
+  // --- 1. AUTOMATIC ID GENERATOR ---
   const generateAdmissionID = async () => {
     const year = new Date().getFullYear();
     const q = query(collection(db, "applications"), where("status", "==", "Approved"), orderBy("idNumber", "desc"), limit(1));
@@ -58,15 +58,17 @@ const AdmissionOfficerDashboard = () => {
     let lastNumber = 0;
     if (!querySnapshot.empty) {
       const lastId = querySnapshot.docs[0].data().idNumber;
-      lastNumber = parseInt(lastId.split("/")[2]);
+      if (lastId) {
+         const parts = lastId.split("/");
+         lastNumber = parseInt(parts[2]) || 0;
+      }
     }
     
     const nextNumber = (lastNumber + 1).toString().padStart(4, "0");
     return `SKY/${year}/${nextNumber}`;
   };
 
-  // --- OFFICIAL HANDLERS ---
-
+  // --- 2. SEND TO RECTOR FOR APPROVAL ---
   const sendToRector = async (id) => {
     setLoadingId(id);
     try {
@@ -76,11 +78,12 @@ const AdmissionOfficerDashboard = () => {
         officerName: auth.currentUser?.displayName || "Admission Officer",
         sentToRectorAt: serverTimestamp()
       });
-      alert("Application sent to Rector for official approval!");
+      alert("Application sent to Rector for approval!");
     } catch (e) { alert(e.message); }
     finally { setLoadingId(null); }
   };
 
+  // --- 3. FINALIZE (AUTO-ID & STAFF ASSIGNMENT) ---
   const finalizeAdmission = async (candidate) => {
     if (!selectedCourse || !selectedStaff) {
       return alert("Please select a Course and assign a Staff/Lecturer first!");
@@ -99,26 +102,26 @@ const AdmissionOfficerDashboard = () => {
         admissionDate: serverTimestamp()
       });
 
-      // Update User Profile (to allow login with ID Number)
+      // Update User Profile (Connect Student to Staff)
       if (candidate.uid) {
         await updateDoc(doc(db, "users", candidate.uid), {
           idNumber: newID,
           role: "student",
           assignedCourse: selectedCourse,
-          advisorId: selectedStaff
+          advisorId: selectedStaff // Staff will now see this student in their list
         });
       }
 
       // Notify Student
       await addDoc(collection(db, "notifications"), {
         toUid: candidate.uid || candidate.email,
-        title: "Admission Released!",
-        message: `Congratulations! Your Admission ID is ${newID}. You are assigned to ${selectedCourse}.`,
+        title: "Admission Confirmed!",
+        message: `Congratulations! Your Admission ID is ${newID}. You are in ${selectedCourse}.`,
         type: "admission",
         createdAt: serverTimestamp()
       });
 
-      alert(`Success! Student Admitted with ID: ${newID}`);
+      alert(`Success! ID ${newID} generated and assigned to Staff.`);
       setSelectedCourse("");
       setSelectedStaff("");
     } catch (e) { alert(e.message); }
@@ -128,7 +131,6 @@ const AdmissionOfficerDashboard = () => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#f1f5f9] font-sans text-left">
       
-      {/* SIDEBAR */}
       <aside className="w-full md:w-72 bg-[#001529] text-white flex flex-col md:sticky md:top-0 md:h-screen shadow-2xl">
         <div className="p-8 border-b border-white/5">
           <div className="flex items-center gap-3">
@@ -152,7 +154,6 @@ const AdmissionOfficerDashboard = () => {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="flex-grow p-6 md:p-12">
         <header className="flex flex-col lg:flex-row justify-between items-center mb-10 gap-6">
           <div>
@@ -202,7 +203,7 @@ const AdmissionOfficerDashboard = () => {
               {/* ACTION CENTER */}
               <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-center lg:justify-end">
                 
-                {/* 1. SEND TO RECTOR */}
+                {/* 1. RECTOR APPROVAL REQUEST BUTTON */}
                 {candidate.status === "Paid" && (
                   <button 
                     onClick={() => sendToRector(candidate.id)}
@@ -213,29 +214,22 @@ const AdmissionOfficerDashboard = () => {
                   </button>
                 )}
 
-                {/* 2. WAITING MESSAGE */}
-                {candidate.status === "Awaiting Rector Approval" && (
-                  <div className="flex items-center gap-2 text-blue-500 font-black text-[10px] uppercase bg-blue-50 px-6 py-4 rounded-2xl border border-blue-100 italic">
-                    <Loader2 size={16} className="animate-spin"/> Pending Rector's Signature
-                  </div>
-                )}
-
-                {/* 3. FINAL ADMISSION (COURSE + TEACHER + ID) */}
+                {/* 2. AUTOMATIC ID & STAFF ASSIGNMENT (Appears after Rector Approval) */}
                 {candidate.status === "Rector Approved" && (
-                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <select 
                       onChange={(e) => setSelectedCourse(e.target.value)}
-                      className="p-4 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
+                      className="p-4 bg-white rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
                     >
-                      <option value="">Select Dept</option>
+                      <option value="">Set Dept</option>
                       {courses.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
 
                     <select 
                       onChange={(e) => setSelectedStaff(e.target.value)}
-                      className="p-4 bg-slate-50 rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
+                      className="p-4 bg-white rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
                     >
-                      <option value="">Assign Teacher</option>
+                      <option value="">Assign Staff</option>
                       {staffList.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
                     </select>
 
@@ -244,17 +238,18 @@ const AdmissionOfficerDashboard = () => {
                       className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-200"
                     >
                       {loadingId === candidate.id ? <Loader2 size={16} className="animate-spin"/> : <UserCheck size={16}/>}
-                      Issue Admission & ID
+                      Issue ID & Finalize
                     </button>
                   </div>
                 )}
 
-                {/* 4. COMPLETED */}
+                {/* 3. ALREADY ADMITTED */}
                 {candidate.status === "Approved" && (
-                  <div className="text-right">
+                  <div className="flex flex-col items-end">
                     <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100">
                       <CheckCircle size={18}/> Fully Admitted
                     </div>
+                    <span className="text-[9px] font-black text-slate-300 mt-1 uppercase tracking-widest">Linked to: {candidate.assignedStaffId || 'Teacher'}</span>
                   </div>
                 )}
               </div>
