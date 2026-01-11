@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react"; // Added useEffect
 import { db } from "../firebase"; 
-import { collection, addDoc, serverTimestamp, updateDoc, doc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, updateDoc, doc, onSnapshot } from "firebase/firestore"; // Added onSnapshot
 import { 
   Upload, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, 
-  MapPin, Calendar, Home, Briefcase, Loader2, User, School, BookOpen, Download 
+  MapPin, Calendar, Home, Briefcase, Loader2, User, School, BookOpen, Download, Lock 
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -16,11 +16,24 @@ export const Apply = () => {
   const [passportPreview, setPassportPreview] = useState(null);
   const receiptRef = useRef(null);
   
+  // --- PORTAL CONTROL STATE ---
+  const [portalSettings, setPortalSettings] = useState({ isOpen: true, message: "" });
+
   const [sittings, setSittings] = useState([{ id: Date.now(), examType: "", examNo: "", centerNo: "", results: {} }]);
   const [formData, setFormData] = useState({
     fullName: "", dob: "", email: "", phone: "", gender: "", 
     stateOrigin: "", lgaOrigin: "", address: "", selectedCourse: ""
   });
+
+  // --- LISTEN FOR PORTAL STATUS ---
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "systemSettings", "admissionControl"), (snapshot) => {
+      if (snapshot.exists()) {
+        setPortalSettings(snapshot.data());
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,9 +57,10 @@ export const Apply = () => {
     setSittings(sittings.filter(s => s.id !== id));
   };
 
-  // --- SUBMIT FORM TO ADMISSION DASHBOARD ---
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (!portalSettings.isOpen) return alert("Sorry, the portal is currently closed.");
+    
     setLoading(true);
     try {
       const docRef = await addDoc(collection(db, "applications"), {
@@ -54,7 +68,7 @@ export const Apply = () => {
         sittings: sittings,
         passport: passportPreview,
         status: "Pending Payment",
-        viewedByAdmission: false, // Wannan zai nuna a dashboard na Admission Officer
+        viewedByAdmission: false,
         appliedAt: serverTimestamp(),
       });
       setApplicationId(docRef.id);
@@ -66,7 +80,6 @@ export const Apply = () => {
     }
   };
 
-  // --- PAYMENT SUCCESS & UPDATE ---
   const handlePaymentSuccess = async () => {
     setLoading(true);
     try {
@@ -84,7 +97,6 @@ export const Apply = () => {
     }
   };
 
-  // --- DOWNLOAD PDF RECEIPT ---
   const downloadReceipt = async () => {
     const element = receiptRef.current;
     const canvas = await html2canvas(element, { scale: 2 });
@@ -126,7 +138,6 @@ export const Apply = () => {
   if (step === "success") {
     return (
       <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-6 font-sans">
-        {/* PHYSICAL RECEIPT DESIGN */}
         <div ref={receiptRef} className="w-[180mm] bg-white p-10 shadow-2xl border-[12px] border-[#002147] relative overflow-hidden mb-6">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
@@ -211,7 +222,18 @@ export const Apply = () => {
         </div>
 
         <form onSubmit={handleFormSubmit} className="p-10 md:p-16 space-y-16">
-          <section>
+          {/* PORTAL STATUS BANNER IF CLOSED */}
+          {!portalSettings.isOpen && (
+            <div className="bg-red-50 border-2 border-red-200 p-6 rounded-[2rem] flex items-center gap-4">
+               <div className="p-3 bg-red-600 text-white rounded-xl shadow-lg shadow-red-200"><Lock size={20}/></div>
+               <div>
+                 <p className="text-[10px] font-black uppercase text-red-600 tracking-widest">Portal Closed</p>
+                 <p className="text-xs font-bold text-slate-600">{portalSettings.message}</p>
+               </div>
+            </div>
+          )}
+
+          <section className={!portalSettings.isOpen ? "opacity-50 pointer-events-none" : ""}>
             <div className="flex items-center gap-4 mb-10 border-b border-slate-100 pb-4">
               <div className="p-3 bg-red-50 text-red-600 rounded-2xl"><User size={24}/></div>
               <h2 className="text-[#002147] text-xl font-black uppercase">Candidate Profile</h2>
@@ -245,7 +267,7 @@ export const Apply = () => {
             </div>
           </section>
 
-          <section className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100">
+          <section className={`bg-slate-50 p-10 rounded-[3rem] border border-slate-100 ${!portalSettings.isOpen ? "opacity-50 pointer-events-none" : ""}`}>
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 bg-[#002147] text-white rounded-2xl"><BookOpen size={24}/></div>
               <h2 className="text-[#002147] text-xl font-black uppercase">Academic Selection</h2>
@@ -272,13 +294,19 @@ export const Apply = () => {
             </div>
           </section>
 
-          <button 
-            disabled={loading}
-            type="submit" 
-            className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-6 rounded-2xl uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-4 text-sm"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : "Verify & Process Application"}
-          </button>
+          {portalSettings.isOpen ? (
+            <button 
+              disabled={loading}
+              type="submit" 
+              className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-6 rounded-2xl uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-4 text-sm"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : "Verify & Process Application"}
+            </button>
+          ) : (
+            <div className="w-full bg-slate-200 text-slate-500 font-black py-6 rounded-2xl uppercase text-center cursor-not-allowed">
+              Applications are currently closed
+            </div>
+          )}
         </form>
       </div>
 

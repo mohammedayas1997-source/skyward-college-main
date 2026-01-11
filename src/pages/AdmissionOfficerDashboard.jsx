@@ -9,7 +9,7 @@ import {
   LayoutDashboard, UserPlus, ClipboardList, CheckCircle, 
   Send, ShieldCheck, Users, Search, X, Loader2, 
   GraduationCap, BookOpen, Bell, Filter, MoreVertical, Eye,
-  UserCheck, Hash, UserPlus2 // Na kara UserPlus2 a nan
+  UserCheck, Hash, UserPlus2, ShieldAlert // Na kara ShieldAlert
 } from "lucide-react";
 
 const AdmissionOfficerDashboard = () => {
@@ -24,6 +24,10 @@ const AdmissionOfficerDashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedStaff, setSelectedStaff] = useState("");
 
+  // --- NEW STATES FOR PORTAL CONTROL ---
+  const [portalSettings, setPortalSettings] = useState({ isOpen: true, message: "" });
+  const [isUpdatingPortal, setIsUpdatingPortal] = useState(false);
+
   // --- OFFICIAL COURSES ---
   const courses = [
     "Air Cabin Crew Management", "Flight Dispatcher", 
@@ -35,22 +39,46 @@ const AdmissionOfficerDashboard = () => {
 
   // --- DATA FETCHING ---
   useEffect(() => {
-    // Na gyara wannan query din domin ya rinka kowa, sannan mu yi tace (filter) a kasa
+    // 1. Fetch Applications
     const qAdmission = collection(db, "applications");
-    
     const unsubAdmission = onSnapshot(qAdmission, (snapshot) => {
       const allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Muna so mu ga wadanda suka biya kudi ko kuma wadanda ake kan aiwatarwa
       setCandidates(allData.filter(c => ["Paid", "Awaiting Rector Approval", "Rector Approved", "Approved"].includes(c.status)));
     });
 
+    // 2. Fetch Staff
     const qStaff = query(collection(db, "users"), where("role", "==", "staff"));
     const unsubStaff = onSnapshot(qStaff, (snapshot) => {
       setStaffList(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    return () => { unsubAdmission(); unsubStaff(); };
+    // 3. Fetch Portal Settings (NEW)
+    const unsubPortal = onSnapshot(doc(db, "systemSettings", "admissionControl"), (docSnap) => {
+      if (docSnap.exists()) {
+        setPortalSettings(docSnap.data());
+      }
+    });
+
+    return () => { unsubAdmission(); unsubStaff(); unsubPortal(); };
   }, []);
+
+  // --- PORTAL CONTROL FUNCTION (NEW) ---
+  const togglePortal = async () => {
+    setIsUpdatingPortal(true);
+    const settingsRef = doc(db, "systemSettings", "admissionControl");
+    try {
+      await updateDoc(settingsRef, {
+        isOpen: !portalSettings.isOpen,
+        message: portalSettings.isOpen ? "Admission for this session is now closed." : "Admission is now open.",
+        updatedAt: serverTimestamp(),
+        updatedBy: "Admission Officer"
+      });
+    } catch (e) {
+      alert("Portal Error: " + e.message);
+    } finally {
+      setIsUpdatingPortal(false);
+    }
+  };
 
   // --- 1. AUTOMATIC ID GENERATOR ---
   const generateAdmissionID = async () => {
@@ -155,6 +183,34 @@ const AdmissionOfficerDashboard = () => {
       </aside>
 
       <main className="flex-grow p-6 md:p-12">
+        {/* --- PORTAL CONTROL PANEL (NEW) --- */}
+        <div className="mb-10 bg-white p-6 rounded-[35px] shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className={`p-4 rounded-2xl ${portalSettings.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+              <ShieldAlert size={24} />
+            </div>
+            <div>
+              <h3 className="text-sm font-black uppercase tracking-widest text-[#002147]">Application Portal</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Current Status: {portalSettings.isOpen ? "Live & Accepting Students" : "Closed & Hidden"}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+             <div className="hidden lg:block text-right">
+                <p className="text-[9px] font-black uppercase text-slate-300 italic">"{portalSettings.message}"</p>
+             </div>
+             <button 
+              onClick={togglePortal}
+              disabled={isUpdatingPortal}
+              className={`flex-grow md:flex-none px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                portalSettings.isOpen ? "bg-red-600 text-white shadow-lg shadow-red-100" : "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
+              }`}
+             >
+              {isUpdatingPortal ? <Loader2 size={16} className="animate-spin" /> : portalSettings.isOpen ? "Close Portal" : "Open Portal"}
+             </button>
+          </div>
+        </div>
+
         <header className="flex flex-col lg:flex-row justify-between items-center mb-10 gap-6">
           <div>
             <h1 className="text-3xl font-black text-[#002147] uppercase tracking-tighter">Admission Pipeline</h1>
@@ -172,6 +228,7 @@ const AdmissionOfficerDashboard = () => {
           </div>
         </header>
 
+        {/* --- MAIN APPLICATIONS LIST --- */}
         <div className="grid grid-cols-1 gap-6">
           {candidates.filter(c => c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
             <div className="bg-white p-20 rounded-[35px] text-center border-2 border-dashed border-slate-200">
