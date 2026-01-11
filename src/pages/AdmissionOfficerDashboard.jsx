@@ -9,7 +9,7 @@ import {
   LayoutDashboard, UserPlus, ClipboardList, CheckCircle, 
   Send, ShieldCheck, Users, Search, X, Loader2, 
   GraduationCap, BookOpen, Bell, Filter, MoreVertical, Eye,
-  UserCheck, Hash
+  UserCheck, Hash, UserPlus2 // Na kara UserPlus2 a nan
 } from "lucide-react";
 
 const AdmissionOfficerDashboard = () => {
@@ -35,10 +35,13 @@ const AdmissionOfficerDashboard = () => {
 
   // --- DATA FETCHING ---
   useEffect(() => {
-    const qAdmission = query(collection(db, "applications"), where("status", "in", ["Paid", "Awaiting Rector Approval", "Rector Approved", "Approved"]));
+    // Na gyara wannan query din domin ya rinka kowa, sannan mu yi tace (filter) a kasa
+    const qAdmission = collection(db, "applications");
     
     const unsubAdmission = onSnapshot(qAdmission, (snapshot) => {
-      setCandidates(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+      const allData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Muna so mu ga wadanda suka biya kudi ko kuma wadanda ake kan aiwatarwa
+      setCandidates(allData.filter(c => ["Paid", "Awaiting Rector Approval", "Rector Approved", "Approved"].includes(c.status)));
     });
 
     const qStaff = query(collection(db, "users"), where("role", "==", "staff"));
@@ -58,7 +61,7 @@ const AdmissionOfficerDashboard = () => {
     let lastNumber = 0;
     if (!querySnapshot.empty) {
       const lastId = querySnapshot.docs[0].data().idNumber;
-      if (lastId) {
+      if (lastId && lastId.includes("/")) {
          const parts = lastId.split("/");
          lastNumber = parseInt(parts[2]) || 0;
       }
@@ -93,7 +96,6 @@ const AdmissionOfficerDashboard = () => {
     try {
       const newID = await generateAdmissionID();
       
-      // Update Application
       await updateDoc(doc(db, "applications", candidate.id), {
         status: "Approved",
         course: selectedCourse,
@@ -102,17 +104,15 @@ const AdmissionOfficerDashboard = () => {
         admissionDate: serverTimestamp()
       });
 
-      // Update User Profile (Connect Student to Staff)
       if (candidate.uid) {
         await updateDoc(doc(db, "users", candidate.uid), {
           idNumber: newID,
           role: "student",
           assignedCourse: selectedCourse,
-          advisorId: selectedStaff // Staff will now see this student in their list
+          advisorId: selectedStaff
         });
       }
 
-      // Notify Student
       await addDoc(collection(db, "notifications"), {
         toUid: candidate.uid || candidate.email,
         title: "Admission Confirmed!",
@@ -173,88 +173,90 @@ const AdmissionOfficerDashboard = () => {
         </header>
 
         <div className="grid grid-cols-1 gap-6">
-          {candidates.filter(c => c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())).map((candidate) => (
-            <div key={candidate.id} className="bg-white p-6 rounded-[35px] shadow-sm border border-slate-200 flex flex-col lg:flex-row items-center gap-8 hover:shadow-md transition-all relative">
-              
-              <div className="w-24 h-24 rounded-3xl bg-slate-100 overflow-hidden border-4 border-white shadow-inner shrink-0">
-                {candidate.passport ? (
-                  <img src={candidate.passport} alt="Student" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-300"><Users size={32}/></div>
-                )}
-              </div>
-
-              <div className="flex-grow space-y-1 text-center lg:text-left">
-                <div className="flex items-center gap-2 justify-center lg:justify-start">
-                  <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter ${
-                    candidate.status === "Approved" ? "bg-emerald-100 text-emerald-600" : 
-                    candidate.status === "Awaiting Rector Approval" ? "bg-blue-100 text-blue-600 shadow-sm" :
-                    candidate.status === "Rector Approved" ? "bg-purple-100 text-purple-600 font-black animate-pulse" :
-                    "bg-amber-100 text-amber-600"
-                  }`}>
-                    {candidate.status}
-                  </span>
-                  {candidate.idNumber && <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 rounded-md border border-blue-100">{candidate.idNumber}</span>}
-                </div>
-                <h3 className="text-xl font-black text-[#002147] uppercase leading-tight">{candidate.fullName}</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{candidate.email}</p>
-              </div>
-
-              {/* ACTION CENTER */}
-              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-center lg:justify-end">
-                
-                {/* 1. RECTOR APPROVAL REQUEST BUTTON */}
-                {candidate.status === "Paid" && (
-                  <button 
-                    onClick={() => sendToRector(candidate.id)}
-                    className="flex items-center gap-2 bg-[#002147] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-800 transition-all shadow-xl shadow-blue-900/10"
-                  >
-                    {loadingId === candidate.id ? <Loader2 className="animate-spin" size={16}/> : <ShieldCheck size={16}/>}
-                    Request Rector Approval
-                  </button>
-                )}
-
-                {/* 2. AUTOMATIC ID & STAFF ASSIGNMENT (Appears after Rector Approval) */}
-                {candidate.status === "Rector Approved" && (
-                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
-                    <select 
-                      onChange={(e) => setSelectedCourse(e.target.value)}
-                      className="p-4 bg-white rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
-                    >
-                      <option value="">Set Dept</option>
-                      {courses.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-
-                    <select 
-                      onChange={(e) => setSelectedStaff(e.target.value)}
-                      className="p-4 bg-white rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
-                    >
-                      <option value="">Assign Staff</option>
-                      {staffList.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
-                    </select>
-
-                    <button 
-                      onClick={() => finalizeAdmission(candidate)}
-                      className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-200"
-                    >
-                      {loadingId === candidate.id ? <Loader2 size={16} className="animate-spin"/> : <UserCheck size={16}/>}
-                      Issue ID & Finalize
-                    </button>
-                  </div>
-                )}
-
-                {/* 3. ALREADY ADMITTED */}
-                {candidate.status === "Approved" && (
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100">
-                      <CheckCircle size={18}/> Fully Admitted
-                    </div>
-                    <span className="text-[9px] font-black text-slate-300 mt-1 uppercase tracking-widest">Linked to: {candidate.assignedStaffId || 'Teacher'}</span>
-                  </div>
-                )}
-              </div>
+          {candidates.filter(c => c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+            <div className="bg-white p-20 rounded-[35px] text-center border-2 border-dashed border-slate-200">
+               <Users className="mx-auto text-slate-200 mb-4" size={64} />
+               <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">No candidates found in the pipeline</p>
             </div>
-          ))}
+          ) : (
+            candidates.filter(c => c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())).map((candidate) => (
+              <div key={candidate.id} className="bg-white p-6 rounded-[35px] shadow-sm border border-slate-200 flex flex-col lg:flex-row items-center gap-8 hover:shadow-md transition-all relative">
+                
+                <div className="w-24 h-24 rounded-3xl bg-slate-100 overflow-hidden border-4 border-white shadow-inner shrink-0">
+                  {candidate.passport ? (
+                    <img src={candidate.passport} alt="Student" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300"><Users size={32}/></div>
+                  )}
+                </div>
+
+                <div className="flex-grow space-y-1 text-center lg:text-left">
+                  <div className="flex items-center gap-2 justify-center lg:justify-start">
+                    <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter ${
+                      candidate.status === "Approved" ? "bg-emerald-100 text-emerald-600" : 
+                      candidate.status === "Awaiting Rector Approval" ? "bg-blue-100 text-blue-600 shadow-sm" :
+                      candidate.status === "Rector Approved" ? "bg-purple-100 text-purple-600 font-black animate-pulse" :
+                      "bg-amber-100 text-amber-600"
+                    }`}>
+                      {candidate.status}
+                    </span>
+                    {candidate.idNumber && <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 rounded-md border border-blue-100">{candidate.idNumber}</span>}
+                  </div>
+                  <h3 className="text-xl font-black text-[#002147] uppercase leading-tight">{candidate.fullName}</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{candidate.email}</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-center lg:justify-end">
+                  {candidate.status === "Paid" && (
+                    <button 
+                      onClick={() => sendToRector(candidate.id)}
+                      className="flex items-center gap-2 bg-[#002147] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-800 transition-all shadow-xl shadow-blue-900/10"
+                    >
+                      {loadingId === candidate.id ? <Loader2 className="animate-spin" size={16}/> : <ShieldCheck size={16}/>}
+                      Request Rector Approval
+                    </button>
+                  )}
+
+                  {candidate.status === "Rector Approved" && (
+                    <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto p-4 bg-slate-50 rounded-[2rem] border border-slate-100">
+                      <select 
+                        onChange={(e) => setSelectedCourse(e.target.value)}
+                        className="p-4 bg-white rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
+                      >
+                        <option value="">Set Dept</option>
+                        {courses.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+
+                      <select 
+                        onChange={(e) => setSelectedStaff(e.target.value)}
+                        className="p-4 bg-white rounded-xl text-[10px] font-black uppercase outline-none border-2 border-slate-100 focus:border-blue-500"
+                      >
+                        <option value="">Assign Staff</option>
+                        {staffList.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+                      </select>
+
+                      <button 
+                        onClick={() => finalizeAdmission(candidate)}
+                        className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-200"
+                      >
+                        {loadingId === candidate.id ? <Loader2 size={16} className="animate-spin"/> : <UserPlus2 size={16}/>}
+                        Issue ID & Finalize
+                      </button>
+                    </div>
+                  )}
+
+                  {candidate.status === "Approved" && (
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100">
+                        <CheckCircle size={18}/> Fully Admitted
+                      </div>
+                      <span className="text-[9px] font-black text-slate-300 mt-1 uppercase tracking-widest italic">{candidate.idNumber}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </main>
     </div>
