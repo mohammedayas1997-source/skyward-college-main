@@ -16,7 +16,6 @@ export const Apply = () => {
   const [passportPreview, setPassportPreview] = useState(null);
   const receiptRef = useRef(null);
   
-  // --- PORTAL CONTROL STATE ---
   const [portalSettings, setPortalSettings] = useState({ isOpen: true, message: "" });
 
   const [sittings, setSittings] = useState([{ id: Date.now(), examType: "", examNo: "", centerNo: "", results: {} }]);
@@ -25,7 +24,6 @@ export const Apply = () => {
     stateOrigin: "", lgaOrigin: "", address: "", selectedCourse: ""
   });
 
-  // --- LISTEN FOR PORTAL STATUS ---
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "systemSettings", "admissionControl"), (snapshot) => {
       if (snapshot.exists()) {
@@ -50,16 +48,23 @@ export const Apply = () => {
   };
 
   const addSitting = () => {
-    if (sittings.length < 2) setSittings([...sittings, { id: Date.now(), results: {} }]);
+    if (sittings.length < 2) setSittings([...sittings, { id: Date.now(), examType: "", examNo: "", centerNo: "", results: {} }]);
   };
 
   const removeSitting = (id) => {
     setSittings(sittings.filter(s => s.id !== id));
   };
 
+  const handleResultChange = (sittingId, subject, grade) => {
+    setSittings(sittings.map(s => 
+      s.id === sittingId ? { ...s, results: { ...s.results, [subject]: grade } } : s
+    ));
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!portalSettings.isOpen) return alert("Sorry, the portal is currently closed.");
+    if (!portalSettings.isOpen) return alert("Portal is closed");
+    if (!passportPreview) return alert("Upload Passport!");
     
     setLoading(true);
     try {
@@ -68,13 +73,12 @@ export const Apply = () => {
         sittings: sittings,
         passport: passportPreview,
         status: "Pending Payment",
-        viewedByAdmission: false,
         appliedAt: serverTimestamp(),
       });
       setApplicationId(docRef.id);
       setStep("payment");
     } catch (error) {
-      alert("Kuskure: " + error.message);
+      alert("Error: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -83,15 +87,14 @@ export const Apply = () => {
   const handlePaymentSuccess = async () => {
     setLoading(true);
     try {
-      const appRef = doc(db, "applications", applicationId);
-      await updateDoc(appRef, {
+      await updateDoc(doc(db, "applications", applicationId), {
         status: "Paid",
         paymentRef: "PAY-" + Math.random().toString(36).substr(2, 9).toUpperCase(),
         paymentDate: new Date().toLocaleString(),
       });
       setStep("success");
     } catch (error) {
-      alert("Payment Error: " + error.message);
+      alert("Payment Error");
     } finally {
       setLoading(false);
     }
@@ -102,32 +105,22 @@ export const Apply = () => {
     const canvas = await html2canvas(element, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`SKYWARD-RECEIPT-${applicationId.substr(0, 5)}.pdf`);
+    pdf.addImage(imgData, "PNG", 0, 0, 210, (canvas.height * 210) / canvas.width);
+    pdf.save("Receipt.pdf");
   };
 
   if (step === "payment") {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-          <div className="bg-[#002147] p-8 text-center text-white">
-            <CreditCard size={48} className="mx-auto mb-4 text-emerald-400" />
-            <h2 className="text-xl font-black uppercase tracking-tighter">Application Fee</h2>
-            <p className="text-slate-400 text-[10px] mt-2 uppercase tracking-widest">Secure Payment Gateway</p>
+        <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl border border-slate-200">
+          <div className="bg-[#002147] p-10 text-center text-white">
+            <CreditCard size={60} className="mx-auto mb-4 text-emerald-400" />
+            <h2 className="text-2xl font-black uppercase">Secure Payment</h2>
           </div>
           <div className="p-10 text-center">
-            <div className="mb-8">
-              <span className="text-5xl font-black text-[#002147]">₦5,000</span>
-              <p className="text-slate-500 text-xs font-bold mt-2 uppercase">Official Form Fee</p>
-            </div>
-            <button 
-              onClick={handlePaymentSuccess} 
-              className="w-full bg-emerald-600 hover:bg-[#002147] text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 className="animate-spin" /> : "Authorize Payment"}
+            <span className="text-6xl font-black text-[#002147]">₦5,000</span>
+            <button onClick={handlePaymentSuccess} className="w-full mt-8 bg-emerald-600 text-white font-black py-5 rounded-2xl uppercase shadow-xl">
+              {loading ? "Processing..." : "Pay Now"}
             </button>
           </div>
         </div>
@@ -137,181 +130,143 @@ export const Apply = () => {
 
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-6 font-sans">
-        <div ref={receiptRef} className="w-[180mm] bg-white p-10 shadow-2xl border-[12px] border-[#002147] relative overflow-hidden mb-6">
+      <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-6 italic">
+        <div ref={receiptRef} className="w-[180mm] bg-white p-10 shadow-2xl border-[12px] border-[#002147] mb-6">
           <div className="flex justify-between items-start mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-[#002147] rounded-full flex items-center justify-center text-white font-black text-2xl italic border-4 border-red-500">S</div>
-              <div>
-                <h1 className="text-2xl font-black text-[#002147] leading-none">SKYWARD COLLEGE</h1>
-                <p className="text-[10px] font-bold text-red-600 uppercase tracking-[0.2em]">Travels & Tourism Academy</p>
-                <p className="text-[9px] text-slate-500 font-bold">Approved by Federal Ministry of Education</p>
-              </div>
+               <div className="w-16 h-16 bg-[#002147] rounded-full flex items-center justify-center text-white font-black text-2xl">S</div>
+               <div>
+                 <h1 className="text-xl font-black text-[#002147]">SKYWARD COLLEGE</h1>
+                 <p className="text-[10px] text-red-600 font-bold uppercase">Travels & Tourism Academy</p>
+               </div>
             </div>
-            <div className="text-right">
-              <div className="bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-[10px] font-black uppercase mb-2">Payment Verified</div>
-              <p className="text-[9px] font-bold text-slate-400 italic">Receipt No: {applicationId?.toUpperCase()}</p>
-            </div>
+            <QRCodeSVG value={applicationId} size={80} />
           </div>
-
-          <div className="grid grid-cols-3 gap-8 mb-8 border-y-2 border-slate-100 py-6">
-            <div className="col-span-1">
-              {passportPreview ? (
-                <img src={passportPreview} className="w-32 h-40 object-cover rounded-lg border-2 border-slate-200" alt="Student" />
-              ) : (
-                <div className="w-32 h-40 bg-slate-100 rounded-lg border-2 border-dashed flex items-center justify-center">No Photo</div>
-              )}
-            </div>
-            <div className="col-span-2 space-y-3">
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-slate-400 uppercase">Candidate Name</span>
-                <span className="text-lg font-black text-[#002147] uppercase">{formData.fullName}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-slate-400 uppercase">Selected Course</span>
-                <span className="text-sm font-bold text-slate-700">{formData.selectedCourse}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[8px] font-black text-slate-400 uppercase">Application ID</span>
-                  <p className="text-[10px] font-bold">{applicationId?.substr(0,10)}</p>
-                </div>
-                <div>
-                  <span className="text-[8px] font-black text-slate-400 uppercase">Payment Date</span>
-                  <p className="text-[10px] font-bold">{new Date().toLocaleDateString()}</p>
-                </div>
-              </div>
-            </div>
+          <div className="flex gap-8 border-y-2 py-6">
+             <img src={passportPreview} className="w-32 h-40 object-cover rounded-lg border" />
+             <div className="space-y-2">
+                <p className="text-xs font-black uppercase text-slate-400">Student Name</p>
+                <p className="text-xl font-black text-[#002147]">{formData.fullName}</p>
+                <p className="text-xs font-black uppercase text-slate-400 mt-4">Selected Course</p>
+                <p className="text-sm font-bold">{formData.selectedCourse}</p>
+             </div>
           </div>
-
-          <div className="flex justify-between items-end">
-            <div>
-               <h3 className="text-[12px] font-black text-[#002147] mb-2 uppercase">Official Stamp Required</h3>
-               <div className="w-32 h-32 border-2 border-dashed border-slate-200 flex items-center justify-center text-[10px] text-slate-300 font-bold uppercase rotate-12">Registry Dept</div>
-            </div>
-            <div className="text-center">
-              <QRCodeSVG value={`https://skyward.edu/verify/${applicationId}`} size={100} level="H" />
-              <p className="text-[8px] font-bold mt-2 text-slate-400 uppercase">Scan to Verify</p>
-            </div>
-          </div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16"></div>
+          <p className="text-[10px] text-center mt-6 text-slate-400">Payment ID: {applicationId}</p>
         </div>
-
-        <div className="flex gap-4">
-          <button onClick={downloadReceipt} className="bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-xs flex items-center gap-3 shadow-xl hover:scale-105 transition-all">
-            <Download size={20}/> Download Receipt PDF
-          </button>
-          <button onClick={() => window.location.reload()} className="bg-[#002147] text-white px-10 py-4 rounded-2xl font-black uppercase text-xs shadow-xl">
-            Finish
-          </button>
-        </div>
+        <button onClick={downloadReceipt} className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-black flex items-center gap-2">
+          <Download size={20}/> DOWNLOAD RECEIPT
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] py-16 px-4 md:px-20 font-sans text-left">
-      <div className="max-w-5xl mx-auto bg-white shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] rounded-[40px] overflow-hidden border border-slate-100">
+    <div className="min-h-screen bg-[#F0F4F8] py-16 px-4 md:px-20 font-sans">
+      <div className="max-w-5xl mx-auto bg-white shadow-2xl rounded-[40px] overflow-hidden border border-slate-100 text-left">
         
-        <div className="bg-[#002147] p-12 text-white relative">
-          <div className="relative z-10">
+        <div className="bg-[#002147] p-12 text-white flex justify-between items-center">
+          <div>
             <h1 className="text-4xl font-black uppercase tracking-tighter">Admission Form</h1>
-            <p className="text-red-500 font-black mt-2 uppercase text-[10px] tracking-[0.4em]">Skyward College of Travels & Tourism</p>
+            <p className="text-red-500 font-black mt-2 uppercase text-[10px]">Skyward College of Travels & Tourism</p>
           </div>
-          <School className="absolute right-12 top-12 text-white/5" size={120} />
+          <School size={80} className="opacity-20" />
         </div>
 
-        <form onSubmit={handleFormSubmit} className="p-10 md:p-16 space-y-16">
-          {!portalSettings.isOpen && (
-            <div className="bg-red-50 border-2 border-red-200 p-6 rounded-[2rem] flex items-center gap-4">
-               <div className="p-3 bg-red-600 text-white rounded-xl shadow-lg shadow-red-200"><Lock size={20}/></div>
-               <div>
-                 <p className="text-[10px] font-black uppercase text-red-600 tracking-widest">Portal Closed</p>
-                 <p className="text-xs font-bold text-slate-600">{portalSettings.message}</p>
-               </div>
-            </div>
-          )}
-
-          <section className={!portalSettings.isOpen ? "opacity-50 pointer-events-none" : ""}>
-            <div className="flex items-center gap-4 mb-10 border-b border-slate-100 pb-4">
-              <div className="p-3 bg-red-50 text-red-600 rounded-2xl"><User size={24}/></div>
+        <form onSubmit={handleFormSubmit} className="p-10 md:p-16 space-y-12">
+          
+          {/* PROFILE SECTION */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-4 border-b pb-4">
+              <User className="text-red-600" />
               <h2 className="text-[#002147] text-xl font-black uppercase">Candidate Profile</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
               <div className="flex flex-col items-center">
-                <div className="w-44 h-52 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center relative group hover:border-red-500 transition-all overflow-hidden">
+                <div className="w-44 h-52 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[2rem] relative flex items-center justify-center overflow-hidden">
                   {passportPreview ? (
-                    <img src={passportPreview} className="w-full h-full object-cover" alt="Preview" />
+                    <img src={passportPreview} className="w-full h-full object-cover" />
                   ) : (
-                    <>
-                      <Upload className="text-slate-300 mb-2" />
-                      <span className="text-[9px] uppercase font-black text-slate-400">Upload Passport</span>
-                    </>
+                    <div className="text-center">
+                      <Upload className="mx-auto text-slate-300" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Passport</span>
+                    </div>
                   )}
                   <input required type="file" accept="image/*" onChange={handlePassportUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                 </div>
               </div>
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input required name="fullName" onChange={handleChange} placeholder="Full Name (Surname First)" className="sky-input" />
-                <input required name="email" type="email" onChange={handleChange} placeholder="Email Address" className="sky-input" />
-                <input required name="phone" type="tel" onChange={handleChange} placeholder="Phone Number" className="sky-input" />
+                <input required name="fullName" onChange={handleChange} placeholder="Full Name" className="sky-input" />
+                <input required name="email" type="email" onChange={handleChange} placeholder="Email" className="sky-input" />
+                <input required name="phone" type="tel" onChange={handleChange} placeholder="Phone" className="sky-input" />
                 <select required name="gender" onChange={handleChange} className="sky-input">
                   <option value="">Gender</option>
                   <option>Male</option>
                   <option>Female</option>
                 </select>
-                <input required name="stateOrigin" onChange={handleChange} placeholder="State of Origin" className="sky-input" />
-                <input required name="lgaOrigin" onChange={handleChange} placeholder="LGA of Origin" className="sky-input" />
+                <input required name="stateOrigin" onChange={handleChange} placeholder="State" className="sky-input" />
+                <input required name="lgaOrigin" onChange={handleChange} placeholder="LGA" className="sky-input" />
               </div>
             </div>
           </section>
 
-          <section className={`bg-slate-50 p-10 rounded-[3rem] border border-slate-100 ${!portalSettings.isOpen ? "opacity-50 pointer-events-none" : ""}`}>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-[#002147] text-white rounded-2xl"><BookOpen size={24}/></div>
+          {/* ACADEMIC SECTION */}
+          <section className="space-y-8 bg-slate-50 p-8 rounded-[2rem]">
+            <div className="flex items-center gap-4 border-b pb-4">
+              <BookOpen className="text-blue-600" />
               <h2 className="text-[#002147] text-xl font-black uppercase">Academic Selection</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Preferred Program</label>
-                 <select required name="selectedCourse" onChange={handleChange} className="sky-input bg-white !border-red-600 !text-[#002147] font-black">
-                   <option value="">Choose Course...</option>
-                   <option>Air Cabin Crew Management</option>
-                   <option>Flight Dispatcher</option>
-                   <option>Travel and Tourism Management</option>
-                   <option>Hotel and Hospitality Management</option>
-                   <option>Cargo & Freight Handling</option>
-                   <option>Catering and Craft Practice</option>
-                   <option>Airport Operations and Safety</option>
-                   <option>Visa Processing</option>
-                   <option>Travel Agency Management</option>
-                   <option>Customer Service Management</option>
-                 </select>
+            <div className="grid grid-cols-1 gap-8">
+              <select required name="selectedCourse" onChange={handleChange} className="sky-input bg-white">
+                <option value="">Choose Course...</option>
+                <option>Air Cabin Crew Management</option>
+                <option>Flight Dispatcher</option>
+                <option>Travel and Tourism Management</option>
+                <option>Hotel and Hospitality Management</option>
+                <option>Cargo & Freight Handling</option>
+                <option>Catering and Craft Practice</option>
+                <option>Airport Operations and Safety</option>
+                <option>Visa Processing</option>
+                <option>Travel Agency Management</option>
+                <option>Customer Service Management</option>
+              </select>
+            </div>
+
+            {/* O-LEVEL RESULTS SECTION (WANDA AKA GOGE) */}
+            <div className="space-y-6 mt-8">
+              <div className="flex justify-between items-center">
+                <h3 className="font-black text-[#002147] text-sm uppercase">O-Level Results</h3>
+                <button type="button" onClick={addSitting} className="text-xs bg-[#002147] text-white px-4 py-2 rounded-lg font-black uppercase">+ Add Sitting</button>
               </div>
-              <div className="space-y-4">
-                 <label className="text-[10px] font-black text-slate-400 uppercase ml-2">O-Level Sitting Count</label>
-                 <div className="flex gap-4">
-                    <button type="button" onClick={addSitting} className="flex-1 bg-white border-2 border-slate-200 py-3 rounded-xl font-black text-[10px] uppercase hover:border-red-500 transition-all flex items-center justify-center gap-2">
-                       <PlusCircle size={16}/> Add Sitting
-                    </button>
-                 </div>
-              </div>
+              
+              {sittings.map((sitting, index) => (
+                <div key={sitting.id} className="bg-white p-6 rounded-2xl border border-slate-200 relative shadow-sm">
+                  {index > 0 && <button onClick={() => removeSitting(sitting.id)} className="absolute top-4 right-4 text-red-500"><Trash2 size={16}/></button>}
+                  <p className="text-[10px] font-black text-blue-600 mb-4 uppercase">Sitting #{index + 1}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <input placeholder="Exam Type (WAEC/NECO)" onChange={(e) => sitting.examType = e.target.value} className="sky-input text-xs" />
+                    <input placeholder="Exam Number" onChange={(e) => sitting.examNo = e.target.value} className="sky-input text-xs" />
+                    <input placeholder="Center Number" onChange={(e) => sitting.centerNo = e.target.value} className="sky-input text-xs" />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {["English", "Maths", "Physics", "Chemistry", "Biology"].map(sub => (
+                      <div key={sub}>
+                        <label className="text-[9px] font-black block mb-1 uppercase">{sub}</label>
+                        <select onChange={(e) => handleResultChange(sitting.id, sub, e.target.value)} className="w-full p-2 border rounded-lg text-xs font-bold">
+                          <option value="">-</option>
+                          <option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option><option>C6</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 
-          {portalSettings.isOpen ? (
-            <button 
-              disabled={loading}
-              type="submit" 
-              className="w-full bg-[#002147] hover:bg-red-600 text-white font-black py-6 rounded-2xl uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-4 text-sm"
-            >
-              {loading ? <Loader2 className="animate-spin" /> : "Verify & Process Application"}
-            </button>
-          ) : (
-            <div className="w-full bg-slate-200 text-slate-500 font-black py-6 rounded-2xl uppercase text-center cursor-not-allowed">
-              Applications are currently closed
-            </div>
-          )}
+          <button disabled={loading} type="submit" className="w-full bg-[#002147] text-white font-black py-6 rounded-3xl uppercase tracking-widest shadow-2xl hover:bg-red-600 transition-all">
+            {loading ? <Loader2 className="animate-spin mx-auto" /> : "Verify & Process Application"}
+          </button>
+
         </form>
       </div>
 
@@ -323,15 +278,9 @@ export const Apply = () => {
           border: 2px solid #e2e8f0;
           border-radius: 1rem;
           font-weight: 700;
-          font-size: 0.875rem;
           outline: none;
-          transition: all 0.3s ease;
         }
-        .sky-input:focus {
-          border-color: #002147;
-          background: white;
-          box-shadow: 0 10px 15px -3px rgba(0, 33, 71, 0.1);
-        }
+        .sky-input:focus { border-color: #002147; background: white; }
       `}</style>
     </div>
   );
