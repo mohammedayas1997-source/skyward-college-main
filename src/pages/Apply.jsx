@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react"; // Added useEffect
+import React, { useState, useRef, useEffect } from "react";
 import { db } from "../firebase"; 
-import { collection, addDoc, serverTimestamp, updateDoc, doc, onSnapshot } from "firebase/firestore"; // Added onSnapshot
+import { collection, addDoc, serverTimestamp, updateDoc, doc, onSnapshot } from "firebase/firestore";
 import { 
   Upload, CreditCard, Printer, CheckCircle, PlusCircle, Trash2, 
   MapPin, Calendar, Home, Briefcase, Loader2, User, School, BookOpen, Download, Lock 
@@ -222,7 +222,6 @@ export const Apply = () => {
         </div>
 
         <form onSubmit={handleFormSubmit} className="p-10 md:p-16 space-y-16">
-          {/* PORTAL STATUS BANNER IF CLOSED */}
           {!portalSettings.isOpen && (
             <div className="bg-red-50 border-2 border-red-200 p-6 rounded-[2rem] flex items-center gap-4">
                <div className="p-3 bg-red-600 text-white rounded-xl shadow-lg shadow-red-200"><Lock size={20}/></div>
@@ -280,7 +279,13 @@ export const Apply = () => {
                    <option>Air Cabin Crew Management</option>
                    <option>Flight Dispatcher</option>
                    <option>Travel and Tourism Management</option>
+                   <option>Hotel and Hospitality Management</option>
+                   <option>Cargo & Freight Handling</option>
+                   <option>Catering and Craft Practice</option>
+                   <option>Airport Operations and Safety</option>
                    <option>Visa Processing</option>
+                   <option>Travel Agency Management</option>
+                   <option>Customer Service Management</option>
                  </select>
               </div>
               <div className="space-y-4">
