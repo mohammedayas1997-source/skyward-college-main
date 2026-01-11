@@ -156,10 +156,10 @@ const AdmissionOfficerDashboard = () => {
           <h2 className="font-black uppercase tracking-tight text-xl italic">Skyward</h2>
         </div>
         <nav className="p-6 space-y-2 flex-grow">
-          <NavItem icon={<LayoutDashboard size={18}/>} label="Dashboard" active onClick={() => setActiveTab("Dashboard")} />
-          <NavItem icon={<Users size={18}/>} label="Staff Directory" onClick={() => setActiveTab("Staff")} />
-          <NavItem icon={<ClipboardCheck size={18}/>} label="Vetting Center" onClick={() => setActiveTab("Vetting")} />
-          <NavItem icon={<Settings size={18}/>} label="Portal Settings" onClick={() => setActiveTab("Settings")} />
+          <NavItem icon={<LayoutDashboard size={18}/>} label="Dashboard" active={activeTab === "Dashboard"} onClick={() => setActiveTab("Dashboard")} />
+          <NavItem icon={<Users size={18}/>} label="Staff Directory" active={activeTab === "Staff"} onClick={() => setActiveTab("Staff")} />
+          <NavItem icon={<ClipboardCheck size={18}/>} label="Vetting Center" active={activeTab === "Vetting"} onClick={() => setActiveTab("Vetting")} />
+          <NavItem icon={<Settings size={18}/>} label="Portal Settings" active={activeTab === "Settings"} onClick={() => setActiveTab("Settings")} />
         </nav>
         <div className="p-6 border-t border-white/5">
           <button onClick={handleLogout} className="flex items-center gap-3 text-red-400 hover:text-red-300 font-black text-[10px] uppercase transition-all">
