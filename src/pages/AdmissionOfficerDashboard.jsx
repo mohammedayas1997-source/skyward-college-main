@@ -98,7 +98,7 @@ const AdmissionOfficerDashboard = () => {
     else setSelectedItems(pendingIds);
   };
 
-  // 5. Send to Rector (Bulk)
+  // 5. Send to Rector (Bulk) - Domin neman Approval
   const sendBulkToRector = async () => {
     if (selectedItems.length === 0) return;
     setLoadingId("bulk");
@@ -113,25 +113,31 @@ const AdmissionOfficerDashboard = () => {
     try { 
       await batch.commit(); 
       setSelectedItems([]); 
-      alert("An yi nasarar tura dukkan daliban zuwa ga Rector!"); 
+      alert("An yi nasarar tura dukkan daliban zuwa ga Rector domin neman amincewa!"); 
     } catch (e) { alert(e.message); }
     finally { setLoadingId(null); }
   };
 
-  // 6. Finalize Admission (Generating ID & Assigning Staff)
+  // 6. Finalize Admission (Generating ID & Sending to Student)
+  // Wannan logic din yana aiki ne bayan Rector ya bayar da approval
   const finalizeAdmission = async (candidate) => {
     if (!selectedCourse || !selectedStaff) return alert("Haba! Ka zabi Course da Malami mana.");
     setLoadingId(candidate.id);
+    
+    // Samar da ID Number ta musamman
     const idNumber = `SKY/${new Date().getFullYear()}/${Math.floor(1000 + Math.random() * 9000)}`;
+    
     try {
       await updateDoc(doc(db, "applications", candidate.id), {
-        status: "Approved",
+        status: "Approved", // Wannan zai nuna wa dalibi an bashi admission
         course: selectedCourse,
         assignedStaffId: selectedStaff,
         idNumber: idNumber,
-        admissionDate: serverTimestamp()
+        admissionDate: serverTimestamp(),
+        notificationSent: true, // Zaka iya amfani da wannan wurin tura sako
+        finalizedBy: auth.currentUser?.displayName || "Exam Officer"
       });
-      alert(`Admission Successful! ID Number: ${idNumber}`);
+      alert(`Admission Successful! An tura wa ${candidate.fullName} Admission kai tsaye. ID: ${idNumber}`);
       setSelectedCourse(""); setSelectedStaff("");
     } catch (e) { alert(e.message); }
     finally { setLoadingId(null); }
@@ -156,10 +162,10 @@ const AdmissionOfficerDashboard = () => {
           <h2 className="font-black uppercase tracking-tight text-xl italic">Skyward</h2>
         </div>
         <nav className="p-6 space-y-2 flex-grow">
-          <NavItem icon={<LayoutDashboard size={18}/>} label="Dashboard" active={activeTab === "Dashboard"} onClick={() => setActiveTab("Dashboard")} />
-          <NavItem icon={<Users size={18}/>} label="Staff Directory" active={activeTab === "Staff"} onClick={() => setActiveTab("Staff")} />
-          <NavItem icon={<ClipboardCheck size={18}/>} label="Vetting Center" active={activeTab === "Vetting"} onClick={() => setActiveTab("Vetting")} />
-          <NavItem icon={<Settings size={18}/>} label="Portal Settings" active={activeTab === "Settings"} onClick={() => setActiveTab("Settings")} />
+          <NavItem icon={<LayoutDashboard size={18}/>} label="Dashboard" active onClick={() => setActiveTab("Dashboard")} />
+          <NavItem icon={<Users size={18}/>} label="Staff Directory" onClick={() => setActiveTab("Staff")} />
+          <NavItem icon={<ClipboardCheck size={18}/>} label="Vetting Center" onClick={() => setActiveTab("Vetting")} />
+          <NavItem icon={<Settings size={18}/>} label="Portal Settings" onClick={() => setActiveTab("Settings")} />
         </nav>
         <div className="p-6 border-t border-white/5">
           <button onClick={handleLogout} className="flex items-center gap-3 text-red-400 hover:text-red-300 font-black text-[10px] uppercase transition-all">
@@ -271,7 +277,6 @@ const AdmissionOfficerDashboard = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* View Details Button */}
                   <button 
                     onClick={() => setViewingStudent(c)} 
                     className="p-3 bg-slate-100 rounded-xl text-slate-500 hover:bg-blue-600 hover:text-white transition-all active:scale-90"
@@ -280,7 +285,6 @@ const AdmissionOfficerDashboard = () => {
                     <Eye size={18}/>
                   </button>
 
-                  {/* Delete Button (Only for rejected) */}
                   {c.status === "Rejected by Rector" && (
                     <button 
                       onClick={() => deleteRejected(c.id)} 
@@ -291,7 +295,7 @@ const AdmissionOfficerDashboard = () => {
                     </button>
                   )}
 
-                  {/* Finalization Section (Only for Rector Approved) */}
+                  {/* NAN NE INDA EXAM OFFICER ZAI TURAWA DALIBI ADMISSION KAI TSAYE */}
                   {c.status === "Rector Approved" && (
                     <div className="flex gap-2 items-center bg-emerald-50 p-2 rounded-2xl border border-emerald-100 shadow-inner">
                       <select 
@@ -322,12 +326,10 @@ const AdmissionOfficerDashboard = () => {
           </div>
         </div>
 
-        {/* MODAL: FULL STUDENT DOSSIER (VETTING SYSTEM) */}
+        {/* MODAL: FULL STUDENT DOSSIER */}
         {viewingStudent && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#001529]/95 backdrop-blur-xl p-4 overflow-y-auto print:bg-white print:p-0">
             <div className="bg-white w-full max-w-5xl rounded-[50px] shadow-2xl overflow-hidden flex flex-col md:flex-row relative print:shadow-none print:rounded-none">
-              
-              {/* Close Button */}
               <button 
                 onClick={() => setViewingStudent(null)} 
                 className="absolute top-8 right-8 p-3 bg-red-50 text-red-500 rounded-full z-10 hover:bg-red-500 hover:text-white transition-all print:hidden"
@@ -335,7 +337,6 @@ const AdmissionOfficerDashboard = () => {
                 <X size={20}/>
               </button>
               
-              {/* LEFT PROFILE PANEL */}
               <div className="md:w-1/3 bg-slate-50/50 p-10 border-r border-slate-100 text-center">
                 <div className="relative inline-block">
                   <img src={viewingStudent.passport} className="w-48 h-48 rounded-[40px] object-cover border-8 border-white shadow-2xl mb-6 mx-auto" alt="Passport"/>
@@ -354,7 +355,6 @@ const AdmissionOfficerDashboard = () => {
                 </div>
               </div>
 
-              {/* RIGHT ACADEMIC DOSSIER */}
               <div className="md:w-2/3 p-10 lg:p-14 max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <header className="flex justify-between items-center mb-10 border-b pb-6">
                   <div>
@@ -369,7 +369,6 @@ const AdmissionOfficerDashboard = () => {
                 </header>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                  {/* O-Level Section */}
                   <section className="space-y-6">
                     <h4 className="text-[11px] font-black uppercase text-blue-600 border-l-4 border-blue-600 pl-3">O-Level (SSCE) Details</h4>
                     <div className="grid grid-cols-1 gap-4">
@@ -385,7 +384,6 @@ const AdmissionOfficerDashboard = () => {
                     </div>
                   </section>
 
-                  {/* Previous Schooling */}
                   <section className="space-y-6">
                     <h4 className="text-[11px] font-black uppercase text-blue-600 border-l-4 border-blue-600 pl-3">Higher Education Info</h4>
                     <div className="grid grid-cols-1 gap-4">
@@ -396,7 +394,6 @@ const AdmissionOfficerDashboard = () => {
                     </div>
                   </section>
 
-                  {/* Application Audit */}
                   <section className="md:col-span-2 bg-slate-900 p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform">
                       <ShieldAlert size={120}/>
