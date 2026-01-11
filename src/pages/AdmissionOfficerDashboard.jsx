@@ -9,7 +9,7 @@ import {
   LayoutDashboard, UserPlus, ClipboardList, CheckCircle, 
   Send, ShieldCheck, Users, Search, X, Loader2, 
   GraduationCap, BookOpen, Bell, Filter, MoreVertical, Eye,
-  UserCheck, Hash, UserPlus2, ShieldAlert // Na kara ShieldAlert
+  UserCheck, Hash, UserPlus2, ShieldAlert 
 } from "lucide-react";
 
 const AdmissionOfficerDashboard = () => {
@@ -24,7 +24,7 @@ const AdmissionOfficerDashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedStaff, setSelectedStaff] = useState("");
 
-  // --- NEW STATES FOR PORTAL CONTROL ---
+  // --- PORTAL CONTROL STATE ---
   const [portalSettings, setPortalSettings] = useState({ isOpen: true, message: "" });
   const [isUpdatingPortal, setIsUpdatingPortal] = useState(false);
 
@@ -52,7 +52,7 @@ const AdmissionOfficerDashboard = () => {
       setStaffList(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    // 3. Fetch Portal Settings (NEW)
+    // 3. Fetch Portal Settings
     const unsubPortal = onSnapshot(doc(db, "systemSettings", "admissionControl"), (docSnap) => {
       if (docSnap.exists()) {
         setPortalSettings(docSnap.data());
@@ -62,7 +62,7 @@ const AdmissionOfficerDashboard = () => {
     return () => { unsubAdmission(); unsubStaff(); unsubPortal(); };
   }, []);
 
-  // --- PORTAL CONTROL FUNCTION (NEW) ---
+  // --- PORTAL CONTROL FUNCTION ---
   const togglePortal = async () => {
     setIsUpdatingPortal(true);
     const settingsRef = doc(db, "systemSettings", "admissionControl");
@@ -90,8 +90,8 @@ const AdmissionOfficerDashboard = () => {
     if (!querySnapshot.empty) {
       const lastId = querySnapshot.docs[0].data().idNumber;
       if (lastId && lastId.includes("/")) {
-         const parts = lastId.split("/");
-         lastNumber = parseInt(parts[2]) || 0;
+          const parts = lastId.split("/");
+          lastNumber = parseInt(parts[2]) || 0;
       }
     }
     
@@ -183,7 +183,7 @@ const AdmissionOfficerDashboard = () => {
       </aside>
 
       <main className="flex-grow p-6 md:p-12">
-        {/* --- PORTAL CONTROL PANEL (NEW) --- */}
+        {/* --- PORTAL CONTROL PANEL --- */}
         <div className="mb-10 bg-white p-6 rounded-[35px] shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className={`p-4 rounded-2xl ${portalSettings.isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
