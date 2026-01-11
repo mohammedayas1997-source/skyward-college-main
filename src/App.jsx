@@ -14,7 +14,7 @@ import { CreateUserAccount } from "./pages/AdminUserManagement";
 // Na daidaita wadannan sunayen da ainihin files din da ka fada min
 import RectorDashboard from "./pages/RectorDashboard";
 import AccountantDashboard from "./pages/AccountantDashboard";
-import AdmissionDashboard from "./pages/AdmissionofficerDashboard"; // Gyara: Sunan file dinka
+import AdmissionDashboard from "./pages/AdmissionOfficerDashboard"; // Gyara: Sunan file dinka
 import StudentDashboard from "./pages/StudentDashboard";
 import ExamDashboard from "./pages/ExamOfficerDashboard"; // Gyara: Sunan file dinka
 import NewsAdmin from "./pages/NewsAdmin"; // Gyara: Sunan file dinka
