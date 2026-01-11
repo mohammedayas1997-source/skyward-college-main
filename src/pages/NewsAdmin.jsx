@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { db, storage } from "../firebase";
+import { getStorage } from "firebase/storage";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Upload, ImageIcon, FileText, Send, LayoutDashboard, PlusCircle } from "lucide-react";

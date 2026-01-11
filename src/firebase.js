@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
+import { getStorage } from "firebase/storage";
 const firebaseConfig = {
   apiKey: "AIzaSyBv-zKXx2on0QXPbqRp5j5YxIUSkCwPQ50",
   authDomain: "skyward-college-main.firebaseapp.com",
@@ -15,8 +15,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Services
+
 const auth = getAuth(app);
 const db = getFirestore(app);
-
+export const storage = getStorage(app);
 // Wannan tsarin fitarwa (Export) ya fi tabbata ga Vercel
 export { auth, db };
