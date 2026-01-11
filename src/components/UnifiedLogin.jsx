@@ -72,6 +72,7 @@ const UnifiedLogin = () => {
 
         // Routing Configuration
         const routes = {
+          admin: "/admin/users",
           rector: "/rector/dashboard",
           proprietor: "/proprietor/dashboard",
           accountant: "/accountant/dashboard",

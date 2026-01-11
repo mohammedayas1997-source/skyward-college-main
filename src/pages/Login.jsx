@@ -65,14 +65,15 @@ const Login = () => {
 
         // 4. SMART REDIRECTION ENGINE
         const routes = {
-          student: "/portal/dashboard",
-          admin: "/admin/dashboard",
-          staff: "/staff/dashboard",
-          rector: "/portal/rector",
-          proprietor: "/portal/proprietor",
-          accountant: "/admin/accountant",
-          "exam-officer": "/admin/exam-office",
-          admission: "/admin/admission-officer"
+          admin: "/admin/users",
+          rector: "/rector/dashboard",
+          proprietor: "/proprietor/dashboard",
+          accountant: "/accountant/dashboard",
+          admission: "/admission/dashboard",
+          staff: "/staff/portal",
+          exam: "/exam/dashboard",
+          student: "/student/dashboard",
+          news_admin: "/news/admin"
         };
 
         const targetRoute = routes[role] || "/";
