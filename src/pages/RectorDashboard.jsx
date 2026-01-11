@@ -3,34 +3,33 @@ import { db, auth } from "../firebase";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { 
   doc, serverTimestamp, collection, 
-  onSnapshot, query, where, updateDoc
+  onSnapshot, query, where, updateDoc, orderBy 
 } from "firebase/firestore";
 import { 
   ShieldAlert, Users, Activity, LogOut, Printer, 
   Search, Calendar, CreditCard, History, X, 
-  CheckCircle2, UserX, UserCheck, Loader2, GraduationCap, ClipboardCheck
+  CheckCircle2, UserX, UserCheck, Loader2, GraduationCap, ClipboardCheck, BookOpen, Eye
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const RectorDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("Overview");
+  
+  // --- STATES ---
   const [staffList, setStaffList] = useState([]);
   const [financialRequests, setFinancialRequests] = useState([]);
-  const [pendingAdmissions, setPendingAdmissions] = useState([]); // Sabo
+  const [pendingAdmissions, setPendingAdmissions] = useState([]);
   const [approvalHistory, setApprovalHistory] = useState([]); 
+  const [studentResults, setStudentResults] = useState([]);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // SECURITY CHECK: Gyara don tabbatar da shiga
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        navigate("/portal/login");
-      } else {
-        // Zaka iya cire check din localStorage idan yana baka wahala a gwaji
-        setLoading(false); 
-      }
+      if (!user) navigate("/portal/login");
+      else setLoading(false);
     });
     return () => unsubscribe();
   }, [navigate]);
@@ -38,88 +37,67 @@ const RectorDashboard = () => {
   useEffect(() => {
     if (!auth.currentUser) return;
 
-    // 1. Personnel List
-    const staffQuery = query(
-        collection(db, "users"), 
-        where("role", "in", ["staff", "accountant", "exam", "admission"])
-    );
-    const unsubStaff = onSnapshot(staffQuery, (snapshot) => {
-      setStaffList(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    // 1. Personnel & Performance
+    const unsubStaff = onSnapshot(query(collection(db, "users"), where("role", "in", ["staff", "accountant", "exam", "admission"])), (snap) => {
+      setStaffList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    // 2. Pending Financial Requests
-    const financeQuery = query(collection(db, "paymentRequests"), where("status", "==", "pending"));
-    const unsubFinance = onSnapshot(financeQuery, (snapshot) => {
-      setFinancialRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    // 2. Financial Pipeline
+    const unsubFinance = onSnapshot(query(collection(db, "paymentRequests"), where("status", "==", "pending")), (snap) => {
+      setFinancialRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    // 3. NEW: Pending Admission Approvals (Wanda Admission Officer ya turo)
-    const admissionQuery = query(
-      collection(db, "applications"), 
-      where("status", "==", "Awaiting Rector Approval")
-    );
-    const unsubAdmission = onSnapshot(admissionQuery, (snapshot) => {
-      setPendingAdmissions(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    // 3. Admission Pipeline
+    const unsubAdmission = onSnapshot(query(collection(db, "applications"), where("status", "==", "Awaiting Rector Approval")), (snap) => {
+      setPendingAdmissions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    // 4. Audit History
-    const historyQuery = query(
-        collection(db, "paymentRequests"), 
-        where("status", "in", ["approved", "rejected"])
-    );
-    const unsubHistory = onSnapshot(historyQuery, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const sortedData = data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-      setApprovalHistory(sortedData);
+    // 4. Academic Results History (Real-life Tracking)
+    const unsubResults = onSnapshot(query(collection(db, "results"), orderBy("createdAt", "desc")), (snap) => {
+      setStudentResults(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
 
+    // 5. Audit History & Analytics
+    const unsubHistory = onSnapshot(query(collection(db, "paymentRequests"), where("status", "in", ["approved", "rejected"])), (snap) => {
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setApprovalHistory(data.sort((a, b) => (b.processedAt?.seconds || 0) - (a.processedAt?.seconds || 0)));
+      
       const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      const total = sortedData.reduce((acc, curr) => {
-        const reqDate = curr.createdAt?.toDate();
-        if (curr.status === "approved" && reqDate?.getMonth() === currentMonth && reqDate?.getFullYear() === currentYear) {
-          return acc + (Number(curr.amount) || 0);
-        }
-        return acc;
+      const total = data.reduce((acc, curr) => {
+        const reqDate = curr.processedAt?.toDate();
+        return (curr.status === "approved" && reqDate?.getMonth() === currentMonth) ? acc + Number(curr.amount || 0) : acc;
       }, 0);
       setMonthlyTotal(total);
     });
 
-    return () => { unsubStaff(); unsubFinance(); unsubHistory(); unsubAdmission(); };
+    return () => { unsubStaff(); unsubFinance(); unsubAdmission(); unsubResults(); unsubHistory(); };
   }, []);
 
-  // --- ACTIONS ---
-  const handleAdmissionApproval = async (id, decision) => {
+  // --- BUSINESS LOGIC ---
+  const handleAdmission = async (id, dec) => {
     try {
-      const status = decision === "approve" ? "Rector Approved" : "Rejected by Rector";
       await updateDoc(doc(db, "applications", id), {
-        status: status,
+        status: dec === "approve" ? "Rector Approved" : "Rejected by Rector",
         rectorActionDate: serverTimestamp()
       });
-      alert(`Student ${decision === "approve" ? "Approved" : "Rejected"}!`);
     } catch (e) { alert(e.message); }
   };
 
-  const handleFinancialApproval = async (id, decision) => {
+  const handleFinance = async (id, dec) => {
     try {
-      const status = decision === "approve" ? "approved" : "rejected";
       await updateDoc(doc(db, "paymentRequests", id), { 
-        status: status, 
+        status: dec === "approve" ? "approved" : "rejected", 
         processedAt: serverTimestamp(),
         approvedBy: "Rector"
       });
-    } catch (error) { alert("Error: " + error.message); }
+    } catch (e) { alert(e.message); }
   };
 
-  const toggleStaffStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === "Active" ? "Suspended" : "Active";
-    await updateDoc(doc(db, "users", id), { status: newStatus });
+  const toggleStaff = async (id, stat) => {
+    await updateDoc(doc(db, "users", id), { status: stat === "Active" ? "Suspended" : "Active" });
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <Loader2 className="animate-spin text-red-600" size={40} />
-    </div>
-  );
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-red-600" size={40} /></div>;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row text-left font-sans">
@@ -129,10 +107,11 @@ const RectorDashboard = () => {
           <div className="p-3 bg-red-600 rounded-2xl shadow-lg"><ShieldAlert size={30} /></div>
           <h2 className="font-black text-2xl uppercase italic">Rector</h2>
         </div>
-        <nav className="space-y-4 flex-1">
-          <SidebarLink icon={<Activity size={18}/>} label="Overview" active />
-          <SidebarLink icon={<GraduationCap size={18}/>} label="Admissions" />
-          <SidebarLink icon={<Users size={18}/>} label="Staff Management" />
+        <nav className="space-y-2 flex-1">
+          <SidebarLink icon={<Activity size={18}/>} label="Overview" active={activeTab === "Overview"} onClick={() => setActiveTab("Overview")} />
+          <SidebarLink icon={<GraduationCap size={18}/>} label="Admissions" active={activeTab === "Admissions"} onClick={() => setActiveTab("Admissions")} />
+          <SidebarLink icon={<Users size={18}/>} label="Personnel" active={activeTab === "Personnel"} onClick={() => setActiveTab("Personnel")} />
+          <SidebarLink icon={<BookOpen size={18}/>} label="Academic Results" active={activeTab === "Results"} onClick={() => setActiveTab("Results")} />
         </nav>
         <button onClick={() => { signOut(auth); navigate("/portal/login"); }} className="mt-auto flex items-center justify-center gap-3 p-5 rounded-2xl font-black text-[11px] uppercase text-red-500 border border-red-500/10 hover:bg-red-600 hover:text-white transition-all">
           <LogOut size={18}/> End Session
@@ -143,104 +122,152 @@ const RectorDashboard = () => {
       <div className="flex-1 p-6 lg:p-12">
         <header className="flex flex-col xl:flex-row justify-between items-start mb-12 gap-8">
           <div>
-            <h1 className="text-4xl lg:text-5xl font-black text-[#0b121d] uppercase italic leading-none">Executive Hub</h1>
+            <h1 className="text-4xl lg:text-5xl font-black text-[#0b121d] uppercase italic leading-none">{activeTab}</h1>
             <p className="text-slate-400 text-[10px] font-bold uppercase mt-3 tracking-widest flex items-center gap-2">
-              <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span> Systems Active
+              <span className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span> Skyward Executive Secure-Line
             </p>
           </div>
           <div className="bg-[#0b121d] text-white p-6 rounded-[30px] flex items-center gap-4 min-w-[240px]">
-            <Calendar size={24} className="text-red-500"/>
+            <CreditCard size={24} className="text-red-500"/>
             <div>
-              <p className="text-[9px] font-black text-slate-400 uppercase">Monthly Expenses</p>
+              <p className="text-[9px] font-black text-slate-400 uppercase">Monthly Approved</p>
               <p className="text-xl font-black">₦{monthlyTotal.toLocaleString()}</p>
             </div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-          <div className="xl:col-span-2 space-y-10">
-            
-            {/* NEW: ADMISSION APPROVALS SECTION */}
-            <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
-              <h3 className="font-black text-[#0b121d] uppercase text-xs tracking-widest flex items-center gap-3 mb-8 italic">
-                <ClipboardCheck className="text-blue-600" size={20}/> Student Admission Requests
-              </h3>
-              <div className="space-y-4">
-                {pendingAdmissions.length === 0 ? (
-                  <p className="text-[10px] text-slate-400 uppercase font-bold py-4">No pending admissions.</p>
-                ) : pendingAdmissions.map((student) => (
-                  <div key={student.id} className="flex flex-col md:flex-row items-center justify-between p-6 bg-blue-50/50 rounded-3xl border border-blue-100 gap-6">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-black">{student.fullName?.charAt(0)}</div>
-                        <div>
-                            <h4 className="font-black text-[#0b121d] text-sm uppercase">{student.fullName}</h4>
-                            <p className="text-[9px] font-bold text-blue-600 uppercase italic">Awaiting Your Approval</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-3">
-                        <button onClick={() => handleAdmissionApproval(student.id, "reject")} className="px-6 py-3 bg-white border border-red-200 text-red-500 rounded-xl font-black text-[10px] uppercase hover:bg-red-50 transition-all">Deny</button>
-                        <button onClick={() => handleAdmissionApproval(student.id, "approve")} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Approve Admission</button>
+        {/* TAB 1: OVERVIEW */}
+        {activeTab === "Overview" && (
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+            <div className="xl:col-span-2 space-y-10">
+              <SectionWrapper title="Pending Financial Vouchers" icon={<CreditCard size={18} className="text-red-600"/>}>
+                {financialRequests.map(req => (
+                  <div key={req.id} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 mb-4">
+                    <div><h4 className="font-black text-sm uppercase">{req.title}</h4><p className="text-[10px] font-bold text-slate-400">₦{Number(req.amount).toLocaleString()}</p></div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleFinance(req.id, "reject")} className="p-3 bg-white border rounded-xl text-red-500 hover:bg-red-50"><X size={18}/></button>
+                      <button onClick={() => handleFinance(req.id, "approve")} className="p-3 bg-[#0b121d] text-white rounded-xl hover:bg-emerald-600 shadow-lg"><CheckCircle2 size={18}/></button>
                     </div>
                   </div>
                 ))}
-              </div>
+              </SectionWrapper>
+              
+              <SectionWrapper title="Audit History" icon={<History size={18} className="text-blue-600"/>}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="text-[10px] font-black text-slate-400 uppercase border-b pb-4">
+                      <tr><th className="pb-4">Description</th><th className="pb-4">Status</th><th className="pb-4 text-right">Amount</th></tr>
+                    </thead>
+                    <tbody>
+                      {approvalHistory.slice(0, 5).map(h => (
+                        <tr key={h.id} className="border-b border-slate-50 last:border-none">
+                          <td className="py-4 font-bold text-[11px] uppercase">{h.title}</td>
+                          <td className="py-4"><span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase ${h.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>{h.status}</span></td>
+                          <td className="py-4 text-right font-black">₦{Number(h.amount).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </SectionWrapper>
             </div>
-
-            {/* FINANCIAL VOUCHERS */}
-            <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
-              <h3 className="font-black text-[#0b121d] uppercase text-xs tracking-widest flex items-center gap-3 mb-8 italic">
-                <CreditCard className="text-red-600" size={20}/> Financial Authorization
-              </h3>
-              <div className="space-y-4">
-                {financialRequests.length === 0 ? <p className="text-[10px] text-slate-400 uppercase font-bold">No financial requests.</p> : financialRequests.map((req) => (
-                  <div key={req.id} className="flex flex-col md:flex-row items-center justify-between p-6 bg-[#f8fafc] rounded-3xl border border-slate-100 gap-6">
-                    <div>
-                      <h4 className="font-black text-[#0b121d] text-sm uppercase">{req.title}</h4>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Amount: ₦{Number(req.amount || 0).toLocaleString()}</p>
+            
+            <div className="space-y-10">
+               <SectionWrapper title="Active Staff" icon={<Users size={18}/>}>
+                  {staffList.slice(0, 6).map(s => (
+                    <div key={s.id} className="flex items-center justify-between mb-4 p-3 bg-slate-50 rounded-2xl">
+                      <div><p className="font-black text-[10px] uppercase leading-none">{s.fullName}</p><p className="text-[8px] text-slate-400 uppercase">{s.role}</p></div>
+                      <span className={`h-2 w-2 rounded-full ${s.status === 'Active' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                     </div>
-                    <div className="flex gap-3">
-                        <button onClick={() => handleFinancialApproval(req.id, "reject")} className="h-12 w-12 bg-white border border-slate-200 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"><X size={20}/></button>
-                        <button onClick={() => handleFinancialApproval(req.id, "approve")} className="h-12 w-12 bg-[#0b121d] text-white rounded-xl hover:bg-emerald-600 transition-all flex items-center justify-center shadow-lg"><CheckCircle2 size={20}/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+               </SectionWrapper>
             </div>
           </div>
+        )}
 
-          {/* STAFF CONTROL */}
-          <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 h-fit">
-            <h3 className="font-black text-[#0b121d] uppercase text-[10px] mb-8 border-b pb-4 italic">System Personnel</h3>
-            <div className="relative mb-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16}/>
-              <input 
-                type="text" placeholder="FILTER STAFF..." 
-                className="w-full bg-slate-50 p-4 pl-12 rounded-2xl text-[10px] font-bold outline-none border border-slate-100"
-                value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="space-y-4">
-              {staffList.filter(s => s.fullName?.toLowerCase().includes(searchTerm.toLowerCase())).map((staff) => (
-                <div key={staff.id} className={`flex items-center justify-between p-4 rounded-2xl border ${staff.status === 'Suspended' ? 'bg-red-50 border-red-100' : 'bg-[#f8fafc] border-transparent'}`}>
-                  <div>
-                    <p className="font-black text-[11px] uppercase text-[#0b121d] leading-none">{staff.fullName}</p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">{staff.role}</p>
+        {/* TAB 2: ADMISSIONS */}
+        {activeTab === "Admissions" && (
+          <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
+            <h3 className="font-black uppercase text-xs tracking-widest flex items-center gap-3 mb-8"><ClipboardCheck className="text-blue-600" size={20}/> Admission Approval Pipeline</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {pendingAdmissions.map(student => (
+                <div key={student.id} className="p-6 bg-slate-50 rounded-[30px] border border-slate-100">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black">{student.fullName?.charAt(0)}</div>
+                    <div><h4 className="font-black text-sm uppercase">{student.fullName}</h4><p className="text-[9px] font-bold text-slate-400">APPLIED FOR ADMISSION</p></div>
                   </div>
-                  <button onClick={() => toggleStaffStatus(staff.id, staff.status)} className={`p-2.5 rounded-xl transition-all ${staff.status === 'Active' ? 'text-red-500 hover:bg-red-600 hover:text-white' : 'text-emerald-600 hover:bg-emerald-600 hover:text-white'}`}>
-                    {staff.status === 'Active' ? <UserX size={18}/> : <UserCheck size={18}/>}
+                  <div className="flex gap-2">
+                    <button onClick={() => handleAdmission(student.id, "reject")} className="flex-1 py-3 bg-white border border-red-200 text-red-500 rounded-xl font-black text-[10px] uppercase">Reject</button>
+                    <button onClick={() => handleAdmission(student.id, "approve")} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase shadow-lg shadow-blue-200">Approve</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: PERSONNEL */}
+        {activeTab === "Personnel" && (
+          <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="font-black uppercase text-xs tracking-widest">University Staff Management</h3>
+              <div className="relative w-64"><Search size={14} className="absolute left-3 top-3 text-slate-400"/><input type="text" placeholder="SEARCH STAFF..." className="w-full pl-10 p-2.5 bg-slate-50 rounded-xl text-[10px] font-bold outline-none" onChange={(e) => setSearchTerm(e.target.value)}/></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {staffList.filter(s => s.fullName?.toLowerCase().includes(searchTerm.toLowerCase())).map(staff => (
+                <div key={staff.id} className={`p-6 rounded-[30px] border transition-all ${staff.status === 'Suspended' ? 'bg-red-50 border-red-100 opacity-75' : 'bg-white border-slate-100 shadow-sm'}`}>
+                  <h4 className="font-black text-sm uppercase mb-1">{staff.fullName}</h4>
+                  <p className="text-[9px] font-bold text-blue-600 uppercase mb-4 tracking-tighter">{staff.role}</p>
+                  <button onClick={() => toggleStaff(staff.id, staff.status)} className={`w-full py-3 rounded-xl font-black text-[9px] uppercase flex items-center justify-center gap-2 ${staff.status === 'Active' ? 'bg-red-500 text-white' : 'bg-emerald-600 text-white'}`}>
+                    {staff.status === 'Active' ? <><UserX size={14}/> Suspend Staff</> : <><UserCheck size={14}/> Activate Staff</>}
                   </button>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* TAB 4: RESULTS */}
+        {activeTab === "Results" && (
+          <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
+            <h3 className="font-black uppercase text-xs tracking-widest flex items-center gap-3 mb-8"><BookOpen className="text-emerald-600" size={20}/> Academic Performance Logs</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="text-[10px] font-black text-slate-400 uppercase border-b pb-4">
+                  <tr><th className="pb-4">Student Name</th><th className="pb-4">Course</th><th className="pb-4">Score</th><th className="pb-4">Lecturer</th><th className="pb-4 text-right">Action</th></tr>
+                </thead>
+                <tbody>
+                  {studentResults.map(res => (
+                    <tr key={res.id} className="border-b border-slate-50 last:border-none">
+                      <td className="py-5 font-black text-xs uppercase text-[#0b121d]">{res.studentName}</td>
+                      <td className="py-5 text-xs font-bold text-slate-500">{res.courseTitle}</td>
+                      <td className="py-5"><span className={`font-black text-xs ${res.score >= 40 ? 'text-emerald-600' : 'text-red-600'}`}>{res.score}%</span></td>
+                      <td className="py-5 text-[10px] font-black uppercase text-blue-600">{res.staffName || 'Exam Office'}</td>
+                      <td className="py-5 text-right"><button className="p-2 bg-slate-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Eye size={14}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const SidebarLink = ({ icon, label, active = false }) => (
-  <button className={`w-full flex items-center gap-4 p-5 rounded-2xl font-black text-[11px] uppercase transition-all ${active ? "bg-red-600 text-white shadow-lg shadow-red-900/20" : "text-slate-500 hover:text-white"}`}>
+// --- SUB-COMPONENTS ---
+const SectionWrapper = ({ title, icon, children }) => (
+  <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
+    <h3 className="font-black text-[#0b121d] uppercase text-xs tracking-widest flex items-center gap-3 mb-8 italic">
+      {icon} {title}
+    </h3>
+    {children}
+  </div>
+);
+
+const SidebarLink = ({ icon, label, active = false, onClick }) => (
+  <button onClick={onClick} className={`w-full flex items-center gap-4 p-5 rounded-2xl font-black text-[11px] uppercase transition-all ${active ? "bg-red-600 text-white shadow-lg shadow-red-900/20" : "text-slate-500 hover:text-white hover:bg-white/5"}`}>
     {icon} {label}
   </button>
 );
