@@ -40,24 +40,36 @@ const AccountantDashboard = () => {
   const categories = ["Maintenance", "Salaries", "Utility", "Fuel", "Academics", "General"];
 
   useEffect(() => {
+    // 1. Fetch Salary Rates
     const unsubRates = onSnapshot(doc(db, "settings", "salary_rates"), (d) => {
-      if (d.exists()) setSalaryRates(d.data());
-    });
+      if (d.exists()) {
+        setSalaryRates(d.data());
+        console.log("Salary Rates Loaded ✅");
+      }
+    }, (err) => console.error("Salary Rates Error:", err.message));
 
+    // 2. Fetch Financial Requests
     const qReq = query(collection(db, "financialRequests"), orderBy("createdAt", "desc"));
     const unsubReq = onSnapshot(qReq, (snap) => {
       setRequestHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+      console.log("Requests Loaded:", snap.docs.length);
+    }, (err) => console.error("Requests Error (Check Rules):", err.message));
 
+    // 3. Fetch Staff (Filtering out students)
     const qStaff = query(collection(db, "users"), where("role", "!=", "student"));
     const unsubStaff = onSnapshot(qStaff, (snap) => {
       setStaffList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      console.log("Staff List Loaded:", snap.docs.length);
+    }, (err) => {
+      console.error("Staff Error (Check if Index is needed or Permission):", err.message);
     });
 
+    // 4. Fetch Transactions & Calculate Stats
     const qIncome = query(collection(db, "transactions"), orderBy("createdAt", "desc"));
     const unsubIncome = onSnapshot(qIncome, (snap) => {
       const txs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setRecentPayments(txs);
+      console.log("Transactions Loaded:", txs.length);
       
       const analysis = txs.reduce((acc, curr) => {
         const amt = Number(curr.amount || 0);
@@ -71,7 +83,7 @@ const AccountantDashboard = () => {
         return acc;
       }, { totalIncome: 0, applicationFees: 0, registrationFees: 0, totalExpenses: 0 });
       setStats(analysis);
-    });
+    }, (err) => console.error("Transactions Error:", err.message));
 
     return () => { unsubRates(); unsubReq(); unsubStaff(); unsubIncome(); };
   }, []);
@@ -89,7 +101,10 @@ const AccountantDashboard = () => {
         createdAt: serverTimestamp()
       });
       alert(`Nasara! An biya ${staff.fullName}. ✅`);
-    } catch (err) { alert(err.message); }
+    } catch (err) { 
+      console.error("Payment Error:", err.message);
+      alert(err.message); 
+    }
     setLoading(false);
   };
 
@@ -108,7 +123,10 @@ const AccountantDashboard = () => {
       });
       alert(`An yi nasarar sa ${newStaff.fullName} a matsayin ${newStaff.role}`);
       setNewStaff({ fullName: "", role: "staff", email: "" });
-    } catch (err) { alert(err.message); }
+    } catch (err) { 
+      console.error("Add Staff Error:", err.message);
+      alert(err.message); 
+    }
     setLoading(false);
   };
 
@@ -124,7 +142,10 @@ const AccountantDashboard = () => {
         });
       }
       alert("Albashin kowa ya canza!");
-    } catch (err) { alert(err.message); }
+    } catch (err) { 
+      console.error("Save Rates Error:", err.message);
+      alert(err.message); 
+    }
     setLoading(false);
   };
 
@@ -165,7 +186,10 @@ const AccountantDashboard = () => {
       });
       alert("An tura bukatar!");
       setRequest({ title: "", amount: "", purpose: "", type: "Expense", category: "General" });
-    } catch (err) { alert(err.message); }
+    } catch (err) { 
+      console.error("Submission Error:", err.message);
+      alert(err.message); 
+    }
     setLoading(false);
   };
 
@@ -240,7 +264,6 @@ const AccountantDashboard = () => {
           </div>
         </header>
 
-        {/* --- TABS CONTENT (OVERVIEW, ANALYTICS, etc.) --- */}
         {activeTab === 'overview' && (
           <div className="space-y-6 md:space-y-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -281,7 +304,6 @@ const AccountantDashboard = () => {
           </div>
         )}
 
-        {/* --- PAYROLL TAB --- */}
         {activeTab === 'payroll' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
             <div className="lg:col-span-1 bg-white p-6 md:p-8 rounded-[30px] border shadow-sm h-fit">
@@ -326,7 +348,6 @@ const AccountantDashboard = () => {
           </div>
         )}
 
-        {/* --- ANALYTICS, REQUESTS, SETTINGS DA HISTORY suma suna nan yadda ka sa su --- */}
         {activeTab === 'requests' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
               <div className="lg:col-span-1 bg-white p-6 md:p-8 rounded-[30px] border shadow-sm">
