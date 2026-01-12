@@ -10,23 +10,32 @@ import {
   LayoutDashboard, FileEdit, History, Search, User, LogOut, 
   Printer, Save, BookText, ClipboardList, Target, Presentation, 
   FileSearch, Users, Inbox, Clock, Database, UserCheck, 
-  FileCheck2, ChevronRight, UserPlus, SendHorizonal, BookOpen, Trash2, Check, Plus
+  FileCheck2, ChevronRight, UserPlus, SendHorizonal, BookOpen, Trash2, Check, Plus, Loader2
 } from "lucide-react";
 
 const StaffDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLocked] = useState(false);
-  const [staffCourse, setStaffCourse] = useState(localStorage.getItem("selectedCourse") || "Computer Science");
   
-  // Real-life course management
+  // --- AN GYARA NAN: Sabbin Courses dinka sun dawo ---
+  const [staffCourse, setStaffCourse] = useState(localStorage.getItem("selectedCourse") || "Air Cabin Crew Management");
+  
   const [availableCourses, setAvailableCourses] = useState([
-    "Computer Science", "Public Administration", "Business Administration", 
-    "Accounting", "Mass Communication", "Electrical Engineering", 
-    "Mechanical Engineering", "Civil Engineering", "Architecture", "Science Lab Tech"
+    "Air Cabin Crew Management",
+    "Flight Dispatcher",
+    "Travel and Tourism Management",
+    "Hotel and Hospitality Management",
+    "Cargo & Freight Handling",
+    "Catering and Craft Practice",
+    "Airport Operations and Safety",
+    "Visa Processing",
+    "Travel Agency Management",
+    "Customer Service Management"
   ]);
+  // --- END GYARA ---
+
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [newCourseName, setNewCourseName] = useState("");
-
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -58,8 +67,6 @@ const StaffDashboard = () => {
   };
 
   useEffect(() => {
-    // REAL LIFE: Receiving students from Admission Officer
-    // Logic: Listen for admissions where course matches and status is "Approved" (Sent from Admission Office)
     const qStudents = query(
       collection(db, "admissions"), 
       where("course", "==", staffCourse), 
@@ -87,18 +94,13 @@ const StaffDashboard = () => {
 
   const handleDeleteStudent = async (id) => {
     if (window.confirm("Are you sure you want to PERMANENTLY delete this student?")) {
-      try {
-        await deleteDoc(doc(db, "studentResults", id));
-      } catch (err) { alert("Error deleting: " + err.message); }
+      try { await deleteDoc(doc(db, "studentResults", id)); } catch (err) { alert("Error deleting: " + err.message); }
     }
   };
 
   const handleUpdateStudentInfo = async (id, newName, newReg) => {
     try {
-      await updateDoc(doc(db, "studentResults", id), {
-        name: newName,
-        reg: newReg
-      });
+      await updateDoc(doc(db, "studentResults", id), { name: newName, reg: newReg });
       setEditingId(null);
     } catch (err) { alert("Error updating: " + err.message); }
   };
@@ -140,7 +142,6 @@ const StaffDashboard = () => {
 
   const acceptStudent = async (student) => {
     try {
-      // 1. Add to teacher's class list
       await addDoc(collection(db, "studentResults"), {
         name: student.name, 
         reg: student.reg || student.admissionNo || "Pending", 
@@ -149,7 +150,6 @@ const StaffDashboard = () => {
         status: "Draft", 
         admittedAt: serverTimestamp()
       });
-      // 2. Update status in admission office records
       await updateDoc(doc(db, "admissions", student.id), { status: "Enrolled" });
       alert(student.name + " accepted into your class!");
     } catch (err) { alert(err.message); }
@@ -198,7 +198,6 @@ const StaffDashboard = () => {
           <div><h2 className="font-black text-sm uppercase leading-tight">Skyward</h2><p className="text-[9px] text-red-500 font-bold uppercase tracking-tighter">Staff Portal</p></div>
         </div>
 
-        {/* Course Selection & Dynamic Adding */}
         <div className="mb-8 p-4 bg-white/5 rounded-2xl border border-white/10">
             <label className="text-[8px] font-black uppercase text-slate-400 mb-2 block tracking-widest">Departmental Course</label>
             <div className="flex flex-col gap-3">
@@ -307,13 +306,13 @@ const StaffDashboard = () => {
           </div>
         )}
 
+        {/* ... Admission Intake, Manual Add, Lesson Plan remains ... */}
         {activeTab === "inbox" && (
            <div className="max-w-4xl mx-auto space-y-4 animate-in fade-in slide-in-from-top-4">
               <div className="bg-red-600 p-10 rounded-[45px] text-white shadow-xl shadow-red-200 mb-10">
                 <h2 className="text-4xl font-black uppercase tracking-tighter">Student Intake</h2>
                 <p className="text-xs font-bold text-white/70 uppercase tracking-widest mt-2">New Approved Students for {staffCourse}</p>
               </div>
-              
               <div className="space-y-4">
                 {incomingStudents.map(student => (
                     <div key={student.id} className="bg-white p-8 rounded-[35px] shadow-sm flex items-center justify-between border border-slate-100 hover:scale-[1.01] transition-transform">
@@ -334,7 +333,6 @@ const StaffDashboard = () => {
            </div>
         )}
 
-        {/* ... Manual Add and Lesson Plan Tabs remain logic-complete below ... */}
         {activeTab === "add_manual" && (
           <div className="max-w-xl mx-auto animate-in zoom-in-95 duration-300">
             <div className="bg-white p-12 rounded-[50px] shadow-2xl border border-slate-100 relative overflow-hidden">
@@ -404,7 +402,6 @@ const StaffDashboard = () => {
   );
 };
 
-// ... PlanEditor and StatCard Components remain the same ...
 const PlanEditor = ({ icon: Icon, label, value, onChange }) => (
   <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm space-y-4">
     <div className="flex items-center gap-3">
