@@ -31,6 +31,20 @@ const ExamOfficerDashboard = () => {
   const [editingResult, setEditingResult] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
 
+  // --- LIST OF 10 COURSES ---
+  const coursesList = [
+    "Aviation Management",
+    "Hospitality & Tourism",
+    "Travel Agency Operations",
+    "Air Cargo Handling",
+    "Flight Attendant Training",
+    "Airport Operations",
+    "Ticketing & Reservation",
+    "Security & Safety Management",
+    "Customer Service Excellence",
+    "Logistic & Supply Chain"
+  ];
+
   // --- SECURITY & DATA FETCHING ---
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (user) => {
@@ -57,7 +71,6 @@ const ExamOfficerDashboard = () => {
 
   // --- HANDLERS ---
 
-  // 1. Update Result Logic
   const handleUpdateResult = async (e) => {
     e.preventDefault();
     setLoadingId(editingResult.id);
@@ -73,7 +86,6 @@ const ExamOfficerDashboard = () => {
     finally { setLoadingId(null); }
   };
 
-  // 2. Update Student Logic
   const handleUpdateStudent = async (e) => {
     e.preventDefault();
     setLoadingId(editingStudent.id);
@@ -89,12 +101,10 @@ const ExamOfficerDashboard = () => {
     finally { setLoadingId(null); }
   };
 
-  // 3. New Enrollment (Modified: ID Number & Course)
   const generateStudentAccount = async (studentData) => {
     setLoadingId("new");
     try {
-      // Note: Firebase Auth still requires email. We use ID@skyward.com as a placeholder if email isn't provided
-      const studentEmail = studentData.email || `${studentData.idNumber}@skyward.com`;
+      const studentEmail = studentData.email || `${studentData.idNumber.replace(/\//g, '')}@skyward.com`;
       const userCred = await createUserWithEmailAndPassword(auth, studentEmail, "Student@2026");
       
       await setDoc(doc(db, "users", userCred.user.uid), {
@@ -114,7 +124,6 @@ const ExamOfficerDashboard = () => {
     finally { setLoadingId(null); }
   };
 
-  // --- ORIGINAL HANDLERS (PRESERVED) ---
   const requestRectorApproval = async (id) => {
     setLoadingId(id);
     try {
@@ -277,7 +286,6 @@ const ExamOfficerDashboard = () => {
                     </div>
                 </section>
 
-                {/* Admission Account Sync (PRESERVED) */}
                 <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 text-left">
                     <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
                       <div className="p-2 bg-amber-50 rounded-lg text-amber-600"><Key size={18} /></div> Admission Sync
@@ -337,7 +345,7 @@ const ExamOfficerDashboard = () => {
             </section>
         )}
 
-        {/* MODAL: NEW ENROLLMENT (Modified with ID & Course) */}
+        {/* MODAL: NEW ENROLLMENT (10 Courses List) */}
         {showAddStudent && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
                 <div className="bg-white w-full max-w-md rounded-[40px] p-10 shadow-2xl relative animate-in zoom-in duration-300">
@@ -360,9 +368,9 @@ const ExamOfficerDashboard = () => {
                           <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Assigned Course</label>
                           <select name="course" className="w-full p-4 bg-slate-50 rounded-2xl border outline-none text-sm font-bold" required>
                              <option value="">Select Course</option>
-                             <option value="Aviation Management">Aviation Management</option>
-                             <option value="Hospitality & Tourism">Hospitality & Tourism</option>
-                             <option value="Travel Agency Operations">Travel Agency Operations</option>
+                             {coursesList.map((course, idx) => (
+                               <option key={idx} value={course}>{course}</option>
+                             ))}
                           </select>
                         </div>
                         <button type="submit" disabled={loadingId === "new"} className="w-full py-5 bg-[#001529] text-white rounded-[25px] font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all">
@@ -395,7 +403,7 @@ const ExamOfficerDashboard = () => {
             </div>
         )}
 
-        {/* MODAL: EDIT STUDENT */}
+        {/* MODAL: EDIT STUDENT (With Course Dropdown) */}
         {editingStudent && (
             <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-6">
                 <div className="bg-white w-full max-w-sm rounded-[40px] p-10 shadow-2xl relative">
@@ -404,7 +412,16 @@ const ExamOfficerDashboard = () => {
                     <form onSubmit={handleUpdateStudent} className="space-y-4">
                         <input value={editingStudent.fullName} onChange={(e) => setEditingStudent({...editingStudent, fullName: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border font-bold" placeholder="Full Name" />
                         <input value={editingStudent.admissionNo} onChange={(e) => setEditingStudent({...editingStudent, admissionNo: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border font-bold" placeholder="Admission No" />
-                        <input value={editingStudent.course} onChange={(e) => setEditingStudent({...editingStudent, course: e.target.value})} className="w-full p-4 bg-slate-50 rounded-2xl border font-bold" placeholder="Course" />
+                        <select 
+                          value={editingStudent.course} 
+                          onChange={(e) => setEditingStudent({...editingStudent, course: e.target.value})} 
+                          className="w-full p-4 bg-slate-50 rounded-2xl border font-bold outline-none"
+                        >
+                          <option value="">Select Course</option>
+                          {coursesList.map((course, idx) => (
+                            <option key={idx} value={course}>{course}</option>
+                          ))}
+                        </select>
                         <button type="submit" className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2">
                             <Save size={18}/> Update Database
                         </button>
@@ -418,7 +435,6 @@ const ExamOfficerDashboard = () => {
   );
 };
 
-// COMPONENT: NAV ITEM
 const NavItem = ({ icon, label, active = false, onClick }) => (
   <div onClick={onClick} className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 group ${active ? "bg-red-600 text-white shadow-xl translate-x-2" : "hover:bg-white/5 text-slate-500 hover:text-white"}`}>
     <span className={`${active ? "text-white" : "group-hover:text-red-500"}`}>{icon}</span>
@@ -426,7 +442,6 @@ const NavItem = ({ icon, label, active = false, onClick }) => (
   </div>
 );
 
-// COMPONENT: STATS CARD
 const StatsCard = ({ title, value, icon, color }) => {
     const colors = { 
       blue: "bg-blue-50 text-blue-600", 
