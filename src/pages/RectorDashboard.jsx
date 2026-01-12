@@ -8,7 +8,7 @@ import {
 import { 
   ShieldAlert, Users, Activity, LogOut, Printer, 
   Search, Calendar, CreditCard, History, X, 
-  CheckCircle2, UserX, UserCheck, Loader2, GraduationCap, ClipboardCheck, BookOpen, Eye, ListFilter
+  CheckCircle2, UserX, UserCheck, Loader2, GraduationCap, ClipboardCheck, BookOpen, Eye, ListFilter, Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -128,6 +128,7 @@ const RectorDashboard = () => {
           <SidebarLink icon={<GraduationCap size={20}/>} label="Admissions Pool" active={activeTab === "Admissions"} onClick={() => {setActiveTab("Admissions"); setSelectedItems([]);}} />
           <SidebarLink icon={<Users size={20}/>} label="University Personnel" active={activeTab === "Personnel"} onClick={() => {setActiveTab("Personnel"); setSelectedItems([]);}} />
           <SidebarLink icon={<BookOpen size={20}/>} label="Academic Intelligence" active={activeTab === "Results"} onClick={() => {setActiveTab("Results"); setSelectedItems([]);}} />
+          <SidebarLink icon={<History size={20}/>} label="Audit History" active={activeTab === "History"} onClick={() => {setActiveTab("History"); setSelectedItems([]);}} />
         </nav>
         <button onClick={() => { signOut(auth); navigate("/portal/login"); }} className="mt-auto flex items-center justify-center gap-3 p-5 rounded-[24px] font-black text-[11px] uppercase text-red-500 bg-red-500/5 border border-red-500/20 hover:bg-red-600 hover:text-white transition-all duration-500 group">
           <LogOut size={18} className="group-hover:-translate-x-1 transition-transform"/> Final Terminate Session
@@ -238,7 +239,7 @@ const RectorDashboard = () => {
           </div>
         )}
 
-        {/* TAB 3: PERSONNEL - FULL LIST */}
+        {/* TAB 3: PERSONNEL */}
         {activeTab === "Personnel" && (
           <div className="bg-white rounded-[50px] p-10 shadow-2xl border border-slate-100">
             <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
@@ -289,6 +290,51 @@ const RectorDashboard = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: HISTORY (AUDIT TRAIL) */}
+        {activeTab === "History" && (
+          <div className="bg-white rounded-[50px] p-10 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between mb-10 border-b border-slate-50 pb-8">
+              <h3 className="font-black uppercase text-sm tracking-[0.3em] flex items-center gap-4 italic"><History size={24} className="text-blue-600"/> Executive Audit Trail</h3>
+              <div className="flex gap-2">
+                 <button onClick={() => window.print()} className="p-4 bg-slate-50 rounded-2xl hover:bg-slate-100"><Printer size={20}/></button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {approvalHistory.length === 0 ? (
+                <div className="py-20 text-center text-slate-300">
+                   <Clock className="mx-auto mb-4 opacity-20" size={50}/>
+                   <p className="font-black uppercase tracking-widest text-xs">No transaction history found</p>
+                </div>
+              ) : (
+                approvalHistory.map(log => (
+                  <div key={log.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-8 rounded-[35px] bg-slate-50/50 border border-slate-100 hover:border-blue-200 transition-all group">
+                    <div className="flex items-center gap-6">
+                      <div className={`p-4 rounded-2xl ${log.status === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                        {log.status === 'approved' ? <CheckCircle2 size={24}/> : <X size={24}/>}
+                      </div>
+                      <div>
+                        <h4 className="font-black text-[13px] uppercase tracking-tight">{log.title}</h4>
+                        <div className="flex gap-4 mt-1">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                            <Calendar size={10}/> {log.processedAt?.toDate().toLocaleDateString()}
+                          </p>
+                          <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest italic">Finance Unit</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 md:mt-0 text-right">
+                      <p className="font-black text-lg mb-1">₦{Number(log.amount || 0).toLocaleString()}</p>
+                      <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${log.status === 'approved' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
+                        {log.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
