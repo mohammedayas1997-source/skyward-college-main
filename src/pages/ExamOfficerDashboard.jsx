@@ -10,7 +10,7 @@ import {
   LayoutDashboard, UploadCloud, Users, FileCheck, 
   LogOut, Search, Clock, CheckCircle, X,
   Key, ShieldCheck, Loader2, BookOpen, UserCheck, Trash2, Edit3, Plus,
-  Printer, Lock, Globe, AlertCircle, ChevronRight
+  Printer, Lock, Globe, AlertCircle, ChevronRight, SendHorizontal
 } from "lucide-react";
 
 const ExamOfficerDashboard = () => {
@@ -33,19 +33,15 @@ const ExamOfficerDashboard = () => {
       if (!user) navigate("/portal/login");
     });
 
-    // Fetch Staff
     const qStaff = query(collection(db, "users"), where("role", "==", "staff"));
     const unsubStaff = onSnapshot(qStaff, (s) => setStaffList(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     
-    // Fetch Approved Admissions waiting for accounts
     const qAdmissions = query(collection(db, "admissions"), where("status", "==", "Approved"));
     const unsubAdmissions = onSnapshot(qAdmissions, (s) => setApprovedAdmissions(s.docs.map(d => ({ id: d.id, ...d.data() }))));
 
-    // Fetch Existing Students
     const qStudents = query(collection(db, "users"), where("role", "==", "student"));
     const unsubStudents = onSnapshot(qStudents, (s) => setAllStudents(s.docs.map(d => ({ id: d.id, ...d.data() }))));
 
-    // Fetch Results (from Teachers)
     const unsubResults = onSnapshot(collection(db, "results"), (s) => {
       setIncomingResults(s.docs.map(d => ({ id: d.id, ...d.data() })));
     });
@@ -71,7 +67,7 @@ const ExamOfficerDashboard = () => {
     finally { setLoadingId(null); }
   };
 
-  // 2. Publish to Student Dashboard (Only after Rector approves)
+  // 2. Publish to Student Dashboard (Normal Route - After Rector)
   const handlePublishResult = async (id) => {
     setLoadingId(id);
     try {
@@ -85,7 +81,26 @@ const ExamOfficerDashboard = () => {
     finally { setLoadingId(null); }
   };
 
-  // 3. Create Student Portal Account
+  // 3. NEW: Direct Release (Skip Rector - Emergency/Direct)
+  const handleDirectRelease = async (result) => {
+    const confirmRelease = window.confirm(`Are you sure you want to release ${result.studentName}'s result directly to their portal?`);
+    if(!confirmRelease) return;
+
+    setLoadingId(result.id);
+    try {
+      await updateDoc(doc(db, "results", result.id), { 
+        status: "Published",
+        rectorStatus: "Bypassed/Direct",
+        publishedAt: serverTimestamp(),
+        visibility: "public",
+        officerVerified: true
+      });
+      alert(`SUCCESS: Result for ${result.studentName} has been sent to their dashboard.`);
+    } catch (e) { alert(e.message); }
+    finally { setLoadingId(null); }
+  };
+
+  // 4. Create Student Portal Account
   const generateStudentAccount = async (student) => {
     setLoadingId(student.id || "new");
     try {
@@ -172,7 +187,7 @@ const ExamOfficerDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* Result Pipeline - Where results from teachers appear */}
+                {/* Result Pipeline */}
                 <section className="xl:col-span-2 bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 text-left">
                     <h3 className="text-[#002147] font-black uppercase text-xs tracking-[0.2em] mb-8 flex items-center gap-3">
                       <div className="p-2 bg-red-50 rounded-lg text-red-600"><UploadCloud size={20}/></div> Result Verification Pipeline
@@ -197,16 +212,24 @@ const ExamOfficerDashboard = () => {
                               </div>
 
                               {/* Pipeline Logic Buttons */}
-                              <div className="relative z-10">
+                              <div className="relative z-10 flex flex-col gap-2">
                                 {!result.rectorStatus ? (
-                                    <button 
-                                      onClick={() => requestRectorApproval(result.id)} 
-                                      disabled={loadingId === result.id}
-                                      className="w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
-                                    >
-                                      {loadingId === result.id ? <Loader2 size={16} className="animate-spin"/> : <ShieldCheck size={16}/>} 
-                                      Send to Rector for Approval
-                                    </button>
+                                    <>
+                                      <button 
+                                        onClick={() => requestRectorApproval(result.id)} 
+                                        disabled={loadingId === result.id}
+                                        className="w-full py-4 bg-orange-500 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 shadow-lg hover:bg-orange-600 transition-all"
+                                      >
+                                        {loadingId === result.id ? <Loader2 size={16} className="animate-spin"/> : <ShieldCheck size={16}/>} 
+                                        Rector's Approval
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDirectRelease(result)}
+                                        className="w-full py-3 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl text-[9px] font-black uppercase flex items-center justify-center gap-2 hover:border-emerald-500 hover:text-emerald-600 transition-all"
+                                      >
+                                        <SendHorizontal size={14}/> Quick Release to Student
+                                      </button>
+                                    </>
                                 ) : result.rectorStatus === "Pending Approval" ? (
                                     <div className="w-full py-4 bg-slate-200 text-slate-500 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 italic">
                                         <Clock size={16} className="animate-pulse"/> Waiting for Rector...
@@ -215,7 +238,7 @@ const ExamOfficerDashboard = () => {
                                     <button 
                                       onClick={() => handlePublishResult(result.id)} 
                                       disabled={loadingId === result.id}
-                                      className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 animate-pulse transition-all shadow-lg shadow-emerald-600/20"
+                                      className="w-full py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-700 animate-pulse transition-all shadow-lg"
                                     >
                                       {loadingId === result.id ? <Loader2 size={16} className="animate-spin"/> : <Globe size={16}/>}
                                       Publish to Student Portal
@@ -256,6 +279,7 @@ const ExamOfficerDashboard = () => {
           </>
         )}
 
+        {/* ... Sauran Tabs: Student Sync & Add Student Modal nan nan kamar yadda suke a code dinka na baya ... */}
         {activeTab === "Student Sync" && (
             <section className="bg-white p-10 rounded-[45px] shadow-sm border border-slate-100 animate-in fade-in duration-500">
                 <table className="w-full text-left">

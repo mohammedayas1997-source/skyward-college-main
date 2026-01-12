@@ -9,7 +9,7 @@ import {
   User, FileCheck, Download, LogOut, Bell, Clock, 
   BookOpen, CreditCard, Menu, X, Award, MapPin,
   GraduationCap, CheckCircle, Lock, ShieldAlert, Loader2,
-  FileText, Activity
+  FileText, Activity, AlertCircle
 } from "lucide-react";
 
 const StudentDashboard = () => {
@@ -27,6 +27,9 @@ const StudentDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [studentData, setStudentData] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  
+  // --- SABON STATE NA RESULT ---
+  const [publishedResults, setPublishedResults] = useState([]);
 
   // --- TSARO & REAL-TIME DATA FETCHING ---
   useEffect(() => {
@@ -36,6 +39,7 @@ const StudentDashboard = () => {
         return;
       }
 
+      // Fetch User Profile
       const unsubUser = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
@@ -50,14 +54,26 @@ const StudentDashboard = () => {
         setLoading(false);
       });
 
+      // Fetch Notifications
       const qNotify = query(collection(db, "notifications"), where("toUid", "==", user.uid));
       const unsubNotify = onSnapshot(qNotify, (snap) => {
         setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       });
 
+      // --- NEW: FETCH PUBLISHED RESULTS KAI TSAYE ---
+      const qResults = query(
+        collection(db, "results"), 
+        where("studentEmail", "==", user.email),
+        where("status", "==", "Published")
+      );
+      const unsubResults = onSnapshot(qResults, (snap) => {
+        setPublishedResults(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+
       return () => {
         unsubUser();
         unsubNotify();
+        unsubResults();
       };
     });
 
@@ -156,7 +172,7 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex relative font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-slate-100 flex relative font-sans overflow-x-hidden text-left">
       
       {/* MOBILE MENU */}
       <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden fixed top-4 left-4 z-[60] bg-[#002147] text-white p-3 rounded-2xl shadow-2xl">
@@ -179,7 +195,7 @@ const StudentDashboard = () => {
           <SidebarBtn active={location.pathname === '/portal/results'} onClick={() => navigate("/portal/check-result")} icon={<Award size={18} />} label="Exam Results" />
           <SidebarBtn active={location.pathname === '/portal/idcard'} onClick={() => alert("ID Card module loading...")} icon={<FileText size={18} />} label="Digital ID" />
 
-          <button onClick={() => navigate("/portal/payments")} className="w-full flex items-center gap-3 bg-blue-600/20 border-2 border-blue-500/50 hover:bg-blue-600 p-4 rounded-2xl font-black text-[10px] uppercase transition-all text-blue-400 hover:text-white mt-4 shadow-xl">
+          <button onClick={() => navigate("/portal/payments")} className="w-full flex items-center gap-3 bg-blue-600/20 border-2 border-blue-500/50 hover:bg-blue-600 p-4 rounded-2xl font-black text-[10px] uppercase transition-all text-blue-400 hover:text-white mt-4 shadow-xl text-left">
             <CreditCard size={18} /> Payments Portal
           </button>
         </nav>
@@ -191,7 +207,7 @@ const StudentDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6 md:p-12 overflow-y-auto pt-20 md:pt-12 text-left">
-        <header className="flex justify-between items-center mb-10 flex-wrap gap-6">
+        <header className="flex justify-between items-center mb-10 flex-wrap gap-6 text-left">
           <div>
             <h1 className="text-3xl font-black text-[#002147] uppercase leading-tight tracking-tighter">
               Barka da zuwa,<br/> <span className="text-red-600">{studentData?.fullName || "Student"}</span>
@@ -213,7 +229,7 @@ const StudentDashboard = () => {
           </div>
         </header>
 
-        {/* 1. Live Status Progress Bar Implementation */}
+        {/* 1. Live Status Progress Bar */}
         <div className="bg-white p-8 rounded-[40px] shadow-sm mb-10 border border-slate-200">
            <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-6">Application Live Tracking</h4>
            <div className="flex justify-between items-center relative">
@@ -228,22 +244,38 @@ const StudentDashboard = () => {
         {/* Real-time Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <DashboardCard title="Admission Status" val={admissionStatus === "Approved" ? "ADMITTED" : admissionStatus} color={admissionStatus === "Approved" ? "green" : "blue"} icon={<FileCheck size={24}/>} />
-          <DashboardCard title="My Department" val={studentData?.course || "Awaiting Assignment"} color="red" icon={<BookOpen size={24}/>} isSmallText />
+          
+          {/* UPDATED: REAL RESULT CARD */}
+          <DashboardCard 
+            title="Results Out" 
+            val={publishedResults.length > 0 ? `${publishedResults.length} COURSES` : "NONE YET"} 
+            color={publishedResults.length > 0 ? "red" : "navy"} 
+            icon={<Award size={24}/>} 
+            isSmallText={publishedResults.length === 0}
+          />
+          
           <DashboardCard title="Wallet Balance" val={studentData?.balance || "₦ 0.00"} color="navy" icon={<CreditCard size={24}/>} isPaid={studentData?.isCleared} />
         </div>
 
-        {/* Real-Life Admission Section */}
-        <div className="bg-white rounded-[45px] shadow-2xl overflow-hidden border border-slate-200 mb-10 animate-in slide-in-from-bottom-6">
+        {/* Admission & Results Section */}
+        <div className="bg-white rounded-[45px] shadow-2xl overflow-hidden border border-slate-200 mb-10">
           <div className="p-8 md:p-10 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4 bg-slate-50/50">
             <div>
-              <h2 className="text-2xl font-black text-[#002147] uppercase tracking-tighter">Official Documents</h2>
-              <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mt-1">Access your academic credentials</p>
+              <h2 className="text-2xl font-black text-[#002147] uppercase tracking-tighter">Academic Status</h2>
+              <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mt-1">Your current progress and documents</p>
             </div>
-            {admissionStatus === "Approved" && (
-              <button onClick={downloadAdmissionLetter} className="bg-[#002147] hover:bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase flex items-center gap-3 transition-all shadow-xl active:scale-95">
-                <Download size={18} /> Print Admission Letter
-              </button>
-            )}
+            <div className="flex gap-3">
+                {publishedResults.length > 0 && (
+                    <button onClick={() => navigate("/portal/check-result")} className="bg-red-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase flex items-center gap-3 transition-all shadow-xl hover:bg-[#002147]">
+                        <Award size={18} /> View Results
+                    </button>
+                )}
+                {admissionStatus === "Approved" && (
+                    <button onClick={downloadAdmissionLetter} className="bg-[#002147] hover:bg-red-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase flex items-center gap-3 transition-all shadow-xl active:scale-95">
+                        <Download size={18} /> Admission Letter
+                    </button>
+                )}
+            </div>
           </div>
 
           <div className="p-8 md:p-12">
@@ -283,7 +315,7 @@ const StudentDashboard = () => {
             </p>
           </div>
 
-          <div className="flex justify-between items-start mb-12">
+          <div className="flex justify-between items-start mb-12 text-left">
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase text-slate-400">Reference Number</p>
               <p className="font-bold text-sm">SCTT/ADM/2026/00{studentData?.uid?.slice(0,4)}</p>
@@ -318,7 +350,6 @@ const StudentDashboard = () => {
               <div className="w-32 h-1 bg-slate-900 mb-2"></div>
               <p className="text-[10px] font-black uppercase">Registrar</p>
             </div>
-            {/* Stamp Image Placeholder */}
             <div className="w-32 h-32 border-4 border-red-600/20 rounded-full flex items-center justify-center rotate-12 relative">
                <span className="text-red-600/30 text-[10px] font-black uppercase text-center tracking-tighter">Skyward College<br/>Official Stamp<br/>2026</span>
                <CheckCircle className="absolute text-emerald-500/20" size={60}/>
@@ -332,7 +363,7 @@ const StudentDashboard = () => {
 
 // Sub-components
 const StatusIcon = ({ label, done }) => (
-  <div className="flex flex-col items-center gap-2 z-10">
+  <div className="flex flex-col items-center gap-2 z-10 text-left">
     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-700 ${done ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "bg-white text-slate-200 border border-slate-100"}`}>
        {done ? <CheckCircle size={20} /> : <Clock size={20} />}
     </div>
@@ -354,7 +385,7 @@ const DashboardCard = ({ title, val, icon, color, isSmallText, isPaid }) => {
   const textColors = { blue: 'text-blue-600', red: 'text-red-600', navy: 'text-[#002147]', green: 'text-emerald-600' };
 
   return (
-    <div className={`bg-white p-8 rounded-[40px] shadow-sm border-b-8 ${borderColors[color]} hover:shadow-2xl hover:-translate-y-1 transition-all duration-300`}>
+    <div className={`bg-white p-8 rounded-[40px] shadow-sm border-b-8 ${borderColors[color]} hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-left`}>
       <div className="flex justify-between items-center mb-6">
         <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{title}</h4>
         <div className={`p-3 rounded-xl bg-slate-50 ${textColors[color]}`}>{icon}</div>
