@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Dokar hotunan News da Gallery (Kowa na iya gani, Staff kadai ke iya sawa)
+    match /news/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Hotunan dalibai ko takardun kudi (Dole sai mutum yana da login)
+    match /documents/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Accountant da Rector na iya ganin komai
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
