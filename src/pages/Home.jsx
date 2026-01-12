@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Gallery from "../components/Gallery";
-import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu, BookOpen, ExternalLink, Home as HomeIcon, Image as GalleryIcon, ShieldCheck } from "lucide-react";
+import { Plane, Users, Globe, Headphones, Briefcase, Layout, Ship, FileText, Building2, Hotel, X, CheckCircle, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Menu, BookOpen, ExternalLink, Home as HomeIcon, Image as GalleryIcon, ShieldCheck, Clock } from "lucide-react";
 
 export const Home = () => {
   const [current, setCurrent] = useState(0);
@@ -33,6 +33,7 @@ export const Home = () => {
       id: 1, 
       title: "Air Ticketing & Reservation", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Plane size={24} />, 
       desc: "The heartbeat of the aviation industry. Become the architect of global travel by mastering international booking systems.", 
       fullDesc: "Step into the command center of global travel. This course isn't just about booking flights; it's about mastering the sophisticated GDS tools (Amadeus & Sabre) that run the world's airlines. You will gain the elite technical skills required to navigate complex itineraries, handle international fare constructions, and provide expert advisory services. In a world that never stops moving, your skills will be the bridge that connects continents. Join us and turn your passion for travel into a high-demand professional craft.",
@@ -44,6 +45,7 @@ export const Home = () => {
       id: 2, 
       title: "Customer Service Management", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Users size={24} />, 
       desc: "Master the art of elite communication and emotional intelligence in the luxury service world.", 
       fullDesc: "In the world of luxury travel and tourism, excellence is defined by the experience. This program transforms you into a master of human psychology and professional ethics. You will learn the secrets of high-level communication, crisis de-escalation, and the art of making every guest feel like royalty. Whether at a 5-star airport lounge or a corporate headquarters, your ability to manage relationships will make you the most valuable asset in any organization. Elevate your persona and become a leader in service excellence.",
@@ -55,6 +57,7 @@ export const Home = () => {
       id: 3, 
       title: "Travel & Tourism Operations", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Globe size={24} />, 
       desc: "Design the world's most exotic experiences. Learn to manage global tourism like a pro.", 
       fullDesc: "Tourism is the world's largest industry, and it needs visionary managers. This course dives deep into the logistics of international tour packaging, destination marketing, and sustainable tourism operations. You will learn how to curate unforgettable experiences from the Maldives to the Alps. We provide you with the strategic mindset to build and manage tourism brands that stand out on the global stage. Don't just visit the world—learn how to run it.",
@@ -66,6 +69,7 @@ export const Home = () => {
       id: 4, 
       title: "Cabin Crew & In-Flight Services", 
       fee: "₦400,000", 
+      duration: "4 Months",
       icon: <Headphones size={24} />, 
       desc: "The ultimate lifestyle career. Train for safety, elegance, and service at 35,000 feet.", 
       fullDesc: "Imagine having the world as your office. Our Cabin Crew program is a rigorous, world-class journey that prepares you for the prestigious role of a flight attendant. From aviation medicine and emergency safety procedures to fine dining service and grooming, we cover it all. You will develop the confidence and grace needed to represent top-tier global airlines. This is more than a job—it's an identity. If you are ready for a life of adventure, prestige, and professional excellence, your wings are waiting here.",
@@ -77,6 +81,7 @@ export const Home = () => {
       id: 5, 
       title: "Flight Dispatcher Course", 
       fee: "₦300,000", 
+      duration: "4 Months",
       icon: <Briefcase size={24} />, 
       desc: "The brain behind every flight. Master meteorology, navigation, and flight safety.", 
       fullDesc: "Flight Dispatchers are the 'captains on the ground.' This high-stakes, high-reward course teaches you the science of flight planning, weather analysis, and aircraft performance. You will be responsible for the safety of hundreds of lives by calculating fuel, monitoring routes, and making critical decisions alongside pilots. If you have a sharp mind and a passion for the technical side of aviation, this is your path to a powerful and respected career in the flight operations center.",
@@ -88,6 +93,7 @@ export const Home = () => {
       id: 6, 
       title: "Airport Ground Operations", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Layout size={24} />, 
       desc: "Control the pulse of the airport. Master passenger handling and ramp safety.", 
       fullDesc: "An airport is a complex city that never sleeps. This course prepares you to manage the crucial ground operations that keep the aviation world moving. You will master passenger check-in procedures, baggage handling systems, and ramp safety protocols. Learn how to manage the flow of thousands of people and aircraft with precision and efficiency. Your career at the heart of the world's most modern airports starts here.",
@@ -99,6 +105,7 @@ export const Home = () => {
       id: 7, 
       title: "Cargo & Freight Handling", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Ship size={24} />, 
       desc: "Master the logistics of global trade. Learn to handle air cargo and dangerous goods.", 
       fullDesc: "Air cargo is the lifeline of the global economy. This program specializes in the high-demand field of air freight logistics. You will learn the intricate details of Air Waybill documentation, the handling of Dangerous Goods (DGR), and supply chain management. As global e-commerce continues to explode, experts who can move goods safely across borders are in higher demand than ever. Secure your future in the booming world of aviation logistics.",
@@ -110,6 +117,7 @@ export const Home = () => {
       id: 8, 
       title: "Visa Processing Course", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <FileText size={24} />, 
       desc: "Become a global mobility expert. Master the complex world of international visas.", 
       fullDesc: "Navigate the complex corridors of international travel laws. This unique course turns you into a professional Visa Consultant. You will gain deep knowledge of global visa categories, embassy requirements, and document verification processes for major countries like the US, UK, Canada, and the Schengen area. In an era of increased migration and travel, your expertise will be the key that opens doors for students, tourists, and professionals worldwide.",
@@ -121,6 +129,7 @@ export const Home = () => {
       id: 9, 
       title: "Travel Agency Management", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Building2 size={24} />, 
       desc: "Be your own boss. Learn how to launch and scale a profitable travel business.", 
       fullDesc: "Why work for the industry when you can own a piece of it? This entrepreneurship-focused course gives you the blueprint to start and manage your own travel agency. We cover everything from business registration and financial management to digital marketing and building supplier relationships. We don't just give you a certificate; we give you the tools to build a business empire in the most exciting industry on earth.",
@@ -132,6 +141,7 @@ export const Home = () => {
       id: 10, 
       title: "Hotel & Hospitality Management", 
       fee: "₦80,000", 
+      duration: "4 Months",
       icon: <Hotel size={24} />, 
       desc: "Master world-class hospitality. Train for leadership in luxury hotels and resorts.", 
       fullDesc: "Hospitality is the art of making people feel at home, even when they are miles away. This course prepares you for leadership roles in the world's most prestigious hotels and resorts. You will master front office operations, food and beverage management, and event planning. We focus on the high-end standards that luxury guests expect. Transform your passion for hospitality into a professional career that can take you to any 5-star destination in the world.",
@@ -241,7 +251,10 @@ export const Home = () => {
                 </div>
                 <div className="p-6 flex flex-col flex-grow items-center">
                   <div onClick={() => setSelectedCourse(course)} className="text-red-600 mb-4 bg-red-50 p-3 rounded-xl cursor-pointer hover:bg-red-600 hover:text-white transition-all">{course.icon}</div>
-                  <h4 className="font-black uppercase text-[11px] mb-2 leading-tight h-8">{course.title}</h4>
+                  <h4 className="font-black uppercase text-[11px] mb-1 leading-tight h-8">{course.title}</h4>
+                  <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 uppercase mb-3">
+                    <Clock size={12} className="text-red-600" /> {course.duration}
+                  </div>
                   <p className="text-slate-500 text-[10px] font-bold mb-4 flex-grow">{course.desc}</p>
                   <button onClick={() => setSelectedCourse(course)} className="w-full mb-4 py-2 border-2 border-slate-100 rounded-xl text-[9px] font-black uppercase hover:bg-[#002147] hover:text-white transition-all">Explore Career</button>
                   <div className="text-red-600 font-black text-sm">{course.fee}</div>
@@ -290,7 +303,10 @@ export const Home = () => {
                 <img src={selectedCourse.img} alt={selectedCourse.title} className="h-full w-full object-cover" />
               </div>
               <div className="p-8 md:p-12 text-[#002147] text-left">
-                <h3 className="text-3xl font-black uppercase leading-tight mb-4 border-b pb-4 border-slate-100">{selectedCourse.title}</h3>
+                <h3 className="text-3xl font-black uppercase leading-tight mb-2 border-b pb-4 border-slate-100">{selectedCourse.title}</h3>
+                <div className="flex items-center gap-2 mb-4 font-black text-xs text-red-600 uppercase">
+                   <Clock size={16} /> Course Duration: {selectedCourse.duration}
+                </div>
                 <p className="text-slate-600 font-medium text-sm leading-relaxed mb-6 italic">"{selectedCourse.fullDesc}"</p>
                 <div className="mb-6">
                   <h4 className="text-xs font-black uppercase tracking-widest text-red-600 mb-3">Key Learning Outcomes:</h4>
@@ -328,6 +344,13 @@ export const Home = () => {
                 <h4 className="font-black text-2xl tracking-tighter">SKYWARD</h4>
               </div>
               <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage.</p>
+              
+              {/* Added Logos Section */}
+              <div className="pt-4 flex flex-wrap gap-4 items-center opacity-80">
+                 <img src="/iata-logo.png" alt="IATA" className="h-8 md:h-10 object-contain brightness-0 invert" />
+                 <img src="/ncaa-logo.png" alt="NCAA" className="h-10 md:h-12 object-contain brightness-0 invert" />
+                 <img src="/iso-logo.png" alt="ISO Certified" className="h-10 md:h-12 object-contain brightness-0 invert" />
+              </div>
             </div>
             <div>
               <h5 className="font-black uppercase text-sm mb-6 border-b border-white/10 pb-2 text-red-600">Quick Links</h5>
