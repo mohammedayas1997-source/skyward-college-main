@@ -345,11 +345,12 @@ export const Home = () => {
               </div>
               <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage.</p>
               
-              {/* Added Logos Section */}
-              <div className="pt-4 flex flex-wrap gap-4 items-center opacity-80">
-                 <img src="/iata-logo.png" alt="IATA" className="h-8 md:h-10 object-contain brightness-0 invert" />
-                 <img src="/ncaa-logo.png" alt="NCAA" className="h-10 md:h-12 object-contain brightness-0 invert" />
-                 <img src="/iso-logo.png" alt="ISO Certified" className="h-10 md:h-12 object-contain brightness-0 invert" />
+              {/* FIXED LOGOS SECTION */}
+              {/* Nemo wannan bangaren a cikin Home.jsx ka tabbatar ya koma haka */}
+              <div className="pt-4 flex flex-wrap gap-6 items-center">
+                <img src="/iata-logo.jpg" alt="IATA" className="h-8 md:h-10 w-auto object-contain bg-white/10 p-1 rounded" />
+                <img src="/ncaa-logo.jpg" alt="NCAA" className="h-10 md:h-12 w-auto object-contain bg-white/10 p-1 rounded" />
+                <img src="/iso-logo.jpg" alt="ISO Certified" className="h-10 md:h-12 w-auto object-contain bg-white/10 p-1 rounded" />
               </div>
             </div>
             <div>
