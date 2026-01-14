@@ -390,14 +390,8 @@ export const Home = () => {
                 <div className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em]">
                     Powered by <span className="text-red-600 font-black">Ayax Digital Solutions</span>
                 </div>
-                <a 
-                  href="https://wa.me/2347087244444" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-2 bg-green-600/10 text-green-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all border border-green-500/20"
-                >
-                  Contact us on Whatsapp: +2347087244444
-                </a>
+          
+                
             </div>
         </div>
       </footer>
