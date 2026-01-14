@@ -345,8 +345,6 @@ export const Home = () => {
               </div>
               <p className="text-slate-400 text-sm font-medium leading-relaxed italic">Are you ready to explore the world while building a successful career? At Skyward College of Travels and Tourism, we don't just teach; we prepare you for the global stage.</p>
               
-              {/* FIXED LOGOS SECTION */}
-              {/* Nemo wannan bangaren a cikin Home.jsx ka tabbatar ya koma haka */}
               <div className="pt-4 flex flex-wrap gap-6 items-center">
                 <img src="/iata-logo.jpg" alt="IATA" className="h-8 md:h-10 w-auto object-contain bg-white/10 p-1 rounded" />
                 <img src="/ncaa-logo.jpg" alt="NCAA" className="h-10 md:h-12 w-auto object-contain bg-white/10 p-1 rounded" />
@@ -381,8 +379,26 @@ export const Home = () => {
               </div>
             </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-            &copy; 2026 Skyward College of Travels and Tourism. All Rights Reserved.
+        
+        {/* BOTTOM SECTION - POWERED BY & WHATSAPP CONTACT */}
+        <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+                &copy; 2026 Skyward College of Travels and Tourism. All Rights Reserved.
+            </div>
+            
+            <div className="flex flex-col items-center md:items-end gap-1">
+                <div className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em]">
+                    Powered by <span className="text-red-600 font-black">Ayax Digital Solutions</span>
+                </div>
+                <a 
+                  href="https://wa.me/2347087244444" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-2 bg-green-600/10 text-green-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all border border-green-500/20"
+                >
+                  Contact us on Whatsapp: +2347087244444
+                </a>
+            </div>
         </div>
       </footer>
     </section>
